@@ -1,0 +1,83 @@
+% Created 2022-09-04 Sun 20:30
+\documentclass[9pt, b5paper]{article}
+\usepackage{xeCJK}
+\usepackage{minted}
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{beraserif}
+\usepackage[scaled]{berasans}
+\usepackage[scaled]{beramono}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{float}
+\usepackage{textcomp}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{latexsym}
+\usepackage{natbib}
+\usepackage{geometry}
+\geometry{left=1.2cm,right=1.2cm,top=1.5cm,bottom=1.2cm}
+\newminted{common-lisp}{fontsize=\footnotesize} 
+\usepackage[xetex,colorlinks=true,CJKbookmarks=true,linkcolor=blue,urlcolor=blue,menucolor=blue]{hyperref}
+\author{deepwaterooo}
+\date{\today}
+\title{deepwaterooo deepwateroooMe -- I am the same GitHub account person}
+\hypersetup{
+  pdfkeywords={},
+  pdfsubject={},
+  pdfcreator={Emacs 27.1 (Org mode 8.2.7c)}}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+
+\section{要求}
+\label{sec-1}
+\begin{itemize}
+\item Overview
+\begin{itemize}
+\item Build an \textbf{employee directory app} that shows a list of employees from the provided endpoint.
+\item The app should display a list (or any kind of \textbf{collection view}!) which shows all the employees returned from the JSON endpoint described below.
+\item Each item in the view should contain a \textbf{summary of the employee}, including their \textbf{photo, name, and team} at minimum. You may add more information to the summary if you want, or \textbf{sort employees in any fashion} you’d like – sort and group by name, team, etc.
+\item There should be some UX to reload the employee list from within the app at any time. The UX can be done in any way you want: \textbf{a button, pull-to-refresh}, etc.
+\item If there is any additional UI/UX you would like to add, feel free to do so! We only ask that you please \textbf{do not build any more screens} than this list. Do not worry about building custom controls or UI elements – using \textbf{system-provided, standard elements} is totally fine.
+\item Be sure to \textbf{appropriately handle the normal variety of errors when querying an endpoint}. The app should \textbf{display useful loading, empty, and error states} where appropriate. \textbf{If images fail to load, displaying a placeholder} is fine.
+\item One extra thing we ask is that you please ensure you \textbf{do not use more network bandwidth than necessary} – \textbf{load expensive resources such as photos on-demand only}.
+\item The \textbf{employee list should not be persisted to disk}. You can reload it from the network \textbf{on each app launch and when refresh is requested} — but no more often than that unintentionally. (Android developers in particular should take care \textbf{not to make redundant network calls} when the \textbf{phone is rotated, or when memory is low}).
+\item \textbf{Images}, however, should \textbf{be cached on disk} so as to not waste device bandwidth. You may use an \textbf{open source image caching solution}, or write your own caching. Do not rely upon HTTP caching for image caching.
+\item Note that photos at a given URL will never change. Once one is loaded, you do not need to reload the photo. If an employee’s photo changes, they will be given a new photo URL.
+\item Tests should be provided for the app. We do not expect 100\% code coverage, so please use your best judgment for what should be tested. We’re also interested only in unit tests. Feel free to skip snapshot or app tests.
+\end{itemize}
+\item MVVM: 需要数据驱动，viewModel里定义一个状态变量，来标记当前的活动状态
+\begin{itemize}
+\item If any employee is malformed, it is fine to invalidate the entire list of employees in the response - there is no need to exclude only malformed employees.
+\item If there are no employees to show, the app should present an \textbf{empty state} view instead of an empty list.
+\end{itemize}
+\end{itemize}
+\section{主要思路}
+\label{sec-2}
+\begin{itemize}
+\item Retrofit + RxJava: 好像是更合适的，可以用注解，并且用得更为广泛
+\begin{itemize}
+\item 搜索关键字：Retrofit + OkHttp +RxJava 网络库构建
+\item \textbf{OkHttp}: 网络请求处理,主要是在应用启动的时候，什么时机开始发布和调用网络请求。所以这个可以不用了，大家都喜欢新的更好用的库
+\end{itemize}
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20220901_171033.png}
+\begin{itemize}
+\item \textbf{图片本地缓存}: 第三方库找一个，还是用AndroidX的Room
+\item 现在的难点：不知道怎么定义图片数据库，同时以OkHTTP respnose回来的连接起来
+\item 应用的 \textbf{启动优化} ：重中之重，需要借助这个小应用弄懂弄清楚， \textbf{不知道如何拆解网络请求的步骤,什么时候加载，初始化之类的？} 以达到较好的启动优化
+\item 
+\item \textbf{MVVM设计} ：只有一个页面，相对就简单方便多了。工作中的案例是使用MVVM但自己编辑逻辑处理信号下发，与数据驱动的UI更新，没有实现双向数据绑定的；可是这里感觉 \textbf{双向数据绑定} 更简单，会有哪些可能的问题呢？这里基本可以当作不需要双向，因为一个UI按钮要求刷新是唯一的UI需求；更多的只是需要时候的数据往UI加载更新；所以 \textbf{可以简单使用观察者模式，UI观察数据的变化} 就可以了
+\item \textbf{图片的加载与处理} ：用样可以使用么第三方库 \textbf{glide}
+\item \textbf{图片的加载与处理} ：用样可以使用么第三方库 \textbf{CircularImageView}
+\item \textbf{AndroidX RecyclerView} 的使用：选择相对更为高效和方便管理的库和数据结构来使用
+\item \textbf{Constraint Layout vs Coordinate Layout}: 暂时先用任何简单的layout先能运行起一个大致的框架来，再进一步优化
+\item 我丢掉了的文件呀，我写过的项目呀，不是在进Lucid之前写得好好的一个项目，现在源码全丢了。。。。。该死的GitHub\ldots{}..
+\end{itemize}
+% Emacs 27.1 (Org mode 8.2.7c)
+\end{document}
