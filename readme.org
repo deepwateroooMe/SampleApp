@@ -38,3 +38,391 @@
 - *Constraint Layout vs Coordinate Layout*: 暂时先用任何简单的layout先能运行起一个大致的框架来，再进一步优化 
 - 我丢掉了的文件呀，我写过的项目呀，不是在进Lucid之前写得好好的一个项目，现在源码全丢了。。。。。该死的GitHub.....
 
+* 下载图片并保存到本地： rxjava 2.x+retrofit 通过动态url保存网络图片到本地
+  #+BEGIN_SRC csharp
+// HttpManager 类：就是一个通过单例模式实现的类，获取retrofit的一个实例来调用NetApi接口内声明的方法，此处只写关键的一部分，别的相信你们都会
+public <T> T getHttpApi(Class<T> service) {
+    Retrofit retrofit = new Retrofit.Builder()
+        .baseUrl(BASE_URl)
+        .client(getClient())
+        .addConverterFactory(GsonConverterFactory.create())
+        .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+        .build();
+
+    return retrofit.create(service);
+}
+// BASE_URl 是你定义的域名比如：http://www.xxxx.com:8080之类的
+
+// NetApi接口：
+@GET
+@Streaming
+Observable<ResponseBody> downloadImg(@Url String  imgUrl);
+
+// 注意注解：
+// @GET后面不加任何东西，平时的都是@GET("api/getuserinfo")之类的和上面的那个BASE_URl拼接起来生成url：
+// http://www.xxxx.com:8080/api/getuserinfo?请求条件=xx
+// 然后去请求，这里采用@Url注解的方式就不用那么麻烦了
+// @Url 此处是动态url即网络图片的url，需要从外部传入，如度娘图标url：
+// https://www.baidu.com/img/superlogo_c4d7df0a003d3db9b65e9ef0fe6da1ec.png
+// 用字符串的形式传入即可
+
+// Presenter类 ：发起网络请求把得到的图片二进制流转化为bitmap对象，再通过bitmap对象保存到本地指定目录下
+/**
+ * 指定线程下载文件(异步)，非阻塞式下载
+ * @param url       图片url
+ * @param savePatch 下载文件保存目录
+ * @param fileName  文件名称(不带后缀)
+ */
+public void downloadFile(String url, final String savePatch, final String fileName) {
+    HttpManager.getInstance().getHttpApi(NetApi.class)
+        .downloadImg(url)
+        .subscribeOn(Schedulers.io())
+        .observeOn(Schedulers.newThread())
+        .subscribe(new DisposableObserver<ResponseBody>() {
+                @Override
+                    public void onNext(ResponseBody responseBody) {
+                    Bitmap bitmap = null;
+                    byte[] bys;
+                    try {
+                        bys = responseBody.bytes();
+                        bitmap = BitmapFactory.decodeByteArray(bys, 0, bys.length);
+
+                        try {
+                            FileUtils.saveImg(bitmap, savePatch, fileName);
+                            String savePath = savePatch + File.separator + fileName + ".jpg";
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (bitmap != null) {
+                        bitmap.recycle();
+                    }
+                }
+                @Override
+                    public void onError(Throwable e) {
+                    //你的处理
+                }
+                @Override
+                    public void onComplete() {
+                    //你的处理
+                }
+            });
+}
+// decodeByteArray是BitmapFactory内的方法，把二进制流转化为bitmap，需要导入系统包：
+// import android.graphics.BitmapFactory;
+
+// FileUtils类：IO操作，把图片保存到本地：
+/**
+ * 保存图片到SD卡
+ * @param bm         图片bitmap对象
+ * @param floderPath 下载文件保存目录
+ * @param fileName   文件名称(不带后缀)
+ */
+public static void saveImg(Bitmap bm, String floderPath, String fileName) throws IOException {
+    //如果不保存在sd下面下面这几行可以不加
+    if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+        Log.e("SD卡异常");
+        return;
+    }
+    File folder = new File(floderPath);
+    if (!folder.exists()) {
+        folder.mkdirs();
+    }
+    String savePath = folder.getPath() + File.separator + fileName + ".jpg";
+    File file = new File(savePath);
+    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
+    bm.compress(Bitmap.CompressFormat.JPEG, 80, bos);
+    Log.d(savePath + " 保存成功");
+    bos.flush();
+    bos.close();
+}
+// 在你的service或者activity中调用：
+mPresenter.downloadFile("https://www.baidu.com/img/superlogo_c4d7df0a003d3db9b65e9ef0fe6da1ec.png", Environment.getExternalStorageDirectory() + File.separator + "test", "baidu")
+  #+END_SRC 
+
+* 关于图片的处理：不仅要下载，下载后还需要自动保存到数据库
+- https://blog.csdn.net/ANDROID_WangWeiDa/article/details/62284675
+- 主要源码参考如下：
+#+BEGIN_SRC csharp
+/**
+ * 观察者
+ */
+Observer<String> observer = new Observer<String>() {
+    @Override
+    public void onCompleted() {
+        Log.e("TAG", "oncompleted()");
+    }
+    @Override
+    public void onError(Throwable e) {
+        Log.e("TAG", "onError()");
+    }
+    @Override
+    public void onNext(String s) {
+        Log.e("TAG", "onNext()" + s);
+    }
+};
+// 或者创建观察者的实现类：Subscriber
+/**
+ * 观察者（观察者的实现类）
+ */
+Subscriber<String> subscriber = new Subscriber<String>() {
+    @Override
+    public void onCompleted() {
+        Log.e("TAG", "oncompleted()");
+    }
+    @Override
+    public void onError(Throwable e) {
+        Log.e("TAG", "onError()");
+    }
+    @Override
+    public void onNext(String s) {
+        Log.e("TAG", "onNext()" + s);
+    }
+};
+// 可以说，两者的效果是一样的。
+// 接着创建可观察者（被观察者）Observable
+
+/**
+ * 可观察者（被观察者）
+ */
+Observable observale = Observable.create(new Observable.OnSubscribe<String>() {
+        @Override
+        public void call(Subscriber<? super String> subscriber) {
+            subscriber.onNext("Hello");
+            subscriber.onNext("My name is Avater!");
+            subscriber.onCompleted();
+        }
+    });
+// 好了，到此已经创建完毕，接着在onCreate方法中进行简单的调用：
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    observale.subscribeOn(Schedulers.io())  //订阅在io线程（非主线程），不会阻塞主线程
+        .observeOn(AndroidSchedulers.mainThread())  //在主线程中观察
+        .subscribe(observer);   //进行订阅关系
+}
+// Log:
+// 03-15 12:06:45.837 2952-2952/com.avater.myapplication E/TAG: onNext()Hello
+// 03-15 12:06:45.847 2952-2952/com.avater.myapplication E/TAG: onNext()My name is Avater!
+// 03-15 12:06:45.847 2952-2952/com.avater.myapplication E/TAG: oncompleted()
+// 是不是很快？是不是很懵逼？哈哈，这就对了，毕竟入门嘛，多实战，多理解！
+// 下面附上一个使用Rxjava下载图片的例子：
+
+private ImageView imageView;
+private String url = "https://ss0.bdstatic.com/5aV1bjqh_Q23odCf/static/superman/img/logo/bd_logo1_31bdc765.png";
+
+/**
+ * 图片观察者
+ */
+Observer<Bitmap> bitmapOberver = new Observer<Bitmap>() {
+    @Override
+    public void onCompleted() {
+
+    }
+    @Override
+    public void onError(Throwable e) {
+        Toast.makeText(MainActivity.this, "图片下载失败", Toast.LENGTH_SHORT).show();
+    }
+    @Override
+    public void onNext(Bitmap bitmap) {
+        imageView.setImageBitmap(bitmap);
+    }
+};
+
+/**
+ * 可观察者（被观察者）
+ */
+Observable<Bitmap> bitmapObservable = Observable.create(new Observable.OnSubscribe<Bitmap>() {
+        @Override
+        public void call(Subscriber<? super Bitmap> subscriber) {
+            URL net;
+            HttpURLConnection conn = null;
+            InputStream inputStream = null;
+            Bitmap bitmap = null;
+            try {
+                net = new URL(url);
+                conn = (HttpURLConnection) net.openConnection();
+                inputStream = conn.getInputStream();
+                bitmap = BitmapFactory.decodeStream(inputStream);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                conn.disconnect();
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            subscriber.onNext(bitmap);
+        }
+    });
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    imageView = (ImageView) findViewById(R.id.imageview);
+
+    bitmapObservable.subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(bitmapOberver);
+}
+#+END_SRC 
+
+* 用Retrofit+Rxjava上传图片支持多张图片的上传
+  #+BEGIN_SRC csharp
+// 1.这是一个接口
+@POST
+Observable<ResponseBody> Image(@Url String url, @HeaderMap Map<String,Object> headermap,@Body MultipartBody body);
+// 第一个是上传一个 第二个是上传多个
+
+// 下面这个是一个Retrofit 封装好的工具类
+public class Retrofits{
+    private MyApiService myApiService;
+    public Retrofits() {
+        HttpLoggingInterceptor loggingInterceptor =new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient okHttpClient =new OkHttpClient.Builder()
+            .readTimeout(20,TimeUnit.SECONDS)
+            .connectTimeout(20,TimeUnit.SECONDS)
+            .writeTimeout(20,TimeUnit.SECONDS)
+            .addInterceptor(loggingInterceptor)
+            .retryOnConnectionFailure(true)
+            .build();
+        Retrofit retrofit =new Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+//                存放的头文件
+            .baseUrl(Contacts.BASE_URL)
+            .client(okHttpClient)
+            .build();
+        myApiService =retrofit.create(MyApiService.class);
+    }
+    public static  Retrofits getInstance(){
+        return RetroHolder.OK_UTIL;
+    }
+    static class RetroHolder{
+        private static final Retrofits OK_UTIL =new Retrofits ();
+    }
+    /**
+     * 封装一个上传图片
+     */
+    public OkUtil image(String murl,Map<String,Object> headermap,Map<String,Object> map,List<Object> list){
+        MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        if (list.size()==1) {
+            for (int i = 0; i < list.size(); i++) {
+                File file = new File((String) list.get(i));
+                builder.addFormDataPart("image", file.getName(),RequestBody.create(MediaType.parse("multipart/octet-stream"),file));
+            }
+        }
+        myApiService.Image(murl,headermap,builder.build())
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(observer);
+        return Retrofits.getInstance();
+    }
+    /**
+     * 多个图片的上传
+     */
+    public OkUtil pinglun(String murl,Map<String,Object> headermap,Map<String,Object> map,List<Object> list){
+        MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        builder.addFormDataPart("commodityId",String.valueOf(map.get("commodityId")));
+        if(!String.valueOf(map.get("orderId")).equals("")){
+            builder.addFormDataPart("orderId",String.valueOf(map.get("orderId")));
+        }
+        builder.addFormDataPart("content",String.valueOf(map.get("content")));
+        if (list.size()!=0) {
+            for (int i = 1; i < list.size(); i++) {
+                File file = new File((String) list.get(i));
+                builder.addFormDataPart("image", file.getName(),RequestBody.create(MediaType.parse("multipart/octet-stream"),file));
+            }
+        }
+        myApiService.Image(murl,headermap,builder.build())
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(observer);
+        return Retrofits.getInstance();
+    }
+//    重写一个观察者模式
+    private Observer observer =new Observer<ResponseBody>(){
+        @Override
+        public void onCompleted() {
+        }
+        @Override
+        public void onError(Throwable e) {
+            if(httpListener!=null){
+                httpListener.onError(e.getMessage());
+            }
+        }
+        @Override
+        public void onNext(ResponseBody responseBody) {
+            if(httpListener !=null){
+                try {
+                    httpListener.onSuccess(responseBody.string());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+    public interface HttpListener{
+        void onSuccess(String gsonstr);
+        void onError(String error);
+    }
+    private HttpListener httpListener;
+    public void setHttpListener(HttpListener listener){
+        this.httpListener =listener;
+    }
+}
+
+// 一个方法把得到的图片路径 变为String类型
+public String getFilePath(String fileName, int requestCode, Intent data) {
+    if (requestCode == 1) {
+        return fileName;
+    } else if (requestCode == 0) {
+        Uri uri = data.getData();
+        String[] proj = {MediaStore.Images.Media.DATA};
+        Cursor actualimagecursor = managedQuery(uri, proj, null, null, null);
+        int actual_image_column_index = actualimagecursor
+            .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        actualimagecursor.moveToFirst();
+        String img_path = actualimagecursor
+            .getString(actual_image_column_index);
+        // 4.0以上平台会自动关闭cursor,所以加上版本判断,OK
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+            actualimagecursor.close();
+        return img_path;
+    }
+    return null;
+}
+
+// 一个打开图库的方法
+Intent intent1 = new Intent(Intent.ACTION_PICK);
+intent1.setType("image/*");
+startActivityForResult(intent1,0);
+
+// 重写一个回调方法
+@Override
+protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if(data==null){
+        return;
+    }
+    if(requestCode==0){
+        String filePath = getFilePath(null,requestCode,data);
+        /**
+         * 这里是用的一个图片的上传
+         */
+        Map<String, Object> map = new HashMap<>();
+        List<Object> list =new ArrayList<>();
+        list.add(filePath);
+        pressent.image(Contacts.UploadYourHead, headermap, map,list,Register.class);
+    }
+}
+  #+END_SRC 

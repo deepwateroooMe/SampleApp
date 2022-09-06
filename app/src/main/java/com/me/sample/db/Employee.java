@@ -6,11 +6,11 @@ public class Employee {
     @NonNull
     @PrimaryKey(autoGenerate=true)
     @ColumnInfo(name = "userId")
-    Long id;
+    String id;
 
-    @ColumnInfo(name = "userName")
-    String name;
-
+    @ColumnInfo(name = "img")
+    String img;
+    
     @Ignore
     public Employee (Long userId) {
         this.id = id;
