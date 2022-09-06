@@ -7,8 +7,12 @@ import com.me.sample.db.Employee;
 public class MainActivityViewModel extends ViewModel {
     private final String TAG = "MainActivityViewModel";
 
+    private EmployeeDatabase mEmployeeDatabase; // need to have an intance reference here in viewModel 是哪里初始化比较好呢 ？
+    // private EmployeeDao mEmployeeDao; // 有个这个不是也还比较好用吗？
+    
+    // private LiveData<List<Emperor>> listEmperor; // 好像确实 Mutable的比较好用
     private MutableLiveData<List<Employee>> mEmpList;
-
+    
     private boolean isRefreshing;
     public boolean getIsRefreshing() {
         return isRefreshing;
@@ -16,6 +20,22 @@ public class MainActivityViewModel extends ViewModel {
     public void setIsRefreshing(boolean isRefreshing) {
         this.isRefreshing = isRefreshing;
         // 如果一点击就要刷新，那么是否需要监听，刷新结束之后，重新设置为false呢，是应该的，感觉这里把逻辑弄复杂了
+    }
+
+    public MainActivityViewModel(@NonNull Application application) {
+        super(application);
+
+        // 初始化数据
+        mEmployeeDatabase = EmployeeDatabase.getInstance(application);
+        // mEmployeeDao = mEmployeeDatabase.
+        mEmpList = mEmployeeDatabase.getEmployeeDao().getEmployees(); // 这里的返回数据类型要再检查定义一下
+
+        // myDatabase = MyDatabase.getDatabaseInstance(application); // reference
+        // listEmperor = myDatabase.getEmperorDao().queryEmperorsByLiveData();
+    }
+
+    public LiveData<List<Employee>> getEmployees() { // 返回类型有问题吗？
+        return mEmpList;
     }
 
     public void refreshData() { // GET

@@ -20,11 +20,6 @@ android {
                     "room.expandProjection":"true"]
             }
         }
-        // javaCompileOptions {
-        //     annotationProcessOptions {
-        //         arguments = ["room.schemaLocation": "$projectDir/schemas".toString()] // 这里写得不对
-        //     }
-        // }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
