@@ -19,12 +19,15 @@
   - If any employee is malformed, it is fine to invalidate the entire list of employees in the response - there is no need to exclude only malformed employees.
   - If there are no employees to show, the app should present an *empty state* view instead of an empty list. 
 * 主要思路
+- 这是一个看似要求极其简单，实则考验的知识点和深度有着相当的跨度的小项目。
+- 它们一定挑都要挑我出差到WSU的一个星期里来考验我，因为他们就是想要去打败一个人。呵呵，真正想要打败一个人，谈何容易，就凭这？？？
 - Retrofit + RxJava: 好像是更合适的，可以用注解，并且用得更为广泛
   - 搜索关键字：Retrofit + OkHttp +RxJava 网络库构建
   - *OkHttp*: 网络请求处理,主要是在应用启动的时候，什么时机开始发布和调用网络请求。所以这个可以不用了，大家都喜欢新的更好用的库
     
 [[./pic/readme_20220901_171033.png]]
 - *图片本地缓存*: 第三方库找一个，还是用AndroidX的Room
+  - 我 *现在数据库的问题* 是：我 *缓存保存了员工数据进数据库* ，但是这里说得很清楚了， *不用保存员工数据，只保存每个员工id所对应的图片就可以了*
 - 现在的难点：不知道怎么定义图片数据库，同时以OkHTTP respnose回来的连接起来
 - 应用的 *启动优化* ：重中之重，需要借助这个小应用弄懂弄清楚， *不知道如何拆解网络请求的步骤,什么时候加载，初始化之类的？* 以达到较好的启动优化
 - 

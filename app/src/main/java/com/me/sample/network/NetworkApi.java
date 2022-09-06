@@ -20,7 +20,7 @@ public class NetworkApi {
     // retrofitHashMap
     private static HashMap<String, Retrofit> retrofitHashMap = new HashMap<>();
     // API访问地址
-    private static String mBaseUrl;
+    private static String mBaseUrl = "https://s3.amazonaws.com/sq-mobile-interview/";
     
     /**
      * 配置OkHttp
@@ -30,8 +30,9 @@ public class NetworkApi {
     private static OkHttpClient getOkHttpClient() {
         if (okHttpClient != null) return okHttpClient; // 不为空则说明已经配置过了，直接返回即可。
 
-        // OkHttp构建器
+        // OkHttp构建器: 这里用的是OkHttpClient不是用的Retrofit的框架。。。
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.baseUrl(Apis.BASE_URL); //必填
         // 设置缓存大小
         int cacheSize = 100 * 1024 * 1024;
         // 设置OkHttp网络缓存

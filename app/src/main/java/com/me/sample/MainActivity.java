@@ -71,12 +71,7 @@ public class MainActivity extends AppCompatActivity {
         mFab.setOnClickListener(new View.OnClickListener() {
                 @Override
                     public void onClick(View view) { // 需要改写成网络申请刷新数据
-                    // mMainActivityViewModel.addNewValue(
-                    //     new NicePlace(
-                    //         "https://i.imgur.com/ZcLLrkY.jpg",
-                    //         "Washington"
-                    //         )
-                    //     );
+                    mMainActivityViewModel.setIsRefreshing(true);
                 }
             });
         initRecyclerView();
