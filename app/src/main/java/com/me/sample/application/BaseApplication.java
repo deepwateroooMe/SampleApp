@@ -1,14 +1,12 @@
-package com.me.sample;
+package com.me.sample.application;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 
-import androidx.room.Room;
-
 import com.me.sample.db.AppDatabase;
 import com.me.sample.network.NetworkApi;
-import com.me.sample.network.NetworkRequiredInfo;
+import com.me.sample.application.NetworkRequiredInfo;
 import com.me.sample.utils.MVUtils;
 import com.tencent.mmkv.MMKV;
 

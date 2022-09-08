@@ -51,14 +51,17 @@ dependencies {
 
     // retrofit2
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    // 自动将服务器返回的数据 以及 我们传给一个JavaBeen实体，转换成json
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    // 日志拦截器
+    // 日志拦截器：OKHttp日志拦截器，OKHttp官方提供
     implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+    // Rxjava + retrofit 用到的一个依赖库，使接口回调的数据以Rxjava形式供我们接受
+    
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
     // rxjava
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.12'
-    // 解析json 数据
+    // 解析json 数据: 实体解析库
     implementation 'com.google.code.gson:gson:2.8.7'
 
     // Lifecycle components

@@ -1,8 +1,9 @@
-package com.me.sample.network;
+package com.me.sample.application;
 
 import android.app.Application;
 
 import com.me.sample.BuildConfig;
+import com.me.sample.network.INetworkRequiredInfo;
 
 /**
  * 网络访问信息

@@ -35,8 +35,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // // 这个后面对应的是几个不同fragment来实现不同测试环境的监听与回调，因为不是当前项目的重点，留下标记，改天有机会再实现测试一遍
+        // // https://cloud.tencent.com/developer/article/1773165
         // setContentView(R.layout.activity_network_environment);
-
 
         setContentView(R.layout.activity_main);
 

@@ -6,7 +6,7 @@ import android.util.Log;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.gson.Gson;
-import com.me.sample.BaseApplication;
+import com.me.sample.application.BaseApplication;
 import com.me.sample.db.beans.Image;
 import com.me.sample.model.EmployeeResponse;
 import com.me.sample.network.ApiService;

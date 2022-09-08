@@ -4,18 +4,19 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-import androidx.appcompat.widget.AppCompatImageView;
 import androidx.databinding.BindingAdapter;
 
 import com.bumptech.glide.Glide;
-import com.me.sample.BaseApplication;
+import com.google.android.material.imageview.ShapeableImageView;
+import com.me.sample.application.BaseApplication;
 import com.me.sample.network.utils.KLog;
 
 import io.reactivex.annotations.Nullable;
 
 // 这里要思考一个问题，那就是图片能不能通过DataBinding的方式进行数据绑定，
 // 是可以的，不过需要我们自定义一个ImageView，用于绑定网络地址
-public class CustomImageView extends AppCompatImageView {
+// public class CustomImageView extends AppCompatImageView {
+public class CustomImageView extends ShapeableImageView {
     
     public CustomImageView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);

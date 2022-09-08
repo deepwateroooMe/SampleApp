@@ -22,6 +22,8 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+// 上面的代码中完成了对OkHttp的优化，OkHttp负责网络访问，使用Retrofit发起网络请求，使用RxJava处理返回结果，
+// 在上面只是做了线程的切换和错误码的处理，所以还需要的返回做一个处理
 public class NetworkApi {
     private final String TAG = "NetworkApi"; 
     

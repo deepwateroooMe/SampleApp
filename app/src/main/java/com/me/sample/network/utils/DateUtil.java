@@ -92,7 +92,7 @@ public class DateUtil {
         return cal.get(Calendar.DAY_OF_WEEK);
     }
 
-    //根据年月日计算是星期几并与当前日期判断  非昨天、今天、明天 则以星期显示
+    // 根据年月日计算是星期几并与当前日期判断  非昨天、今天、明天 则以星期显示
     public static String Week(String dateTime) {
         String week = "";
         String yesterday = "";
