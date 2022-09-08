@@ -5,6 +5,7 @@ import io.reactivex.functions.Function;
 
 /**
  * 网络错误处理
+ * @author llw
  */
 public class HttpErrorHandler<T> implements Function<Throwable, Observable<T>> {
     /**

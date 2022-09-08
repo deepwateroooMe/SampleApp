@@ -1,5 +1,8 @@
 package com.me.sample.db;
 
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+
 public class LocalEmployeeDao implements EmployeeDao {
 
     private final EmployeeDao mEmployeeDao;
@@ -18,8 +21,8 @@ public class LocalEmployeeDao implements EmployeeDao {
         return mEmployeeDao.insertOrUpdateEmployee(employee);
     }
 
-    @Override
-        public void deleteAllEmployees() {
-        mEmployeeDao.deleteAllEmployees();
-    }
+//    @Override
+//        public void deleteAllEmployees() {
+//        mEmployeeDao.deleteAllEmployees();
+//    }
 }

@@ -33,8 +33,9 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:visibility="gone"/>
+<!-- 记住上面我首先把它的状态设置为了隐藏 -->
 
-    <!-- <android.support.design.widget.FloatingActionButton -->
+<!-- <android.support.design.widget.FloatingActionButton -->
     <!--     android:id="@+id/fab" -->
     <!--     android:layout_width="wrap_content" -->
     <!--     android:layout_height="wrap_content" -->

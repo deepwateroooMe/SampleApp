@@ -42,13 +42,29 @@ public class ExceptionHandle {
             responseThrowable = new ResponseThrowable(throwable, ERROR.HTTP_ERROR);
             switch (httpException.code()) {
             case UNAUTHORIZED:
+                responseThrowable.message = "未授权";
+                break;
             case FORBIDDEN:
+                responseThrowable.message = "禁止访问";
+                break;
             case NOT_FOUND:
+                responseThrowable.message = "未找到";
+                break;
             case REQUEST_TIMEOUT:
+                responseThrowable.message = "请求超时";
+                break;
             case GATEWAY_TIMEOUT:
+                responseThrowable.message = "网关超时";
+                break;
             case INTERNAL_SERVER_ERROR:
+                responseThrowable.message = "内部服务器错误";
+                break;
             case BAD_GATEWAY:
+                responseThrowable.message = "错误网关";
+                break;
             case SERVICE_UNAVAILABLE:
+                responseThrowable.message = "暂停服务";
+                break;
             default:
                 responseThrowable.message = "网络错误";
                 break;
@@ -95,17 +111,31 @@ public class ExceptionHandle {
      * 约定异常
      */
     public class ERROR {
-         // 未知错误
+        /**
+         * 未知错误
+         */
         public static final int UNKNOWN = 1000;
-         // 解析错误
+        /**
+         * 解析错误
+         */
         public static final int PARSE_ERROR = 1001;
-         // 网络错误
+        /**
+         * 网络错误
+         */
         public static final int NETWORK_ERROR = 1002;
-         // 协议出错
+        /**
+         * 协议出错
+         */
         public static final int HTTP_ERROR = 1003;
-         // 证书出错
+
+        /**
+         * 证书出错
+         */
         public static final int SSL_ERROR = 1005;
-         // 连接超时
+
+        /**
+         * 连接超时
+         */
         public static final int TIMEOUT_ERROR = 1006;
     }
 

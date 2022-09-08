@@ -19,13 +19,13 @@
   - If any employee is malformed, it is fine to invalidate the entire list of employees in the response - there is no need to exclude only malformed employees.
   - If there are no employees to show, the app should present an *empty state* view instead of an empty list. 
 * 主要思路
+- 终于找到了先前二三月份参考过的一个很的案例日志序列： MVVM https://blog.csdn.net/qq_38436214/category_11482619.html?spm=1001.2014.3001.5482
+  - 里面有十几篇博文都作了最新的更新
 - 这是一个看似要求极其简单，实则考验的知识点和深度有着相当的跨度的小项目。
 - 它们一定挑都要挑我出差到WSU的一个星期里来考验我，因为他们就是想要去打败一个人。呵呵，真正想要打败一个人，谈何容易，就凭这？？？
 - Retrofit + RxJava: 好像是更合适的，可以用注解，并且用得更为广泛
   - 搜索关键字：Retrofit + OkHttp +RxJava 网络库构建
   - *OkHttp*: 网络请求处理,主要是在应用启动的时候，什么时机开始发布和调用网络请求。所以这个可以不用了，大家都喜欢新的更好用的库
-    
-[[./pic/readme_20220901_171033.png]]
 - *图片本地缓存*: 第三方库找一个，还是用AndroidX的Room
   - 我 *现在数据库的问题* 是：我 *缓存保存了员工数据进数据库* ，但是这里说得很清楚了， *不用保存员工数据，只保存每个员工id所对应的图片就可以了*
   - 说到网络缓存,肯定都不陌生，多多少少使用过不同的缓存方案。使用网络缓存有什么作用:
@@ -36,180 +36,178 @@
 - *OkHttpClient/Retrofit里在网络请求的时候(根据不同的url链接，或是不是请求接口？基于拦截器来做缓存)来动态使用不同的缓存策略(适用于自己只缓存图片，而不缓存员工链表)* ，这个思路应该用在这个项目的设计与实现里。原理参考这个思路： 
   - https://blog.csdn.net/c10WTiybQ1Ye3/article/details/125687902?spm=1001.2101.3001.6661.1&utm_medium=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-1-125687902-blog-51550400.pc_relevant_multi_platform_whitelistv3&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-1-125687902-blog-51550400.pc_relevant_multi_platform_whitelistv3&utm_relevant_index=1
 - 笔记本电脑上的kotlin-mode还没有配置好，改天配置好后再把这个部分的代码好好整理一下。早上时间紧张，暂时没时间来处理这个了 
-#+BEGIN_SRC text
+#+BEGIN_SRC kotlin
 private fun buildCacheKey(request: Request): String {
-val requestBody = request.body ?: return request.url.toString()
-val buffer = Buffer()
-requestBody.writeTo(buffer)
+    val requestBody = request.body ?: return request.url.toString()
+    val buffer = Buffer()
+    requestBody.writeTo(buffer)
 
-val contentType = requestBody.contentType()
-val charset = contentType?.charset(Charsets.UTF_8) ?: Charsets.UTF_8
+    val contentType = requestBody.contentType()
+    val charset = contentType?.charset(Charsets.UTF_8) ?: Charsets.UTF_8
 
-if (isProbablyUtf8(buffer)) {
-val questParam = buffer.readString(charset)
-buffer.close()
-if (questParam.isBlank()) return request.url.toString()
-val builder = request.url.newBuilder()
-kotlin.runCatching {
-builder.addQueryParameter("${request.method.lowercase()}param", questParam)
-return builder.build().toString()
-}.onFailure {
-return ""
+    if (isProbablyUtf8(buffer)) {
+        val questParam = buffer.readString(charset)
+        buffer.close()
+        if (questParam.isBlank()) return request.url.toString()
+        val builder = request.url.newBuilder()
+        kotlin.runCatching {
+            builder.addQueryParameter("${request.method.lowercase()}param", questParam)
+            return builder.build().toString()
+        }.onFailure {
+            return ""
+        }
+    }
+    return request.url.toString()
 }
-}
-return request.url.toString()
-}
-拦截器
 
-我们在拦截器里做缓存，每次请求可能会是不同的策略，所以首先要拿到的就是缓存模式，拿到缓存模式之后再根据不同的模式去读取或者写入操作，核心代码也就下边这几行：
-
+// 拦截器
+// 我们在拦截器里做缓存，每次请求可能会是不同的策略，所以首先要拿到的就是缓存模式，
+// 拿到缓存模式之后再根据不同的模式去读取或者写入操作，核心代码也就下边这几行：
 override fun intercept(chain: Interceptor.Chain): Response {
-val initialRequest = chain.request()
-val strategy = CacheUtil.getCacheStrategy(initialRequest)
-val newRequest = initialRequest.rmCacheHeader()
+    val initialRequest = chain.request()
+    val strategy = CacheUtil.getCacheStrategy(initialRequest)
+    val newRequest = initialRequest.rmCacheHeader()
 
-if (strategy == null) return chain.proceed(newRequest)// 策略为空，直接返回网络结果
+    if (strategy == null) return chain.proceed(newRequest)// 策略为空，直接返回网络结果
 
-// ONLY_NETWORK 直接请求网络
-if (strategy.cacheMode == CacheMode.ONLY_NETWORK) return chain.proceed(newRequest)
+    // ONLY_NETWORK 直接请求网络
+    if (strategy.cacheMode == CacheMode.ONLY_NETWORK) return chain.proceed(newRequest)
 
-// ONLY_CACHE 只读取缓存
-if (strategy.cacheMode == CacheMode.ONLY_CACHE) {
-// 只读缓存模式,缓存为空,返回错误响应
-return (if (CacheManager.useExpiredData) mCache.getCache(strategy.cacheKey, newRequest)
-else redCache(strategy, newRequest)) ?: Response.Builder()
-.request(chain.request())
-.protocol(Protocol.HTTP_1_1)
-.code(HttpURLConnection.HTTP_GATEWAY_TIMEOUT)
-.message("no cached data")
-.body(EMPTY_RESPONSE)
-.sentRequestAtMillis(-1L)
-.receivedResponseAtMillis(System.currentTimeMillis())
-.build()
+    // ONLY_CACHE 只读取缓存
+    if (strategy.cacheMode == CacheMode.ONLY_CACHE) {
+        // 只读缓存模式,缓存为空,返回错误响应
+        return (if (CacheManager.useExpiredData) mCache.getCache(strategy.cacheKey, newRequest)
+                else redCache(strategy, newRequest)) ?: Response.Builder()
+            .request(chain.request())
+            .protocol(Protocol.HTTP_1_1)
+            .code(HttpURLConnection.HTTP_GATEWAY_TIMEOUT)
+            .message("no cached data")
+            .body(EMPTY_RESPONSE)
+            .sentRequestAtMillis(-1L)
+            .receivedResponseAtMillis(System.currentTimeMillis())
+            .build()
+    }
+
+    //先取缓存再取网络
+    if (strategy.cacheMode == CacheMode.READ_CACHE_NETWORK_PUT) {
+        val cacheResponse = redCache(strategy, newRequest)
+        if (cacheResponse != null) return cacheResponse
+    }
+
+    try {
+        // 开始请求网络
+        val response = chain.proceed(newRequest)
+        // 成功后写入缓存
+        if (response.isSuccessful) {
+            return cacheWritingResponse(mCache.putCache(strategy.cacheKey, response), response)
+        }
+        if (strategy.cacheMode == CacheMode.NETWORK_PUT_READ_CACHE) {
+            return redCache(strategy, newRequest) ?: response
+        }
+        return response
+    } catch (e: Throwable) {
+        //请求失败尝试读取缓存，缓存没有或者失效，抛异常
+        if (strategy.cacheMode == CacheMode.NETWORK_PUT_READ_CACHE) {
+            return redCache(strategy, newRequest) ?: throw e
+        }
+        throw e
+    }
 }
 
-//先取缓存再取网络
-if (strategy.cacheMode == CacheMode.READ_CACHE_NETWORK_PUT) {
-val cacheResponse = redCache(strategy, newRequest)
-if (cacheResponse != null) return cacheResponse
-}
-
-try {
-// 开始请求网络
-val response = chain.proceed(newRequest)
-// 成功后写入缓存
-if (response.isSuccessful) {
-return cacheWritingResponse(mCache.putCache(strategy.cacheKey, response), response)
-}
-if (strategy.cacheMode == CacheMode.NETWORK_PUT_READ_CACHE) {
-return redCache(strategy, newRequest) ?: response
-}
-return response
-} catch (e: Throwable) {
-//请求失败尝试读取缓存，缓存没有或者失效，抛异常
-if (strategy.cacheMode == CacheMode.NETWORK_PUT_READ_CACHE) {
-return redCache(strategy, newRequest) ?: throw e
-}
-throw e
-}
-}
-设置缓存
-
-这里不得不佩服 Retrofit 在解耦方面做的是真的强啊。我何时能有那样的思路跟想法呢。眼里只有崇拜~~~
-
-言归正传 Retrofit 的请求头是在 Service里边添加的，所以添加缓存策略，直接写在Service里。Retrofit 两种添加请求头的方式@Headers 是方法注解，@Header 是参数注解。再结合Kotlin 语法可以指定默认参数，如有不同缓存模式就可以在请求的时候，去动态使用不同缓存模式。
-
+// 设置缓存
+// 这里不得不佩服 Retrofit 在解耦方面做的是真的强啊。我何时能有那样的思路跟想法呢。眼里只有崇拜~~~
+// 言归正传 Retrofit 的请求头是在 Service里边添加的，所以添加缓存策略，直接写在Service里。
+// Retrofit 两种添加请求头的方式@Headers 是方法注解，@Header 是参数注解。
+// 再结合Kotlin 语法可以指定默认参数，如有不同缓存模式就可以在请求的时候，去动态使用不同缓存模式。
 /**
-* 使用 Header 参数注解
-*/
+ * 使用 Header 参数注解
+ */
 @FormUrlEncoded
 @POST("user/login")
 suspend fun login(
-@Field("username") username: String,
-@Field("password") password: String,
-@Header(CacheStrategy.CACHE_MODE) cacheMode: String = CacheMode.READ_CACHE_NETWORK_PUT,
-@Header(CacheStrategy.CACHE_TIME) cacheTime: String = "10"// 过期时间，10秒 不过期
+    @Field("username") username: String,
+    @Field("password") password: String,
+    @Header(CacheStrategy.CACHE_MODE) cacheMode: String = CacheMode.READ_CACHE_NETWORK_PUT,
+    @Header(CacheStrategy.CACHE_TIME) cacheTime: String = "10"// 过期时间，10秒 不过期
 ): BaseResponse<Any>
 
 /**
-* 使用 Headers 方法注解
-*/
+ * 使用 Headers 方法注解
+ */
 @Headers(
-"${CacheStrategy.CACHE_TIME}:-1", // 过期时间，-1 不过期
-"${CacheStrategy.CACHE_MODE}:${CacheMode.READ_CACHE_NETWORK_PUT}"
+    "${CacheStrategy.CACHE_TIME}:-1", // 过期时间，-1 不过期
+    "${CacheStrategy.CACHE_MODE}:${CacheMode.READ_CACHE_NETWORK_PUT}"
 )
 @GET("article/list/{page}/json")
 suspend fun getPage(@Path("page") page: Any): BaseResponse<Page<ArticleBean>>
-缓存的读写
 
-读写操作还是用的OkHttp 的 DiskLruCache类。Okhttp 4.0.0 版本以后 就用 Kotlin 重构了。DiskLruCache 的构造函数被 internal 修饰了。重构后的前几个版本还提供了 静态方法来创建。后边版本直接静态方法都移除了，这是要搞事情啊，不准备给我们用的样子。不过如果用Java写的话就可以直接创建，Java会忽视 internal 关键字直接过编译期。但是 Kotlin 就不行了，会报错。又不想用Java写。还是直接用反射创建吧，没有反射干不了的事情。
-
+// 缓存的读写
+// 读写操作还是用的OkHttp 的 DiskLruCache类。
+// Okhttp 4.0.0 版本以后 就用 Kotlin 重构了。DiskLruCache 的构造函数被 internal 修饰了。
+// 重构后的前几个版本还提供了 静态方法来创建。后边版本直接静态方法都移除了，这是要搞事情啊，不准备给我们用的样子。
+// 不过如果用Java写的话就可以直接创建，Java会忽视 internal 关键字直接过编译期。但是 Kotlin 就不行了，会报错。
+// 又不想用Java写。还是直接用反射创建吧，没有反射干不了的事情。
 internal fun getDiskLruCache(
-fileSystem: FileSystem?,
-directory: File?,
-appVersion: Int,
-valueCount: Int,
-maxSize: Long
+    fileSystem: FileSystem?,
+    directory: File?,
+    appVersion: Int,
+    valueCount: Int,
+    maxSize: Long
 ): DiskLruCache {
-val cls = DiskLruCache::class.java
-return try {
-val runnerClass = Class.forName("okhttp3.internal.concurrent.TaskRunner")
-val constructor = cls.getConstructor(
-FileSystem::class.java,
-File::class.java,
-Int::class.java,
-Int::class.java,
-Long::class.java,
-runnerClass
-)
-constructor.newInstance(
-fileSystem,
-directory,
-appVersion,
-valueCount,
-maxSize,
-TaskRunner.INSTANCE
-)
-} catch (e: Exception) {
-try {
-val constructor = cls.getConstructor(
-FileSystem::class.java,
-File::class.java,
-Int::class.java,
-Int::class.java,
-Long::class.java,
-Executor::class.java
-)
-val executor = ThreadPoolExecutor(
-0, 1, 60L, TimeUnit.SECONDS,
-LinkedBlockingQueue(), threadFactory("OkHttp DiskLruCache", true)
-)
-constructor.newInstance(
-fileSystem,
-directory,
-appVersion,
-valueCount,
-maxSize,
-executor
-)
-} catch (e: Exception) {
-throw IllegalArgumentException("Please use okhttp 4.0.0 or later")
+    val cls = DiskLruCache::class.java
+    return try {
+        val runnerClass = Class.forName("okhttp3.internal.concurrent.TaskRunner")
+        val constructor = cls.getConstructor(
+            FileSystem::class.java,
+            File::class.java,
+            Int::class.java,
+            Int::class.java,
+            Long::class.java,
+            runnerClass
+        )
+        constructor.newInstance(
+            fileSystem,
+            directory,
+            appVersion,
+            valueCount,
+            maxSize,
+            TaskRunner.INSTANCE
+        )
+    } catch (e: Exception) {
+        try {
+            val constructor = cls.getConstructor(
+                FileSystem::class.java,
+                File::class.java,
+                Int::class.java,
+                Int::class.java,
+                Long::class.java,
+                Executor::class.java
+            )
+            val executor = ThreadPoolExecutor(
+                0, 1, 60L, TimeUnit.SECONDS,
+                LinkedBlockingQueue(), threadFactory("OkHttp DiskLruCache", true)
+            )
+            constructor.newInstance(
+                fileSystem,
+                directory,
+                appVersion,
+                valueCount,
+                maxSize,
+                executor
+            )
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Please use okhttp 4.0.0 or later")
+        }
+    }
 }
-}
-}
-刚好4.0.0 之后的几个版本，构造函数要提供一个线程池，4.3.0 后的版本成了 TaskRunner 了。可以都兼容一下。
-
-具体的读写IO操作在CacheManager.kt 这个类中，这个是根据Okhttp 的 Cache 修改而来的。
-
-全局参数
-
-增加了全局 设置缓存模式、缓存时间。优先级还是 Service 中声明出来的高。
-
+// 刚好4.0.0 之后的几个版本，构造函数要提供一个线程池，4.3.0 后的版本成了 TaskRunner 了。可以都兼容一下。
+// 具体的读写IO操作在CacheManager.kt 这个类中，这个是根据Okhttp 的 Cache 修改而来的。
+// 全局参数
+// 增加了全局 设置缓存模式、缓存时间。优先级还是 Service 中声明出来的高。
 CacheManager.setCacheModel(CacheMode.READ_CACHE_NETWORK_PUT)// 设置全局缓存模式
-.setCacheTime(15 * 1000) // 设置全局 过期时间 (毫秒)
-.useExpiredData(true)// 缓存过期时是否继续使用，仅对 ONLY_CACHE 生效
-具体使用方式:详见Demo NetCache
-https://github.com/AleynP/net-cache
+    .setCacheTime(15 * 1000) // 设置全局 过期时间 (毫秒)
+    .useExpiredData(true)// 缓存过期时是否继续使用，仅对 ONLY_CACHE 生效
+// 具体使用方式:详见Demo NetCache： https://github.com/AleynP/net-cache
 #+END_SRC 
 - 现在的难点：不知道怎么定义图片数据库，同时以OkHTTP respnose回来的连接起来 (可以参考下面的一个例子，虽然MVVM的分工可能还不是很明确，但至少是一个可以运行的版本)
 - 应用的 *启动优化* ：重中之重，需要借助这个小应用弄懂弄清楚， *不知道如何拆解网络请求的步骤,什么时候加载，初始化之类的？* 以达到较好的启动优化

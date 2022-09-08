@@ -1,12 +1,22 @@
 package com.me.sample.db;
 
-@Database(entities={employee.class}, version = 1, exportSchema = true) // exportSchema: 这个是干什么用的 ？
+import android.content.Context;
+
+import androidx.annotation.NonNull;
+import androidx.room.Database;
+import androidx.room.DatabaseConfiguration;
+import androidx.room.InvalidationTracker;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteOpenHelper;
+
+@Database(entities={Employee.class}, version = 1, exportSchema = true) // exportSchema: 这个是干什么用的 ？
 public class EmployeeDatabase extends RoomDatabase {
     private final String TAG = "EmployeeDatabase";
 
     private static volatile EmployeeDatabase instance;
     
-    public static UsersDatabase getInstance(Context context) { // 使用单例模式，双重检测机制
+    public static EmployeeDatabase getInstance(Context context) { // 使用单例模式，双重检测机制
         if (instance == null) {
             synchronized (EmployeeDatabase.class) { // 上锁锁在这个类上
                 if (instance == null) {
@@ -26,6 +36,24 @@ public class EmployeeDatabase extends RoomDatabase {
     }
     
     public abstract EmployeeDao getEmployeeDao(); // Declare your data access objects as abstract
+
+
+    @NonNull
+    @Override
+    protected SupportSQLiteOpenHelper createOpenHelper(DatabaseConfiguration config) {
+        return null;
+    }
+
+    @NonNull
+    @Override
+    protected InvalidationTracker createInvalidationTracker() {
+        return null;
+    }
+
+    @Override
+    public void clearAllTables() {
+
+    }
 
     // 数据库迁移升级的逻辑可以补上
     // // 升级相关

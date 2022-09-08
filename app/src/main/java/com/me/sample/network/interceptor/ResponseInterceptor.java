@@ -14,7 +14,6 @@ import okhttp3.Response;
  * @author llw
  */
 public class ResponseInterceptor implements Interceptor {
-
     private static final String TAG = "ResponseInterceptor";
 
     /**

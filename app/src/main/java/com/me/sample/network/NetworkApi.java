@@ -1,26 +1,52 @@
 package com.me.sample.network;
 
+import com.me.sample.network.errorhandler.ExceptionHandle;
+import com.me.sample.network.errorhandler.HttpErrorHandler;
+import com.me.sample.network.interceptor.RequestInterceptor;
+import com.me.sample.network.interceptor.ResponseInterceptor;
+
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NetworkApi {
     private final String TAG = "NetworkApi"; 
     
     // 获取APP运行状态及版本信息，用于日志打印
     private static INetworkRequiredInfo iNetworkRequiredInfo;
+
+    // API访问地址
+    private static String BASE_URL = "https://s3.amazonaws.com/sq-mobile-interview";
+
     // OkHttp客户端
     private static OkHttpClient okHttpClient;
 
     // retrofitHashMap
-    private static HashMap<String, Retrofit> retrofitHashMap = new HashMap<>();
-    // API访问地址
-    private static String mBaseUrl = "https://s3.amazonaws.com/sq-mobile-interview/";
+// 这里final的只是map的reference, 里面的内容当然可以变的
+    private static final HashMap<String, Retrofit> retrofitHashMap = new HashMap<>(); 
+
+    // 初始化: 提取应用的最基本配置信息
+    public static void init(INetworkRequiredInfo networkRequiredInfo) {
+        iNetworkRequiredInfo = networkRequiredInfo;
+    }
+
+    // 创建serviceClass的实例
+    public static <T> T createService(Class<T> serviceClass) {
+        return getRetrofit(serviceClass).create(serviceClass);
+    }
     
     /**
      * 配置OkHttp
@@ -32,15 +58,17 @@ public class NetworkApi {
 
         // OkHttp构建器: 这里用的是OkHttpClient不是用的Retrofit的框架。。。
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.baseUrl(Apis.BASE_URL); //必填
         // 设置缓存大小
         int cacheSize = 100 * 1024 * 1024;
         // 设置OkHttp网络缓存
         builder.cache(new Cache(iNetworkRequiredInfo.getApplicationContext().getCacheDir(),cacheSize));
         // 设置网络请求超时时长，这里设置为6s
         builder.connectTimeout(6, TimeUnit.SECONDS);
-        // 在这里添加拦截器，通过拦截器可以知道一些信息，这对于开发中是有所帮助的，后面给加上。
-        //  ...
+
+        // 添加请求拦截器，如果接口有请求头的话，可以放在这个拦截器里面
+        builder.addInterceptor(new RequestInterceptor(iNetworkRequiredInfo));
+        // 添加返回拦截器，可用于查看接口的请求耗时，对于网络优化有帮助
+        builder.addInterceptor(new ResponseInterceptor());
 
         // 当程序在debug过程中则打印数据日志，方便调试用。
         if (iNetworkRequiredInfo != null && iNetworkRequiredInfo.isDebug()){
@@ -64,32 +92,31 @@ public class NetworkApi {
      * @return Retrofit
      */
     private static Retrofit getRetrofit(Class serviceClass) {
-        if (retrofitHashMap.get(mBaseUrl + serviceClass.getName()) != null) {
-            //刚才上面定义的Map中键是String，值是Retrofit，当键不为空时，必然有值，有值则直接返回。
-            return retrofitHashMap.get(mBaseUrl + serviceClass.getName());
+        if (retrofitHashMap.get(BASE_URL + serviceClass.getName()) != null) {
+            // 刚才上面定义的Map中键是String，值是Retrofit，当键不为空时，必然有值，有值则直接返回。
+            return retrofitHashMap.get(BASE_URL + serviceClass.getName());
         }
-        //初始化Retrofit  Retrofit是对OKHttp的封装，通常是对网络请求做处理，也可以处理返回数据。
-        //Retrofit构建器
+        // 初始化Retrofit  Retrofit是对OKHttp的封装，通常是对网络请求做处理，也可以处理返回数据。
+        // Retrofit构建器
         Retrofit.Builder builder = new Retrofit.Builder();
-        //设置访问地址
-        builder.baseUrl(mBaseUrl);
-        //设置OkHttp客户端，传入上面写好的方法即可获得配置后的OkHttp客户端。
+        // 设置访问地址
+        builder.baseUrl(BASE_URL); //  基础的地址是在这里设置的
+        // 设置OkHttp客户端，传入上面写好的方法即可获得配置后的OkHttp客户端。
         builder.client(getOkHttpClient());
-        //设置数据解析器 会自动把请求返回的结果（json字符串）通过Gson转化工厂自动转化成与其结构相符的实体Bean
+        // 设置数据解析器 会自动把请求返回的结果（json字符串）通过Gson转化工厂自动转化成与其结构相符的实体Bean
         builder.addConverterFactory(GsonConverterFactory.create());
-        //设置请求回调，使用RxJava 对网络返回进行处理
+        // 设置请求回调，使用RxJava 对网络返回进行处理
         builder.addCallAdapterFactory(RxJava2CallAdapterFactory.create());
-        //retrofit配置完成
+        // retrofit配置完成
         Retrofit retrofit = builder.build();
-        //放入Map中
-        retrofitHashMap.put(mBaseUrl + serviceClass.getName(), retrofit);
-        //最后返回即可
+        // 放入Map中
+        retrofitHashMap.put(BASE_URL + serviceClass.getName(), retrofit);
+        // 最后返回即可
         return retrofit;
     }
 
-    // 这是我上次看得一知半解的，这次终于要搞明白了，哦哦哦 主要是实现不同线程的切换
     /**
-     * 配置RxJava 完成线程的切换，如果是Kotlin中完全可以直接使用协程
+     * 配置RxJava 完成线程的切换; 如果是Kotlin中完全可以直接使用协程
      *
      * @param observer 这个observer要注意不要使用lifecycle中的Observer
      * @param <T>      泛型
@@ -104,7 +131,6 @@ public class NetworkApi {
                     .observeOn(AndroidSchedulers.mainThread()) // 观察：Android主线程
                     .map(NetworkApi.<T>getAppErrorHandler())   // 判断有没有500的错误，有则进入getAppErrorHandler
                     .onErrorResumeNext(new HttpErrorHandler<T>());// 判断有没有400的错误
-                // 这里还少了对异常
                 // 订阅观察者
                 observable.subscribe(observer);
                 return observable;

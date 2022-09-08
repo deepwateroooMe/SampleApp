@@ -1,5 +1,13 @@
 package com.me.sample.db;
 
+import androidx.room.Dao;
+import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
+import androidx.room.Query;
+
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
+
 @Dao
 public interface EmployeeDao {
 
@@ -24,5 +32,5 @@ public interface EmployeeDao {
     /**
      * 删除所有表中所有 User 对象
      */
-    void  deleteAllEmployees();
+    //void  deleteAllEmployees();
 }
