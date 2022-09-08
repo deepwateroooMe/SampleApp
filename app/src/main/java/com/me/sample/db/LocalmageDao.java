@@ -3,22 +3,22 @@ package com.me.sample.db;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 
-public class LocalEmployeeDao implements EmployeeDao {
+public class LocalmageDao implements ImageDao {
 
-    private final EmployeeDao mEmployeeDao;
+    private final ImageDao mImageDao;
 
-    public LocalEmployeeDao(EmployeeDao mEmployeeDao) {
-        this.mEmployeeDao = mEmployeeDao;
+    public LocalmageDao(ImageDao mImageDao) {
+        this.mImageDao = mImageDao;
     }
 
     @Override
         public Flowable<Employee> getEmployees() {
-        return mEmployeeDao.getEmployees();
+        return mImageDao.getEmployees();
     }
 
     @Override
         public Completable insertOrUpdateEmployee(Employee employee) {
-        return mEmployeeDao.insertOrUpdateEmployee(employee);
+        return mImageDao.insertOrUpdateEmployee(employee);
     }
 
 //    @Override

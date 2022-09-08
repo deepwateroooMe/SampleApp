@@ -5,7 +5,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.me.sample.R;
-import com.me.sample.db.Employee;
 
 // public class RecyclerAdapter extends RecyclerView.Adapter<ListAdapter.ListViewHolder> {
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {

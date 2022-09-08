@@ -10,18 +10,20 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteOpenHelper;
 
-@Database(entities={Employee.class}, version = 1, exportSchema = true) // exportSchema: 这个是干什么用的 ？
-public class EmployeeDatabase extends RoomDatabase {
+import com.me.sample.db.beans.Image;
+
+@Database(entities={Image.class}, version = 1, exportSchema = true) // exportSchema: 这个是干什么用的 ？
+public abstract class AppDatabase extends RoomDatabase {
     private final String TAG = "EmployeeDatabase";
 
-    private static volatile EmployeeDatabase instance;
+    private static volatile AppDatabase instance;
     
-    public static EmployeeDatabase getInstance(Context context) { // 使用单例模式，双重检测机制
+    public static AppDatabase getInstance(Context context) { // 使用单例模式，双重检测机制
         if (instance == null) {
-            synchronized (EmployeeDatabase.class) { // 上锁锁在这个类上
+            synchronized (AppDatabase.class) { // 上锁锁在这个类上
                 if (instance == null) {
                     instance = Room
-                        .databaseBuilder(getApplicationContext(), EmployeeDatabase.class, "employees.db")
+                        .databaseBuilder(context.getApplicationContext(), AppDatabase.class, "employees.db")
                         
 // 关于数据库升级迁移，以及出错出现异常时回退到某个版本的逻辑处理
                         // .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
@@ -35,7 +37,7 @@ public class EmployeeDatabase extends RoomDatabase {
         return instance;
     }
     
-    public abstract EmployeeDao getEmployeeDao(); // Declare your data access objects as abstract
+    public abstract ImageDao imageDao(); // Declare your data access objects as abstract
 
 
     @NonNull

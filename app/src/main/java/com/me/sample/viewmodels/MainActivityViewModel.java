@@ -3,23 +3,18 @@ package com.me.sample.viewmodels;
 import android.app.Application;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.me.sample.db.Employee;
-import com.me.sample.db.EmployeeDatabase;
+import com.me.sample.db.AppDatabase;
 import com.me.sample.model.EmployeeResponse;
 import com.me.sample.repository.MainRepository;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import io.reactivex.annotations.NonNull;
 
 public class MainActivityViewModel extends ViewModel {
     private final String TAG = "MainActivityViewModel";
 
-    private EmployeeDatabase mEmployeeDatabase; // need to have an intance reference here in viewModel 是哪里初始化比较好呢 ？
+    private AppDatabase mEmployeeDatabase; // need to have an intance reference here in viewModel 是哪里初始化比较好呢 ？
     
     private LiveData<EmployeeResponse> mEmpList;
 
@@ -39,7 +34,7 @@ public class MainActivityViewModel extends ViewModel {
         super(application);
 
         // 初始化数据
-        mEmployeeDatabase = EmployeeDatabase.getInstance(application);
+        mEmployeeDatabase = AppDatabase.getInstance(application);
 //        mEmpList = mEmployeeDatabase.getEmployeeDao().getEmployees(); // 这里的返回数据类型要再检查定义一下
     }
 

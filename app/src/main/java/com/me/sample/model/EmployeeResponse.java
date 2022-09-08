@@ -21,7 +21,8 @@ public class EmployeeResponse {
         private String phoneNumber;
         private String email;
         private String biography;
-        private String imgUrl;
+        private String imgUrlSmall;
+        private String imgUrlLarge;
         private String team;
         private String hiredType;
 
@@ -65,11 +66,19 @@ public class EmployeeResponse {
             this.biography = biography;
         }
 
-        public String getImgUrl() {
+        public String getImgUrlSmall() {
             return imgUrl;
         }
 
-        public void setImgUrl(String imgUrl) {
+        public void setImgUrlSmall(String imgUrl) {
+            this.imgUrl = imgUrl;
+        }
+
+        public String getImgUrlLarge() {
+            return imgUrl;
+        }
+
+        public void setImgUrlLarge(String imgUrl) {
             this.imgUrl = imgUrl;
         }
 

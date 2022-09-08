@@ -1,15 +1,9 @@
 package com.me.sample.network;
 
-import android.media.Image;
-
-import com.me.sample.db.Employee;
 import com.me.sample.model.EmployeeResponse;
-
-import java.util.List;
 
 import io.reactivex.Observable;
 import retrofit2.http.GET;
-import retrofit2.http.Url;
 
 public interface ApiService { // interface methods
     
