@@ -4,8 +4,8 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 
+import com.me.sample.activities.ActivityManager;
 import com.me.sample.network.NetworkApi;
-import com.me.sample.application.NetworkRequiredInfo;
 import com.me.sample.utils.MVUtils;
 import com.tencent.mmkv.MMKV;
 
@@ -34,5 +34,9 @@ public class BaseApplication extends Application {
 
     public static Context getContext() {
         return context;
+    }
+
+    public static ActivityManager getActivityManager() {
+        return ActivityManager.getInstance();
     }
 }

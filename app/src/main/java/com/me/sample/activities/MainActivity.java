@@ -1,11 +1,14 @@
-package com.me.sample;
+package com.me.sample.activities;
 
 import static android.view.View.VISIBLE;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.me.sample.R;
 import com.me.sample.adapters.RecyclerAdapter;
+import com.me.sample.databinding.ActivityMainBinding;
 import com.me.sample.model.EmployeeResponse;
 import com.me.sample.viewmodels.MainActivityViewModel;
 
@@ -23,13 +26,15 @@ import android.widget.ProgressBar;
 
 import io.reactivex.annotations.Nullable;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     private final String TAG = "MainActivity"; 
 
     private FloatingActionButton mFab;
     private RecyclerView mRecyclerView;
     private RecyclerAdapter mAdapter;
     private ProgressBar mProgressBar;
+
+    private ActivityMainBinding dataBinding;
     private MainActivityViewModel mMainActivityViewModel;
 
     //网络环境
@@ -42,9 +47,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate() ");
         // // 这个后面对应的是几个不同fragment来实现不同测试环境的监听与回调，因为不是当前项目的重点，留下标记，改天有机会再实现测试一遍
-        // // https://cloud.tencent.com/developer/article/1773165
+        // // https://clogud.tencent.com/developer/article/1773165
         // setContentView(R.layout.activity_network_environment);
-        setContentView(R.layout.activity_main);
+        // setContentView(R.layout.activity_main);
+        showLoading();
 
         mFab = findViewById(R.id.fab);
         mRecyclerView = findViewById(R.id.rv);
