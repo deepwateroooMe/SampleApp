@@ -38,7 +38,7 @@ public class MainActivity extends BaseActivity {
         mMainActivityViewModel.mEmpList.observe(this, empListResponse -> {
                 // 返回数据时更新ViewModel，ViewModel更新则xml更新
                 dataBinding.setViewModel(mMainActivityViewModel);
-                dataBinding.rv.setAdapter(new RecyclerAdapter(empListResponse));
+                dataBinding.rv.setAdapter(new RecyclerAdapter(empListResponse.getEmployees()));
                 dataBinding.pb.setVisibility(INVISIBLE);
             });
         mMainActivityViewModel.failed.observe(this, failed -> dismissLoading());

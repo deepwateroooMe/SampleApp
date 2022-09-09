@@ -11,11 +11,12 @@ import java.util.List;
 public class EmployeeResponse {
     private List<EmployeesBean> mEmpList;
     public List<EmployeesBean> getEmployees() {
-        return mEmpList == null ? new ArrayList<>() : mEmpList;
+        return mEmpList;
     }
     public void setEmployees(List<EmployeesBean> employees) {
         this.mEmpList = employees;
     }
+
     public static class EmployeesBean {
         private String uuid;
         private String name;

@@ -28,6 +28,29 @@
 - *Retrofit + RxJava*: 好像是更合适的，可以用注解，并且用得更为广泛
   - 搜索关键字：Retrofit + OkHttp +RxJava 网络库构建
   - *OkHttp*: 网络请求处理,主要是在应用启动的时候，什么时机开始发布和调用网络请求。所以这个可以不用了，大家都喜欢新的更好用的库
+- *网络数据解析* ：我这里得到了网络数据，可是好像我并没有解析数据出来，这整个过程我可能还少了这比较关键的一个步骤
+  - 需要一个如下的步骤来解析从网络上拿到返回回来的数据
+#+BEGIN_SRC csharp
+Retrofit retrofit = new Retrofit.Builder()
+    .baseUrl("http://www.kuaidi100.com/")
+    .addConverterFactory(GsonConverterFactory.create())
+    .build();
+        
+RetrofitService service = retrofit.create(RetrofitService.class);
+Call<PostInfo> call = service.getPostInfo("yuantong", "11111111111");
+call.enqueue(new Callback<PostInfo>() {
+        @Override
+            public void onResponse(Call<PostInfo> call, Response<PostInfo> response) {
+            Log.i("http返回：", response.body().toString() + "");
+        }
+        @Override
+            public void onFailure(Call<PostInfo> call, Throwable t) {
+        }
+    });
+#+END_SRC 
+- *RxJava基本原理* ：RxJava is a Java VM implementation of Reactive Extensions: a library for composing asynchronous and event-based programs by using observable sequences.(一个通过使用可观察序列来组成异步的、基于事件的程序的库。)
+  - 从介绍中我们可以提取出一个关键词：异步,但安卓中已经有很多解决异步操作的方法了，比如Handler和AsyncTask等, *为什么还选择RxJava呢，其实目的就是为了让代码更简洁，而且它的简洁是与众不同的，因为RxJava的使用方式是基于事件流的链式调用，这就保证了随着程序复杂性的提高，RxJava依然能保持代码的简洁和优雅* 。
+ 
 - *图片本地缓存*: 第三方库找一个，还是用AndroidX的Room
   - 上面可能想错了，就是使用的第三方图片库Glide本身已经具备了缓存图片到本地的功能，所有我大可不必再多此一举，再来一个AndroidX Jetpack的Room数据库
   - 现将所有的room数据库相送的源码全部删除， *现只负责将RecyclerView的所有相送逻辑连通就可以了*
@@ -227,6 +250,25 @@ CacheManager.setCacheModel(CacheMode.READ_CACHE_NETWORK_PUT)// 设置全局缓�
 - *Constraint Layout vs Coordinate Layout*: 暂时先用任何简单的layout先能运行起一个大致的框架来，再进一步优化 
 - 我丢掉了的文件呀，我写过的项目呀，不是在进Lucid之前写得好好的一个项目，现在源码全丢了。。。。。该死的GitHub.....
 
+* Retrofit
+- 首先来了解下Retrofit是什么，在官网中对于Retrofit的描述是这样的：
+  - A type-safe HTTP client for Android and Java.
+  - 适用于Android和Java的类型安全的HTTP客户端。
+  - 可以理解成一个封装好的网络请求库。
+* RxJava线程调度
+- 在RxJava中，我们可以自行指定事件产生和事件消费的线程，可以通过RxJava中的Scheduler来实现。 Scheduler
+** RxJava内置的5个Scheduler
+- Schedulers. *immediate()*: 直接在当前线程运行，相当于不指定线程。这是默认的 Scheduler，但是为了防止被错误使用，在RxJava2中已经被移除了。
+- Schedulers. *newThread()*: 开启新线程，并在新线程执行操作。
+- Schedulers. *io()*: I/O 操作（ *读写文件、读写数据库、网络信息交互等* ）所使用的 Scheduler。行为模式和 newThread() 差不多，区别在于 io() 的内部实现是是用一个无数量上限的线程池，可以重用空闲的线程，因此 *多数情况下 io() 比 newThread() 更有效率。不要把计算工作放在 io() 中，可以避免创建不必要的线程。*
+- Schedulers. *computation()*: 计算所使用的 Scheduler，例如图形的计算。这个 Scheduler 使用的固定的线程池，大小为 CPU 核数。不要把 I/O 操作放在 computation() 中，否则 I/O 操作的等待时间会浪费 CPU。
+- Schedulers. *trampoline()*:主要用于延迟工作任务的执行。当我们想在当前线程执行一个任务时，但并不是立即，我们可以用.trampoline()将它入队，trampoline将会处理它的队列并且按序运行队列中每一个任务。
+- Android特有的Scheduler
+  - AndroidSchedulers. *mainThread()*:指定的操作将在Android的主线程中进行，如UI界面的更新操作。
+** 线程的控制
+- *subscribeOn():指定事件产生的线程* ，例如subscribeOn(Schedulers.io())可以指定被观察者的网络请求、文件读写等操作放置在io线程。
+- *observeOn():指定事件消费的线程* ，例如observeOn(AndroidSchedulers.mainThread())指定Subscriber中的方法在主线程中运行。
+- 在subscribe()之前写上两句subscribeOn(Scheduler.io())和observeOn(AndroidSchedulers.mainThread())的使用方式非常常见，它适用于多数的 <后台线程取数据，主线程显示> 的程序策略。
 * room 数据库相关的部分: 几个相关可以用作参考的例子
 ** 另一个更好的参考例子： dagger + RecyclerView 和相应的 Adapters + BufferKnife View auto-injections
 - https://github.com/SpikeKing/wcl-rx-cache-demo
@@ -726,3 +768,4 @@ protected void onActivityResult(int requestCode, int resultCode, @Nullable Inten
     }
 }
   #+END_SRC 
+

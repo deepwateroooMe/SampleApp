@@ -51,7 +51,7 @@ public class NetworkApi {
     }
     
     /**
-     * 配置OkHttp
+     * 配置OkHttp: 定制的OkHttpClient, 或者说根据自己的兴趣订制的个性化的OkHttp客户端
      *
      * @return OkHttpClient
      */
@@ -75,13 +75,18 @@ public class NetworkApi {
         // 当程序在debug过程中则打印数据日志，方便调试用。
         if (iNetworkRequiredInfo != null && iNetworkRequiredInfo.isDebug()){
             // iNetworkRequiredInfo不为空且处于debug状态下则初始化日志拦截器
-            HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
+            // HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
+            HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+                    @Override
+                    public void log(String message) {
+                        Log.i("Http请求参数：", message);
+                    }
+                });
             // 设置要打印日志的内容等级，BODY为主要内容，还有BASIC、HEADERS、NONE。
             httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
             // 将拦截器添加到OkHttp构建器中
             builder.addInterceptor(httpLoggingInterceptor);
         }
-
         // OkHttp配置完成
         okHttpClient = builder.build();
         return okHttpClient;
@@ -108,7 +113,7 @@ public class NetworkApi {
         // 设置数据解析器 会自动把请求返回的结果（json字符串）通过Gson转化工厂自动转化成与其结构相符的实体Bean
         builder.addConverterFactory(GsonConverterFactory.create());
         // 设置请求回调，使用RxJava 对网络返回进行处理
-        builder.addCallAdapterFactory(RxJava2CallAdapterFactory.create());
+        builder.addCallAdapterFactory(RxJava2CallAdapterFactory.create()); // 支持RxJava2
         // retrofit配置完成
         Retrofit retrofit = builder.build();
         // 放入Map中
@@ -129,8 +134,8 @@ public class NetworkApi {
             @Override
                 public ObservableSource<T> apply(Observable<T> upstream) {
                 Observable<T> observable = upstream
-                    .subscribeOn(Schedulers.io()) // 线程订阅
-                    .observeOn(AndroidSchedulers.mainThread()) // 观察：Android主线程
+                    .subscribeOn(Schedulers.io()) // 线程订阅: 在子线程中进行http访问
+                    .observeOn(AndroidSchedulers.mainThread()) // 观察者：Android主线程，处理返回接口
                     .map(NetworkApi.<T>getAppErrorHandler())   // 判断有没有500的错误，有则进入getAppErrorHandler
                     .onErrorResumeNext(new HttpErrorHandler<T>());// 判断有没有400的错误
                 // 订阅观察者

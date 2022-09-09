@@ -19,6 +19,8 @@ import com.me.sample.model.EmployeeResponse;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -26,14 +28,14 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
      * 传递过来的数据
      */
     // private final List<WallPaperResponse.ResBean.VerticalBean> verticalBeans;
-    private EmployeeResponse mEmpList;
+    private List<EmployeeResponse.EmployeesBean> mEmpList;
 
     // private Context context;
 
     // public WallPaperAdapter(List<WallPaperResponse.ResBean.VerticalBean> verticalBeans) {
     //     this.verticalBeans = verticalBeans;
     // }
-    public RecyclerAdapter(EmployeeResponse mEmpList) {
+    public RecyclerAdapter(List<EmployeeResponse.EmployeesBean> mEmpList) {
         this.mEmpList = mEmpList;
     }
     // public RecyclerAdapter(Context context, EmployeeResponse mEmpList) {
@@ -51,7 +53,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
         public void onBindViewHolder(@NonNull @NotNull RecyclerView.ViewHolder holder, int position) {
         ItemEmpBinding binding = ((ViewHolderItemEmp)holder).getBinding();
-        binding.setEmp(mEmpList.getEmployees().get(position));
+        binding.setEmp(mEmpList.get(position));
         binding.executePendingBindings();
         // // Set the image
         // RequestOptions defaultOptions = new RequestOptions()
@@ -64,7 +66,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
         public int getItemCount() {
         // if (mEmpList == null) return 0;
-        return mEmpList.getEmployees().size();
+        return mEmpList.size();
     }
 
     // @NonNull
