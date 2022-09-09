@@ -31,7 +31,7 @@ public class NetworkApi {
     private static INetworkRequiredInfo iNetworkRequiredInfo;
 
     // API访问地址
-    private static String BASE_URL = "https://s3.amazonaws.com/sq-mobile-interview";
+    private static String BASE_URL = "https://s3.amazonaws.com/sq-mobile-interview/";
 
     // OkHttp客户端
     private static OkHttpClient okHttpClient;
