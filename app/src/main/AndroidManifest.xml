@@ -10,7 +10,7 @@
   <application
       android:name=".application.BaseApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_mvvm_logo"
         android:label="MVVM Retrofit RxJava framework demo"
         android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"

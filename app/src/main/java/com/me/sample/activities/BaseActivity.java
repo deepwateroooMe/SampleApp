@@ -32,7 +32,6 @@ import com.me.sample.view.dialog.LoadingDialog;
 public class BaseActivity extends AppCompatActivity {
 
     protected AppCompatActivity context;
-
     private LoadingDialog loadingDialog;
 
     /**
