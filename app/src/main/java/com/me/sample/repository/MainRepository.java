@@ -1,21 +1,17 @@
 package com.me.sample.repository;
 
 import android.annotation.SuppressLint;
+import android.media.Image;
 import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.gson.Gson;
-import com.me.sample.application.BaseApplication;
-import com.me.sample.db.beans.Image;
 import com.me.sample.model.EmployeeResponse;
 import com.me.sample.network.ApiService;
 import com.me.sample.network.BaseObserver;
 import com.me.sample.network.NetworkApi;
-import com.me.sample.network.utils.DateUtil;
 import com.me.sample.network.utils.KLog;
-import com.me.sample.utils.Constant;
-import com.me.sample.utils.MVUtils;
 
 import java.util.ArrayList;
 
@@ -28,6 +24,14 @@ import io.reactivex.Flowable;
  */
 public class MainRepository {
     private static final String TAG = MainRepository.class.getSimpleName();
+    
+    private static MainRepository instance;
+    public static MainRepository getInstance(){
+        if (instance == null)
+            instance = new MainRepository();
+        return instance;
+    }
+
 
     // 对 ApiService里定义的网络接口进行请求，然后返回LiveData
     // 为什么要单独建一个包来管理页面的数据获取，其实你可以将这里的代码写到MainViewModel中，
@@ -41,9 +45,9 @@ public class MainRepository {
         ApiService apiService = NetworkApi.createService(ApiService.class);
         apiService.getEmployees().compose(NetworkApi.applySchedulers(new BaseObserver<EmployeeResponse>() {
                     @Override
-                        public void onSuccess(EmployeeResponse biYingImgResponse) {
-                        KLog.d(new Gson().toJson(biYingImgResponse));
-                        employees.setValue(biYingImgResponse);
+                        public void onSuccess(EmployeeResponse empsResponse) {
+                        KLog.d(new Gson().toJson(empsResponse));
+                        employees.setValue(empsResponse);
                     }
                     @Override
                         public void onFailure(Throwable e) {
@@ -53,87 +57,86 @@ public class MainRepository {
         return employees;
     }
 
-    final MutableLiveData<Image> image = new MutableLiveData<>();
-    /**
-     * 保存数据
-     */
-    private void saveImageData(Image image) {
-        // 记录今日已请求
-        MVUtils.put(Constant.IS_TODAY_REQUEST,true);
-        // 记录此次请求的时最晚有效时间戳
-        MVUtils.put(Constant.REQUEST_TIMESTAMP, DateUtil.getMillisNextEarlyMorning());
+    // final MutableLiveData<Image> image = new MutableLiveData<>();
+    // /**
+    //  * 保存数据: 因为使用了一个全自动处理的图库，我不再需要手动维护图片的缓存了
+    //  */
+    // private void saveImageData(Image image) {
+    //     // 记录今日已请求
+    //     MVUtils.put(Constant.IS_TODAY_REQUEST,true);
+    //     // 记录此次请求的时最晚有效时间戳
+    //     MVUtils.put(Constant.REQUEST_TIMESTAMP, DateUtil.getMillisNextEarlyMorning());
+    //     // 保存到数据库
+    //     Completable insert = BaseApplication.getDb().imageDao().insertAll(image);
+    //     CustomDisposable.addDisposable(insert, ()-> Log.d(TAG, "saveImageData: 插入图片数据成功"));
+    //     // new Thread(() -> BaseApplication.getDb().imageDao().insertAll(image)).start();
+    //     //                // new Image(1,bean.getUrl(),bean.getUrlbase(),bean.getCopyright(),
+    //     //                //           bean.getCopyrightlink(), bean.getTitle()))).start();
+    // }
 
-        // 保存到数据库
-        Completable insert = BaseApplication.getDb().imageDao().insertAll(image);
-        CustomDisposable.addDisposable(insert, ()-> Log.d(TAG, "saveImageData: 插入图片数据成功"));
-        // new Thread(() -> BaseApplication.getDb().imageDao().insertAll(image)).start();
-        //                // new Image(1,bean.getUrl(),bean.getUrlbase(),bean.getCopyright(),
-        //                //           bean.getCopyrightlink(), bean.getTitle()))).start();
-    }
+//     /**
+//      * 从网络上请求数据: 先要自己想清楚这里是干什么的，需要自己负责下载图片吗？不必，glide已经帮助处理好了
+//      */
+//     @SuppressLint("CheckResult")
+//     private void requestNetworkApi() {
+//         Log.d(TAG, "requestNetworkApi: 从网络获取");
+//         ApiService apiService = NetworkApi.createService(ApiService.class);
+//         apiService.getEmployees().compose(NetworkApi.applySchedulers(new BaseObserver<EmployeeResponse>() {
+//                     @Override
+//                         public void onSuccess(EmployeeResponse imgResponse) {
+//                         // 存储到本地数据库中，并记录今日已请求了数据
+// //                        saveImageData(imgResponse);
+//                         image.setValue(imgResponse);
+//                     }
+//                     @Override
+//                         public void onFailure(Throwable e) {
+//                         KLog.e("BiYing Error: " + e.toString());
+//                     }
+//                 }));
+//     }
 
-    /**
-     * 从网络上请求数据
-     */
-    @SuppressLint("CheckResult")
-    private void requestNetworkApi() {
-        Log.d(TAG, "requestNetworkApi: 从网络获取");
-        ApiService apiService = NetworkApi.createService(ApiService.class);
-        apiService.getEmployees().compose(NetworkApi.applySchedulers(new BaseObserver<EmployeeResponse>() {
-                    @Override
-                        public void onSuccess(EmployeeResponse imgResponse) {
-                        // 存储到本地数据库中，并记录今日已请求了数据
-                        saveImageData(imgResponse);
-                        image.setValue(imgResponse);
-                    }
-                    @Override
-                        public void onFailure(Throwable e) {
-                        KLog.e("BiYing Error: " + e.toString());
-                    }
-                }));
-    }
+    // /**
+    //  * 从本地数据库获取: 这个方法这里不实用；不用存和取员工数据；而数片需要根据员工名字来读取
+    //  */
+    // private void getLocalDB() {
+    //     Log.d(TAG, "getLocalDB: 从本地数据库获取");
+    //     EmployeeResponse imgResponse = new EmployeeResponse();
+    //     Flowable<Image> imgFlowable = BaseApplication.getDb().imageDao().queryByName("fdkj");
+    //     CustomDisposable.addDisposable(imgFlowable, img -> {
+    //             EmployeeResponse.ImagesBean imagesBean = new EmployeeResponse.ImagesBean();
+    //             imagesBean.setUrl(image.getUrl());
+    //             List<EmployeeResponse.ImagesBean> imagesBeanList = new ArrayList<>();
+    //             imagesBeanList.add(imagesBean);
+    //             imgResponse.setImages(imagesBeanList);
+    //             biyingImage.postValue(imgResponse);
+    //         });
+    //     // new Thread(() -> {
+    //     //         // 从数据库获取
+    //     //         Image image = BaseApplication.getDb().imageDao().queryByName(1);
+    //     //         EmployeeResponse.ImagesBean imagesBean = new EmployeeResponse.ImagesBean();
+    //     //         imagesBean.setUrl(image.getUrl());
+    //     //         List<EmployeeResponse.ImagesBean> imagesBeanList = new ArrayList<>();
+    //     //         imagesBeanList.add(imagesBean);
+    //     //         imgResponse.setImages(imagesBeanList);
+    //     //         biyingImage.postValue(imgResponse);
+    //     //     }).start();
+    // }
 
-    /**
-     * 从本地数据库获取: 这个方法这里不实用；不用存和取员工数据；而数片需要根据员工名字来读取
-     */
-    private void getLocalDB() {
-        Log.d(TAG, "getLocalDB: 从本地数据库获取");
-        EmployeeResponse imgResponse = new EmployeeResponse();
-        Flowable<Image> imgFlowable = BaseApplication.getDb().imageDao().queryByName("fdkj");
-        CustomDisposable.addDisposable(imgFlowable, img -> {
-                EmployeeResponse.ImagesBean imagesBean = new EmployeeResponse.ImagesBean();
-                imagesBean.setUrl(image.getUrl());
-                List<EmployeeResponse.ImagesBean> imagesBeanList = new ArrayList<>();
-                imagesBeanList.add(imagesBean);
-                imgResponse.setImages(imagesBeanList);
-                biyingImage.postValue(imgResponse);
-            });
-        // new Thread(() -> {
-        //         // 从数据库获取
-        //         Image image = BaseApplication.getDb().imageDao().queryByName(1);
-        //         EmployeeResponse.ImagesBean imagesBean = new EmployeeResponse.ImagesBean();
-        //         imagesBean.setUrl(image.getUrl());
-        //         List<EmployeeResponse.ImagesBean> imagesBeanList = new ArrayList<>();
-        //         imagesBeanList.add(imagesBean);
-        //         imgResponse.setImages(imagesBeanList);
-        //         biyingImage.postValue(imgResponse);
-        //     }).start();
-    }
-
-    // 下面的这个思路，可台稍微参考一下
-    public MutableLiveData<EmployeeResponse> getBiYing() {
-        // 今日此接口是否已请求
-        if (MVUtils.getBoolean(Constant.IS_TODAY_REQUEST)) {
-            if (DateUtil.getTimestamp() <= MVUtils.getLong(Constant.REQUEST_TIMESTAMP)){
-                // 当前时间未超过次日0点，从本地获取
-                getLocalDB();
-            } else {
-                // 大于则数据需要更新，从网络获取
-                requestNetworkApi();
-            }
-        } else {
-            // 没有请求过接口 或 当前时间，从网络获取
-            requestNetworkApi();
-        }
-        return biyingImage;
-    }
+    // // 下面的这个思路，可台稍微参考一下
+    // public MutableLiveData<EmployeeResponse> getBiYing() {
+    //     // 今日此接口是否已请求
+    //     if (MVUtils.getBoolean(Constant.IS_TODAY_REQUEST)) {
+    //         if (DateUtil.getTimestamp() <= MVUtils.getLong(Constant.REQUEST_TIMESTAMP)){
+    //             // 当前时间未超过次日0点，从本地获取
+    //             getLocalDB();
+    //         } else {
+    //             // 大于则数据需要更新，从网络获取
+    //             requestNetworkApi();
+    //         }
+    //     } else {
+    //         // 没有请求过接口 或 当前时间，从网络获取
+    //         requestNetworkApi();
+    //     }
+    //     return biyingImage;
+    // }
 }

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 
-import com.me.sample.db.AppDatabase;
 import com.me.sample.network.NetworkApi;
 import com.me.sample.application.NetworkRequiredInfo;
 import com.me.sample.utils.MVUtils;
@@ -19,8 +18,8 @@ public class BaseApplication extends Application {
     @SuppressLint("StaticFieldLeak")
         public static Context context;
 
-    // 数据库
-    public static AppDatabase db;
+    // // 数据库
+    // public static AppDatabase db;
     
     @Override
         public void onCreate() {
@@ -30,8 +29,8 @@ public class BaseApplication extends Application {
         NetworkApi.init(new NetworkRequiredInfo(this));
         context = getApplicationContext();
 
-        // 创建本地数据库
-        db = AppDatabase.getInstance(this);
+        // // 创建本地数据库
+        // db = AppDatabase.getInstance(this);
         
         // MMKV初始化
         MMKV.initialize(this);
@@ -39,9 +38,9 @@ public class BaseApplication extends Application {
         MVUtils.getInstance();
     }
 
-    public static AppDatabase getDb(){
-        return db;
-    }
+    // public static AppDatabase getDb(){
+    //     return db;
+    // }
     public static Context getContext() {
         return context;
     }

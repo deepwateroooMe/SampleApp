@@ -67,19 +67,19 @@ public class EmployeeResponse {
         }
 
         public String getImgUrlSmall() {
-            return imgUrl;
+            return imgUrlSmall;
         }
 
         public void setImgUrlSmall(String imgUrl) {
-            this.imgUrl = imgUrl;
+            this.imgUrlSmall = imgUrl;
         }
 
         public String getImgUrlLarge() {
-            return imgUrl;
+            return imgUrlLarge;
         }
 
         public void setImgUrlLarge(String imgUrl) {
-            this.imgUrl = imgUrl;
+            this.imgUrlLarge = imgUrl;
         }
 
         public String getTeam() {

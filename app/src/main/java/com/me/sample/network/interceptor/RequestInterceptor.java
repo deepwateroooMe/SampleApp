@@ -2,8 +2,13 @@ package com.me.sample.network.interceptor;
 
 
 import com.me.sample.network.INetworkRequiredInfo;
+import com.me.sample.network.utils.DateUtil;
+
+import java.io.IOException;
 
 import okhttp3.Interceptor;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * 请求拦截器
@@ -39,4 +44,3 @@ public class RequestInterceptor implements Interceptor {
         return chain.proceed(builder.build());
     }
 }
-d
