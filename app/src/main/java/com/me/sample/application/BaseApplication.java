@@ -18,9 +18,6 @@ public class BaseApplication extends Application {
     @SuppressLint("StaticFieldLeak")
         public static Context context;
 
-    // // 数据库
-    // public static AppDatabase db;
-    
     @Override
         public void onCreate() {
         super.onCreate();
@@ -29,18 +26,12 @@ public class BaseApplication extends Application {
         NetworkApi.init(new NetworkRequiredInfo(this));
         context = getApplicationContext();
 
-        // // 创建本地数据库
-        // db = AppDatabase.getInstance(this);
-        
         // MMKV初始化
         MMKV.initialize(this);
         // 工具类的初始化: 是否可以延后处理，寻找更合适的时机来初始化不是完全必要的工具类 ？
         MVUtils.getInstance();
     }
 
-    // public static AppDatabase getDb(){
-    //     return db;
-    // }
     public static Context getContext() {
         return context;
     }

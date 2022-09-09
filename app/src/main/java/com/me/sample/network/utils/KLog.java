@@ -47,7 +47,6 @@ public final class KLog {
     public static void d() {
         printLog(D, null, DEFAULT_MESSAGE);
     }
-
     public static void d(String msg) {
         printLog(D, null, msg);
     }

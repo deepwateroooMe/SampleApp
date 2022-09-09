@@ -14,6 +14,7 @@ import com.me.sample.network.NetworkApi;
 import com.me.sample.network.utils.KLog;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -25,13 +26,25 @@ import io.reactivex.Flowable;
 public class MainRepository {
     private static final String TAG = MainRepository.class.getSimpleName();
     
-    private static MainRepository instance;
-    public static MainRepository getInstance(){
-        if (instance == null)
-            instance = new MainRepository();
-        return instance;
-    }
+    // private static MainRepository instance;
+    // public static MainRepository getInstance(){
+    //     if (instance == null)
+    //         instance = new MainRepository();
+    //     return instance;
+    // }
 
+    // // for debugging propose only
+    // private List<EmployeeResponse.EmployeesBean> dataSet = new ArrayList<>();
+    // public MutableLiveData<EmployeeResponse> getEmployees(){
+    //     EmployeeResponse.EmployeesBean tmp = new EmployeeResponse.EmployeesBean();
+    //     tmp.setUuid("0d8fcc12-4d0c-425c-8355-390b312b909c");
+    //     tmp.setName("Justine Mason");
+    //     tmp.setImgUrlSmall("https://s3.amazonaws.com/sq-mobile-interview/photos/16c00560-6dd3-4af4-97a6-d4754e7f2394/small.jpg");
+    //     dataSet.add(tmp);
+    //     EmployeeResponse tmptwo = new EmployeeResponse();
+    //     tmptwo.setEmployees(dataSet);
+    //     return new MutableLiveData<>(tmptwo);
+    // }
 
     // 对 ApiService里定义的网络接口进行请求，然后返回LiveData
     // 为什么要单独建一个包来管理页面的数据获取，其实你可以将这里的代码写到MainViewModel中，
@@ -41,18 +54,13 @@ public class MainRepository {
     @SuppressLint("CheckResult")
     public MutableLiveData<EmployeeResponse> getEmployees() { 
         final MutableLiveData<EmployeeResponse> employees = new MutableLiveData<>();
-        
         ApiService apiService = NetworkApi.createService(ApiService.class);
+// 为什么这里会出问题呢？不是自动进行了线程的切换吗？        
         apiService.getEmployees().compose(NetworkApi.applySchedulers(new BaseObserver<EmployeeResponse>() {
-                    @Override
+                    @Override // 这里有问题，拿到的数据是空的
                         public void onSuccess(EmployeeResponse empsResponse) {
                         KLog.d(new Gson().toJson(empsResponse));
                         employees.setValue(empsResponse);
-                        Log.d(TAG, " (empsResponse != null): " +  (empsResponse != null));
-                        if (empsResponse != null) {
-                            int cnt = empsResponse.getEmployees().size();
-                            Log.d(TAG, "cnt: " + cnt);
-                        }
                     }
                     @Override
                         public void onFailure(Throwable e) {

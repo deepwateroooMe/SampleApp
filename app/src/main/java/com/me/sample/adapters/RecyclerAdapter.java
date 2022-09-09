@@ -38,14 +38,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
-
-        // Set the name of the 'NicePlace'
         ((ViewHolder)viewHolder).mName.setText(mEmpList.getEmployees().get(i).getName());
 
         // Set the image
         RequestOptions defaultOptions = new RequestOptions()
             .error(R.drawable.ic_launcher_background);
-// 这里的原理和过程还没有弄明白：加载过程到底是怎样的，加载的是什么？        
         Glide.with(context)
             .setDefaultRequestOptions(defaultOptions)
             .load(mEmpList.getEmployees().get(i).getImgUrlSmall())
@@ -59,7 +56,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-
         private CircleImageView mImage;
         private TextView mName;
 
