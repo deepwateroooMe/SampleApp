@@ -1,5 +1,7 @@
 package com.me.sample;
 
+import static android.view.View.VISIBLE;
+
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -9,14 +11,13 @@ import com.me.sample.viewmodels.MainActivityViewModel;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-//import com.me.sample.databinding.ActivityMainBinding;
 
 import android.widget.ProgressBar;
 
@@ -55,27 +56,20 @@ public class MainActivity extends AppCompatActivity {
         mMainActivityViewModel.fetchEmployeesList().observe(this, new Observer<EmployeeResponse>() {
                 @Override
                     public void onChanged(@Nullable EmployeeResponse mEmpList) {
-                    mAdapter.notifyDataSetChanged();
+                    Log.d(TAG, "onChanged() ");
+                    if (mEmpList != null) {
+                        mProgressBar.setVisibility(View.INVISIBLE);
+                        // mRecyclerView.setVisibility(VISIBLE);
+                        initRecyclerView();
+                        mAdapter.notifyDataSetChanged();
+                    }
                 }
             });
-        
-        // // 这里先简单改写为请求刷新员工数据，下发请求到viewmodel
-        // mMainActivityViewModel.getIsRefreshing().observe(this, new Observer<Boolean>() { // 是否正在刷新
-        //         @Override
-        //             public void onChanged(@Nullable Boolean aBoolean) {
-        //             if (aBoolean){
-        //                 showProgressBar();
-        //             } else{
-        //                 hideProgressBar();
-        //                 // mRecyclerView.smoothScrollToPosition(mMainActivityViewModel.getNicePlaces().getValue().size()-1); // <<<<<<<<<< 
-        //             }
-        //         }
-        //     });
 
         mFab.setOnClickListener(new View.OnClickListener() {
                 @Override
                     public void onClick(View view) { // 需要改写成网络申请刷新数据
-                    mMainActivityViewModel.setIsUpdating(true);
+                    mMainActivityViewModel.fetchEmployeesList();
                 }
             });
         initRecyclerView();
@@ -89,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showProgressBar(){
-        mProgressBar.setVisibility(View.VISIBLE);
+        mProgressBar.setVisibility(VISIBLE);
     }
     private void hideProgressBar(){
         mProgressBar.setVisibility(View.GONE);

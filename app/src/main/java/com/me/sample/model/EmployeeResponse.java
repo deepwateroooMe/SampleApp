@@ -1,5 +1,6 @@
 package com.me.sample.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
 public class EmployeeResponse {
     private List<EmployeesBean> mEmpList;
     public List<EmployeesBean> getEmployees() {
-        return mEmpList;
+        return mEmpList == null ? new ArrayList<>() : mEmpList;
     }
     public void setEmployees(List<EmployeesBean> employees) {
         this.mEmpList = employees;

@@ -54,6 +54,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemCount() {
+        if (mEmpList == null) return 0;
         return mEmpList.getEmployees().size();
     }
 

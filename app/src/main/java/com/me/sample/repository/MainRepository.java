@@ -48,6 +48,11 @@ public class MainRepository {
                         public void onSuccess(EmployeeResponse empsResponse) {
                         KLog.d(new Gson().toJson(empsResponse));
                         employees.setValue(empsResponse);
+                        Log.d(TAG, " (empsResponse != null): " +  (empsResponse != null));
+                        if (empsResponse != null) {
+                            int cnt = empsResponse.getEmployees().size();
+                            Log.d(TAG, "cnt: " + cnt);
+                        }
                     }
                     @Override
                         public void onFailure(Throwable e) {
