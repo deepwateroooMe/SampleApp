@@ -22,4 +22,11 @@
     <style name="Theme.Sample.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.Sample.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <!-- 圆角图片 -->
+    <style name="roundedImageStyle">
+      <item name="cornerFamily">rounded</item>
+      <item name="cornerSize">27dp</item>
+    </style>
+    
 </resources>

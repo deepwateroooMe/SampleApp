@@ -54,19 +54,20 @@ public class MainActivity extends AppCompatActivity {
         mMainActivityViewModel.init();
         
         // 观察者模式：UI 观察数据的变化 
-        mMainActivityViewModel.fetchEmployeesList().observe(this, new Observer<EmployeeResponse>() {
-                @Override
-                    public void onChanged(@Nullable EmployeeResponse mEmpList) {
-                    Log.d(TAG, "onChanged() ");
-                    if (mEmpList != null) {
-                        mProgressBar.setVisibility(View.INVISIBLE);
-                        // mRecyclerView.setVisibility(VISIBLE);
-                        initRecyclerView();
-                        mAdapter.notifyDataSetChanged();
-                    }
-                }
-            });
-
+        // mMainActivityViewModel.fetchEmployeesList().observe(this, new Observer<EmployeeResponse>() {
+        //         @Override
+        //             public void onChanged(@Nullable EmployeeResponse mEmpList) {
+        //             Log.d(TAG, "onChanged() ");
+        //             if (mEmpList != null) {
+        //                 mProgressBar.setVisibility(View.INVISIBLE);
+        //                 // mRecyclerView.setVisibility(VISIBLE);
+        //                 initRecyclerView();
+        //                 mAdapter.notifyDataSetChanged();
+        //             }
+        //         }
+        //     });
+        mMainActivityViewModel.fetchEmployeesList().observe(this, empListResponse -> mRecyclerView.setAdapter(new RecyclerAdapter(empListResponse)));
+        
         mFab.setOnClickListener(new View.OnClickListener() {
                 @Override
                     public void onClick(View view) { // 需要改写成网络申请刷新数据
@@ -77,10 +78,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initRecyclerView(){
-        mAdapter = new RecyclerAdapter(this, mMainActivityViewModel.fetchEmployeesList().getValue());
+        // mAdapter = new RecyclerAdapter(this, mMainActivityViewModel.fetchEmployeesList().getValue());
         RecyclerView.LayoutManager linearLayoutManager = new LinearLayoutManager(this); // 就用纵向排列的就可以了
         mRecyclerView.setLayoutManager(linearLayoutManager);
-        mRecyclerView.setAdapter(mAdapter);
+        // mRecyclerView.setAdapter(mAdapter);
     }
 
     private void showProgressBar(){
