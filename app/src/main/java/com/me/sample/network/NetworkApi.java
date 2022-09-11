@@ -33,7 +33,8 @@ public class NetworkApi {
     private static INetworkRequiredInfo iNetworkRequiredInfo;
 
     // API访问地址
-    private static String BASE_URL = "https://s3.amazonaws.com//sq-mobile-interview/";
+                                      // https://s3.amazonaws.com/sq-mobile-interview/employees.json
+    private static String BASE_URL = "https://s3.amazonaws.com";
 
     // OkHttp客户端
     private static OkHttpClient okHttpClient;
@@ -77,13 +78,13 @@ public class NetworkApi {
         // 当程序在debug过程中则打印数据日志，方便调试用。
         if (iNetworkRequiredInfo != null && iNetworkRequiredInfo.isDebug()){
             // iNetworkRequiredInfo不为空且处于debug状态下则初始化日志拦截器
-            // HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
-            HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-                    @Override
-                    public void log(String message) {
-                        Log.i("Http请求参数：", message);
-                    }
-                });
+            HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
+            // HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            //         @Override
+            //         public void log(String message) {
+            //             Log.i("Http请求参数：", message);
+            //         }
+            //     });
             // 设置要打印日志的内容等级，BODY为主要内容，还有BASIC、HEADERS、NONE。
             httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
             // 将拦截器添加到OkHttp构建器中

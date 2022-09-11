@@ -13,9 +13,11 @@ import retrofit2.http.GET;
 public interface ApiService { 
     
     // 下载所有员工数据的接口
-    @GET("/employees.json")
+// https://s3.amazonaws.com/sq-mobile-interview/employees.json
+    // @GET("/employees.json")
+    @GET("/sq-mobile-interview/employees.json")
     // Call<ResponseBody> getEmployees();
-    Call<List<Employee>> getEmployees();
+    // Call<List<Employee>> getEmployees();
     // Observable<ResponseBody> getEmployees();
-    // Observable<EmployeeResponse> getEmployees();
+    Observable<EmployeeResponse> getEmployees();
 } 

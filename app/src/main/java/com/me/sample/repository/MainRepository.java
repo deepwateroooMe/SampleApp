@@ -39,7 +39,7 @@ public class MainRepository {
     /**
      * 员工链表数据
      */
-    final MutableLiveData<List<Employee>> employees = new MutableLiveData<>();
+    final MutableLiveData<EmployeeResponse> employees = new MutableLiveData<>();
     public final MutableLiveData<String> failed = new MutableLiveData<>();
 
     @Inject
@@ -63,40 +63,42 @@ public class MainRepository {
     //     return new MutableLiveData<>(tmptwo);
     // }
 
-    public MutableLiveData<List<Employee>> getEmployees() {
+    public MutableLiveData<EmployeeResponse> getEmployees() {
         ApiService apiService = NetworkApi.createService(ApiService.class);
-        apiService.getEmployees().enqueue(new Callback<List<Employee>>() {
-            @Override
-            public void onResponse(Call<List<Employee>> call, Response<List<Employee>> response) {
-                if (response.isSuccessful()) {
-//                        mAdapter.updateAnswers(response.body().getEmployees());
-                    employees.setValue(response.body());
-                    Log.d("MainActivity", "posts loaded from API");
-                } else {
-                    int statusCode  = response.code();
-                    // handle request errors depending on status code
-                }
-            }
+//         apiService.getEmployees().enqueue(new Callback<List<Employee>>() {
+//             @Override
+//             public void onResponse(Call<List<Employee>> call, Response<List<Employee>> response) {
+//                 if (response.isSuccessful()) {
+// //                        mAdapter.updateAnswers(response.body().getEmployees());
+//                     employees.setValue(response.body());
+//                     Log.d("MainActivity", "posts loaded from API");
+//                 } else {
+//                     int statusCode  = response.code();
+//                     // handle request errors depending on status code
+//                 }
+//             }
 
-            @Override
-            public void onFailure(Call<List<Employee>> call, Throwable t) {
+//             @Override
+//             public void onFailure(Call<List<Employee>> call, Throwable t) {
                 // showErrorMessage();
-                Log.d("MainActivity", "error loading from API");
-            }
-            });
+            //     Log.d("MainActivity", "error loading from API");
+            // }
+    //         });
         
         
-        // // apiService.getEmployees().compose(NetworkApi.applySchedulers(new BaseObserver<EmployeeResponse>() {
+        apiService.getEmployees().compose(NetworkApi.applySchedulers(new BaseObserver<EmployeeResponse>() {
         // apiService.getEmployees().compose(NetworkApi.applySchedulers(new BaseObserver<ResponseBody>() {
-        //             @Override // 这里有问题，拿到的数据是空的
-        //                 public void onSuccess(ResponseBody empsResponse) {
-        //                 ResponseBody body = (ResponseBody)empsResponse;
-        //             }
-        //             @Override
-        //                 public void onFailure(Throwable e) {
-        //                 KLog.e("Employees Error: " + e.toString());
-        //             }
-        //         }));
+                    @Override // 这里有问题，拿到的数据是空的
+                        public void onSuccess(EmployeeResponse empsResponse) {
+                        // ResponseBody body = (ResponseBody)empsResponse;
+                        KLog.d(new Gson().toJson(empsResponse));
+                        employees.setValue(empsResponse);
+                    }
+                    @Override
+                        public void onFailure(Throwable e) {
+                        KLog.e("Employees Error: " + e.toString());
+                    }
+                }));
         return employees;
     }
 

@@ -46,23 +46,27 @@ public class MainActivity extends BaseActivity {
         dataBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         mMainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
 
-        // 返回数据时更新ViewModel，ViewModel更新则xml更新 ???
-        dataBinding.setViewModel(mMainActivityViewModel);
-
+// OkHttp Call for fetching data
         mMainActivityViewModel.getEmployees();
         
+// 应该是不需要每次都重新设置viewModel，也不需要每次都重启RecyclerView
+        // 返回数据时更新ViewModel，ViewModel更新则xml更新 ???
+        dataBinding.setViewModel(mMainActivityViewModel);
+        initRecyclerView(); 
+// 感觉这里每次都New 一个新的 RecyclerAdapter也不是很好，暂时用不优雅的公用API的方式重置数据               
         mAdapter = new RecyclerAdapter(new ArrayList<Employee>(0));
-//        {
-//                @Override
-//                public void onPostClick(long id) {
-//                    Toast.makeText(MainActivity.this, "Post id is" + id, Toast.LENGTH_SHORT).show();
-//                }
-//            });
+        // dataBinding.rv.setAdapter(new RecyclerAdapter(empListResponse.getEmployees()));
+        dataBinding.rv.setAdapter(mAdapter);
+
+        mMainActivityViewModel.mEmpList.observe(this, empListResponse -> {
+                mAdapter.updateEmpList(empListResponse.getEmployees());
+//                dataBinding.pb.setVisibility(INVISIBLE);
+            });
+
+        
         initRecyclerView();
         dataBinding.rv.setAdapter(mAdapter);
         dataBinding.rv.setHasFixedSize(true);
-//        RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST);
-//        dataBinding.rv.addItemDecoration(itemDecoration);
         
         mMainActivityViewModel.failed.observe(this, failed -> dismissLoading());
 
@@ -73,43 +77,10 @@ public class MainActivity extends BaseActivity {
                 }
             });
 
-        mMainActivityViewModel.mEmpList.observe(this, empListResponse -> {
-                dataBinding.rv.setAdapter(new RecyclerAdapter(empListResponse));
-                // initRecyclerView();
-                // dataBinding.pb.setVisibility(INVISIBLE);
-            });
     }
 
-    private void loadData() {
-        ApiService apiService = NetworkApi.createService(ApiService.class);
-        apiService.getEmployees().enqueue(new Callback<List<Employee>>() {
-                @Override
-                    public void onResponse(Call<List<Employee>> call, Response<List<Employee>> response) {
-                    boolean valid = response.isSuccessful();
-                    Log.d(TAG, "valid: " + valid);
-                    // if (response.isSuccessful()) {
-                    if (valid) {
-                       mAdapter.updateAnswers(response.body());
-//                        employees.setValue(response.body());
-                        Log.d("MainActivity", "posts loaded from API");
-                    } else {
-                        int statusCode  = response.code();
-                        // handle request errors depending on status code
-                    }
-                }
-
-                @Override
-                    public void onFailure(Call<List<Employee>> call, Throwable t) {
-                    // showErrorMessage();
-                    Log.d("MainActivity", "error loading from API");
-                }
-            });
-    }
-    
     private void initRecyclerView(){
-        Log.d(TAG, "initRecyclerView() ");
         RecyclerView.LayoutManager linearLayoutManager = new LinearLayoutManager(this); // 就用纵向排列的就可以了
-        Log.d(TAG, "(dataBinding.rv == null): " + (dataBinding.rv == null));
         dataBinding.rv.setLayoutManager(linearLayoutManager);
     }
 }

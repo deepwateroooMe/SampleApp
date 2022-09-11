@@ -1,4 +1,4 @@
-% Created 2022-09-11 Sun 15:16
+% Created 2022-09-11 Sun 16:05
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -315,6 +315,7 @@ CacheManager.setCacheModel(CacheMode.READ_CACHE_NETWORK_PUT)// 设置全局缓�
 \label{sec-3}
 \begin{itemize}
 \item \url{https://www.cnblogs.com/wjtaigwh/p/6210534.html}
+\item 继这个最简单浅显的例子之后，可以借助\url{https://blog.51cto.com/u_15456329/4799618} 再深入理解一下，并按照别人的例子再实现一遍
 \end{itemize}
 \subsection{简单的异步Get请求}
 \label{sec-3-1}
@@ -678,8 +679,393 @@ public class OkHttpClientManager {
 }
 \end{minted}
 
-\section{Retrofit}
+
+\section{封装：OkHttp + EventBus}
 \label{sec-4}
+\begin{itemize}
+\item EventBut是自己知识点面上的欠缺。借助这个极小的包装，打开一个通向真正理解这个OkHttp底层EventBus的道路。。。。
+\item event有5个类： \textbf{BaseEvent + HttpEvent + HttpSuccessEvent + HttpErrorEvent + AppEvent}
+\item \textbf{RequestTag}:请求tag
+\item \textbf{MainReqeust}:封装了OkHttp的回调，onResponse(\ldots{}) onFailure(\ldots{})中用EventBus发送数据
+\item \textbf{UserRequest} ：请求网络数据的方法全部在里面，把OkHttp的前3步写在这里面，第4布封装在了MainRequest中
+\item \textbf{BaseActivity}:订阅事件总线，接收EventBus发送(post)的数据
+\end{itemize}
+\subsection{BaseEvent.java}
+\label{sec-4-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class BaseEvent {
+    private int id;
+    private String message;
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+    public String getMessage() {
+        return message;
+    }
+    public void setMessage(String message) {
+        this.message = message;
+    }
+}
+\end{minted}
+\subsection{HttpEvent}
+\label{sec-4-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class HttpEvent extends BaseEvent {
+    @NonNull
+        private RequestTag requestTag;
+    public RequestTag getRequestTag() {
+        return requestTag;
+    }
+    public void setRequestTag(@NonNull RequestTag requestTag) {
+        this.requestTag = requestTag;
+    }
+}
+\end{minted}
+\subsection{HttpSuccessEvent}
+\label{sec-4-3}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class HttpSuccessEvent extends HttpEvent {
+    
+    private String json;
+    public String getJson() {
+        return json;
+    }
+    public void setJson(String json) {
+        this.json = json;
+    }
+}
+\end{minted}
+\subsection{HttpErrorEvent}
+\label{sec-4-4}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class HttpErrorEvent extends HttpEvent {
+    private int errorCode;
+    private String errorMessage;
+    public int getErrorCode() {
+        return errorCode;
+    }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+}
+\end{minted}
+\subsection{AppEvent}
+\label{sec-4-5}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class AppEvent extends BaseEvent {
+
+    private Object obj1;
+    private Object obj2;
+    private String extraInfo = null;
+    private String tag;
+    private int code;
+    public String getExtraInfo() {
+        return extraInfo;
+    }
+    public void setExtraInfo(String extraInfo) {
+        this.extraInfo = extraInfo;
+    }
+    public Object getObj1() {
+        return obj1;
+    }
+    public void setObj1(Object obj) {
+        this.obj1 = obj;
+    }
+    public Object getObj2() {
+        return obj2;
+    }
+    public void setObj2(Object obj2) {
+        this.obj2 = obj2;
+    }
+    public String getTag() {
+        return tag;
+    }
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+    public int getCode() {
+        return code;
+    }
+    public void setCode(int code) {
+        this.code = code;
+    }
+}
+\end{minted}
+\subsection{RequestTag}
+\label{sec-4-6}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public enum RequestTag {
+    GET1,
+    GET2,
+    POST1,
+    POST2,
+}
+\end{minted}
+\subsection{MainRequest}
+\label{sec-4-7}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class MainRequest {
+    private static MainRequest mainRequest;
+    private MainRequest() {
+        super();
+    }
+    public static MainRequest getInstance() {
+        if (mainRequest == null) {
+            mainRequest = new MainRequest();
+        }
+        return mainRequest;
+    }
+
+    // 异步get
+    public void makeAsyncGetRequest(Call call, final RequestTag tag) {
+        call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    httpErrorEvent(e, tag);
+                }
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    httpSuccessEvent(response.body().string(), tag);
+                }
+            });
+    }
+    // 同步get
+    public void makeSyncGetRequest(final Call call, final RequestTag tag) {
+        new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Response response = call.execute();
+                        if (response.isSuccessful()) {
+                            httpSuccessEvent(response.body().string(), tag);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        httpErrorEvent(e, tag);
+                    }
+                }
+            }).start();
+    }
+    // 异步post
+    public void makeSyncPostRequest(Call call, final RequestTag tag) {
+        call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    httpErrorEvent(e, tag);
+                }
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    httpSuccessEvent(response.body().string(), tag);
+                }
+            });
+    }
+    // 同步post
+    public void makeAsyncPostRequest(final Call call, final RequestTag tag) {
+        new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Response response = call.execute();
+                        if (response.isSuccessful()) {
+                            httpSuccessEvent(response.body().string(), tag);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        httpErrorEvent(e, tag);
+                    }
+                }
+            }).start();
+    }
+    private void httpErrorEvent(IOException e, RequestTag tag) {
+        Log.d("error", "error=" + e.getMessage().toString());
+        HttpErrorEvent event = new HttpErrorEvent();
+        event.setErrorMessage("" + e.getMessage().toString());
+        event.setRequestTag(tag);
+        EventBus.getDefault().post(event);
+    }
+    private void httpSuccessEvent(String json, RequestTag tag) {
+        Log.d("response", "response=" + json);
+        HttpSuccessEvent event = new HttpSuccessEvent();
+        event.setJson(json);
+        event.setRequestTag(tag);
+        EventBus.getDefault().post(event);
+    }
+}
+\end{minted}
+\subsection{UserRequest}
+\label{sec-4-8}
+\begin{itemize}
+\item app中所有的请求都放在这个类中，类名比较随意，可以自己修改成AppRequest，比较好理解。
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class UserRequest {
+    private OkHttpClient http;
+
+    private UserRequest() {
+        super();
+        http = new OkHttpClient();
+    }
+    private static UserRequest userRequest;
+    public static UserRequest getInstance() {
+        if (userRequest == null) 
+            userRequest = new UserRequest();
+        return userRequest;
+    }
+
+    // get请求 不带参数
+    //  同步get
+    public void syncGet(String name, String pwd) {
+        String url = "http:// 192.168.1.11:8080/okhttp/json1";
+        RequestTag tag = RequestTag.GET1;
+        Request request = new Request.Builder().url(url).get().build();
+        Call call = http.newCall(request);
+        MainRequest.getInstance().makeSyncGetRequest(call, tag);
+    }
+    // 异步get
+    public void AsyncGet(String name, String pwd) {
+        String url = "http:// 192.168.1.11:8080/okhttp/json2";
+        RequestTag tag = RequestTag.GET2;
+        Request request = new Request.Builder().url(url).get().build();
+        Call call = http.newCall(request);
+        MainRequest.getInstance().makeAsyncGetRequest(call, tag);
+    }
+    // 同步post
+    public void syncPost(String name, String pwd) {
+        String url = "http:// 192.168.1.11:8080/okhttp/json3";
+        RequestTag tag = RequestTag.POST1;
+        FormBody formBody = new FormBody.Builder().add("name", name).add("pwd", pwd).build();
+        Request request = new Request.Builder().post(formBody).url(url).build();
+        Call call = http.newCall(request);
+        MainRequest.getInstance().makeSyncPostRequest(call, tag);
+    }
+    // 异步post
+    public void AsyncPost(String name, String pwd) {
+        String url = "http:// 192.168.1.11:8080/okhttp/json4";
+        RequestTag tag = RequestTag.POST2;
+        FormBody formBody = new FormBody.Builder().add("name", name).add("pwd", pwd).build();
+        Request request = new Request.Builder().url(url).post(formBody).build();
+        Call call = http.newCall(request);
+        MainRequest.getInstance().makeAsyncPostRequest(call, tag);
+    }
+}
+\end{minted}
+\end{itemize}
+\subsection{BaseActivity}
+\label{sec-4-9}
+\begin{itemize}
+\item 订阅事件，其余activity只需要继承即可
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class BaseActivity extends AppCompatActivity {
+    private ProgressDialogUtil progressDialogUtil;
+    @Override
+        protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
+        progressDialogUtil = new ProgressDialogUtil(this);
+    }
+    @Override
+        protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+        public final void onEventBack(BaseEvent event) {
+        if (event instanceof HttpErrorEvent) {
+            // mark error
+            httpErrorEvent((HttpErrorEvent) event);
+        } else if (event instanceof HttpSuccessEvent) {
+            httpSuccessEvent((HttpSuccessEvent) event);
+        } else {
+            applicationEvent((AppEvent) event);
+        }
+    }
+    /**
+     * 处理网络失败/错误请求
+     * <p>直接判断HttpEvent的RequestTag即可
+     * @param event 错误事件
+     */
+    public void httpErrorEvent(HttpErrorEvent event) {}
+    /**
+     * 处理网络成功请求
+     * <p>直接判断HttpEvent的RequestTag即可
+     * @param event 成功事件
+     */
+    public void httpSuccessEvent(HttpSuccessEvent event) {}
+    /**
+     * 处理app内部事件
+     * @param event app内部事件
+     */
+    public void applicationEvent(AppEvent event) {}
+    public void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+    public void showProgressDialog() {
+        progressDialogUtil.showDialog();
+    }
+    public void dismissProgressDialog() {
+        progressDialogUtil.dismissDialog();
+    }
+}
+\end{minted}
+\end{itemize}
+\subsection{使用封装}
+\label{sec-4-10}
+\begin{itemize}
+\item 这样我们只需要调用一行代码就可以实现请求数据，提高了代码的简洁性。
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+UserRequest.getInstance().AsyncPost("cui", "123456");
+\end{minted}
+\begin{itemize}
+\item 重写这3个方法用于处理请求的数据
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+@Override
+public void httpSuccessEvent(HttpSuccessEvent event) {
+    super.httpSuccessEvent(event);
+    if (event.getRequestTag() == RequestTag.GET1 || event.getRequestTag() == RequestTag.GET2
+        || event.getRequestTag() == RequestTag.POST1 || event.getRequestTag() == RequestTag.POST2) {
+        String json = event.getJson();
+        tv.setText(json);
+        //  TODO:  解析数据可以再写一个类JsonParser,将解析结果用EventBus发送过来，EventBus.getDefault().post(event);其中event是AppEvent
+    }
+}
+
+@Override
+public void httpErrorEvent(HttpErrorEvent event) {
+    super.httpErrorEvent(event);
+    if (event.getRequestTag() == RequestTag.GET1 || event.getRequestTag() == RequestTag.GET2
+        || event.getRequestTag() == RequestTag.POST1 || event.getRequestTag() == RequestTag.POST2) {
+        String json = event.getErrorMessage();
+        tv.setText(json);
+    }
+}
+@Override
+public void applicationEvent(AppEvent event) {
+    super.applicationEvent(event);
+    //  TODO: 接收httpSuccessEvent(...)中JsonParser成功后发送的结果
+}
+\end{minted}
+\end{itemize}
+\subsection{怎么设置网络请求的缓存？}
+\label{sec-4-11}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+OkHttpClient client = new OkHttpClient.Builder()  
+    .connectTimeout(5, TimeUnit.SECONDS)  
+    .cache(new Cache(new File(this.getExternalCacheDir(), "okhttpcache"), 10 * 1024 * 1024))  
+    .build();
+\end{minted}
+
+\section{Retrofit}
+\label{sec-5}
 \begin{itemize}
 \item 首先来了解下Retrofit是什么，在官网中对于Retrofit的描述是这样的：
 \begin{itemize}
@@ -689,12 +1075,12 @@ public class OkHttpClientManager {
 \end{itemize}
 \end{itemize}
 \section{RxJava线程调度}
-\label{sec-5}
+\label{sec-6}
 \begin{itemize}
 \item 在RxJava中，我们可以自行指定事件产生和事件消费的线程，可以通过RxJava中的Scheduler来实现。 Scheduler
 \end{itemize}
 \subsection{RxJava内置的5个Scheduler}
-\label{sec-5-1}
+\label{sec-6-1}
 \begin{itemize}
 \item Schedulers. \textbf{immediate()}: 直接在当前线程运行，相当于不指定线程。这是默认的 Scheduler，但是为了防止被错误使用，在RxJava2中已经被移除了。
 \item Schedulers. \textbf{newThread()}: 开启新线程，并在新线程执行操作。
@@ -707,16 +1093,16 @@ public class OkHttpClientManager {
 \end{itemize}
 \end{itemize}
 \subsection{线程的控制}
-\label{sec-5-2}
+\label{sec-6-2}
 \begin{itemize}
 \item \textbf{subscribeOn():指定事件产生的线程} ，例如subscribeOn(Schedulers.io())可以指定被观察者的网络请求、文件读写等操作放置在io线程。
 \item \textbf{observeOn():指定事件消费的线程} ，例如observeOn(AndroidSchedulers.mainThread())指定Subscriber中的方法在主线程中运行。
 \item 在subscribe()之前写上两句subscribeOn(Scheduler.io())和observeOn(AndroidSchedulers.mainThread())的使用方式非常常见，它适用于多数的 <后台线程取数据，主线程显示> 的程序策略。
 \end{itemize}
 \section{room 数据库相关的部分: 几个相关可以用作参考的例子}
-\label{sec-6}
+\label{sec-7}
 \subsection{另一个更好的参考例子： dagger + RecyclerView 和相应的 Adapters + BufferKnife View auto-injections}
-\label{sec-6-1}
+\label{sec-7-1}
 \begin{itemize}
 \item \url{https://github.com/SpikeKing/wcl-rx-cache-demo}
 \item 这个 \textbf{设计思路可能显得相对过时了一点儿，四年前的仓库} ，应该还有很多更好的设计与实现，但仍然是一个非常值得自己参考与学习的仓库
@@ -732,7 +1118,7 @@ public class OkHttpClientManager {
 \item 这里网络数据的刷新与获取是在activity 的 onResume()里自动刷新并更新UI数据，MVVM用了吗分工明确了吗？仍然感觉不是很好
 \end{itemize}
 \subsection{ApiModule.java}
-\label{sec-6-2}
+\label{sec-7-2}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 /**
  * 模块
@@ -761,7 +1147,7 @@ public class ApiModule {
 }
 \end{minted}
 \subsection{ApiComponent.java}
-\label{sec-6-3}
+\label{sec-7-3}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 /**
  * 组件
@@ -773,7 +1159,7 @@ public interface ApiComponent {
 }
 \end{minted}
 \subsection{NocacheActivity extends Activity}
-\label{sec-6-4}
+\label{sec-7-4}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 /**
  * 无缓存Activity
@@ -817,15 +1203,15 @@ public class NocacheActivity extends Activity {
 }
 \end{minted}
 \subsection{这里有个小例子： \url{https://github.com/Tom1881/Jet-pack/tree/master/app}}
-\label{sec-6-5}
+\label{sec-7-5}
 \begin{itemize}
 \item 但是我感觉上面的例子中，关于MVVM中的M, V, VM的分工逻辑处理得不好，dao不应该出现在view (activity/fragment)中，应该是在ViewModel或是Model中，应用是在数据的管理中， 而不是View/Ui中。
 \end{itemize}
 
 \section{Glide的缓存分为两种，Resource缓存、Bitmap缓存。}
-\label{sec-7}
+\label{sec-8}
 \subsection{一、Resource缓存：}
-\label{sec-7-1}
+\label{sec-8-1}
 \begin{itemize}
 \item 首先Resource缓存就是缓存整体的图片资源文件，缓存它是为了当首次从服务器端下载下来之后，缓存到本地，如果再次使用这个图片，不用去跑网络请求，直接从本地读取，节省流量也提高访问速度。它使用的是三级缓存原理：
 \begin{itemize}
@@ -836,7 +1222,7 @@ public class NocacheActivity extends Activity {
 \item 1和2都是内存缓存，只不过功能不一样，1是使用LRU算法缓存被GC回收的资源，2是用弱引用缓存正在使用的资源。在复用图片资源的时候首先从回收的内存缓存集合中查找，内存缓存的集合中没有的时候，去弱引用集合查找是否是当前正在使用，没有的话，去磁盘中查找，再没有的时候去网络中查找。
 \end{itemize}
 \subsection{二、Bitmap缓存：Bitmap所占的内存大小由其三部分组成：图片宽，高和Bitmap质量参数。}
-\label{sec-7-2}
+\label{sec-8-2}
 \begin{itemize}
 \item bitmap内存大小 = 宽*高*质量参数所占的位数，单位是字节b
 \begin{itemize}
@@ -850,7 +1236,7 @@ public class NocacheActivity extends Activity {
 \item Bitmap的缓存是以键值对的方式进行缓存的，Resource和Bitmap都作为Value，而这些值是需要一个key来标识缓存的内容，根据key可以查找和移除对应的缓存。
 \end{itemize}
 \section{下载图片并保存到本地： rxjava 2.x+retrofit 通过动态url保存网络图片到本地}
-\label{sec-8}
+\label{sec-9}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // HttpManager 类：就是一个通过单例模式实现的类，获取retrofit的一个实例来调用NetApi接口内声明的方法，此处只写关键的一部分，别的相信你们都会
 public <T> T getHttpApi(Class<T> service) {
@@ -956,7 +1342,7 @@ mPresenter.downloadFile("https://www.baidu.com/img/superlogo_c4d7df0a003d3db9b65
 \end{minted}
 
 \section{关于图片的处理：不仅要下载，下载后还需要自动保存到数据库}
-\label{sec-9}
+\label{sec-10}
 \begin{itemize}
 \item \url{https://blog.csdn.net/ANDROID_WangWeiDa/article/details/62284675}
 \item 主要源码参考如下：
@@ -1091,7 +1477,7 @@ protected void onCreate(Bundle savedInstanceState) {
 \end{minted}
 
 \section{用Retrofit+Rxjava上传图片支持多张图片的上传}
-\label{sec-10}
+\label{sec-11}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 1.这是一个接口
 @POST

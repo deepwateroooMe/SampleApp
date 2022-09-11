@@ -55,7 +55,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         public int getItemCount() {
         return mEmpList.size();
     }
-    public void updateAnswers(List<Employee> items) {
+    public void updateEmpList(List<Employee> items) {
         mEmpList = items;
         notifyDataSetChanged();
     }
