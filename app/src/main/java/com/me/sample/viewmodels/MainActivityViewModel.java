@@ -16,7 +16,7 @@ import java.util.List;
 public class MainActivityViewModel extends BaseViewModel {
     private final String TAG = "MainViewModel";
 
-    public LiveData<List<Employee>> mEmpList; // 改成是公用的，数据得到更新了，应该就不会丢失了
+    public LiveData<EmployeeResponse> mEmpList;
 
     private final MainRepository mainRepository;
 

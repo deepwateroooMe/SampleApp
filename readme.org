@@ -19,6 +19,7 @@
   - If any employee is malformed, it is fine to invalidate the entire list of employees in the response - there is no need to exclude only malformed employees.
   - If there are no employees to show, the app should present an *empty state* view instead of an empty list. 
 * 主要思路
+- 现在终于改掉了自己网址写错的小bug了，可以再往前迈进一步，深入深解拦截器与OkHttp底层的原理了。。。
 - 终于找到了先前 *今年二三月份参考过的一个很好的案例日志序列* ： MVVM https://blog.csdn.net/qq_38436214/category_11482619.html?spm=1001.2014.3001.5482
   - 里面有十几篇博文都作了最新的更新，上次自己那个项目，可能就只工作笔记本上还有一个版本吧，其它的两台电脑我都找过了没有了
   - 今天刚到家，只休息了三个小时，脑袋昏昏的，会明天后天再花两三天的时间在这个项目上，把它实现完，理解得再深入透彻一点儿
@@ -29,6 +30,9 @@
   - 搜索关键字：Retrofit + OkHttp +RxJava 网络库构建
   - *OkHttp*: 网络请求处理,主要是在应用启动的时候，什么时机开始发布和调用网络请求。所以这个可以不用了，大家都喜欢新的更好用的库
 - *网络数据解析* ：我这里得到了网络数据，可是好像我并没有解析数据出来，这整个过程我可能还少了这比较关键的一个步骤
+  - 当对这类框架和OOP设计有了更好的了解，就可以自定义解析类来在获得数据前自动解析为自己想要的类型
+    - 注意这里提供的API其实并没有code msg之类的信息，而是直接的结果；再想一下：为什么OkHttp的拦截器能够得到code 200呢？这里Response返回基本信息还有点儿糊涂
+    - 可以参考这个例子： https://developer.aliyun.com/article/609862
   - 需要一个如下的步骤来解析从网络上拿到返回回来的数据
 #+BEGIN_SRC csharp
 Retrofit retrofit = new Retrofit.Builder()
@@ -252,6 +256,7 @@ CacheManager.setCacheModel(CacheMode.READ_CACHE_NETWORK_PUT)// 设置全局缓�
 
 * OkHttp Call 实现的简单案例: 最简单的小例子
 - https://www.cnblogs.com/wjtaigwh/p/6210534.html
+- 继这个最简单浅显的例子之后，可以借助https://blog.51cto.com/u_15456329/4799618 再深入理解一下，并按照别人的例子再实现一遍
 ** 简单的异步Get请求
   #+BEGIN_SRC csharp
 // okHttp的基本使用 --- get方法
@@ -596,6 +601,369 @@ public class OkHttpClientManager {
     }
 }    
 #+END_SRC 
+
+
+* 封装：OkHttp + EventBus
+- EventBut是自己知识点面上的欠缺。借助这个极小的包装，打开一个通向真正理解这个OkHttp底层EventBus的道路。。。。
+- event有5个类： *BaseEvent + HttpEvent + HttpSuccessEvent + HttpErrorEvent + AppEvent*
+- *RequestTag*:请求tag
+- *MainReqeust*:封装了OkHttp的回调，onResponse(...) onFailure(...)中用EventBus发送数据
+- *UserRequest* ：请求网络数据的方法全部在里面，把OkHttp的前3步写在这里面，第4布封装在了MainRequest中
+- *BaseActivity*:订阅事件总线，接收EventBus发送(post)的数据
+** BaseEvent.java
+   #+BEGIN_SRC csharp
+public class BaseEvent {
+    private int id;
+    private String message;
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+    public String getMessage() {
+        return message;
+    }
+    public void setMessage(String message) {
+        this.message = message;
+    }
+}
+   #+END_SRC 
+** HttpEvent
+   #+BEGIN_SRC csharp
+public class HttpEvent extends BaseEvent {
+    @NonNull
+        private RequestTag requestTag;
+    public RequestTag getRequestTag() {
+        return requestTag;
+    }
+    public void setRequestTag(@NonNull RequestTag requestTag) {
+        this.requestTag = requestTag;
+    }
+}
+   #+END_SRC 
+** HttpSuccessEvent
+   #+BEGIN_SRC csharp
+public class HttpSuccessEvent extends HttpEvent {
+    
+    private String json;
+    public String getJson() {
+        return json;
+    }
+    public void setJson(String json) {
+        this.json = json;
+    }
+}
+   #+END_SRC 
+** HttpErrorEvent
+   #+BEGIN_SRC csharp
+public class HttpErrorEvent extends HttpEvent {
+    private int errorCode;
+    private String errorMessage;
+    public int getErrorCode() {
+        return errorCode;
+    }
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+}
+   #+END_SRC 
+** AppEvent
+   #+BEGIN_SRC csharp
+public class AppEvent extends BaseEvent {
+
+    private Object obj1;
+    private Object obj2;
+    private String extraInfo = null;
+    private String tag;
+    private int code;
+    public String getExtraInfo() {
+        return extraInfo;
+    }
+    public void setExtraInfo(String extraInfo) {
+        this.extraInfo = extraInfo;
+    }
+    public Object getObj1() {
+        return obj1;
+    }
+    public void setObj1(Object obj) {
+        this.obj1 = obj;
+    }
+    public Object getObj2() {
+        return obj2;
+    }
+    public void setObj2(Object obj2) {
+        this.obj2 = obj2;
+    }
+    public String getTag() {
+        return tag;
+    }
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+    public int getCode() {
+        return code;
+    }
+    public void setCode(int code) {
+        this.code = code;
+    }
+}
+   #+END_SRC 
+** RequestTag
+   #+BEGIN_SRC csharp
+public enum RequestTag {
+    GET1,
+    GET2,
+    POST1,
+    POST2,
+}
+   #+END_SRC 
+** MainRequest
+   #+BEGIN_SRC csharp
+public class MainRequest {
+    private static MainRequest mainRequest;
+    private MainRequest() {
+        super();
+    }
+    public static MainRequest getInstance() {
+        if (mainRequest == null) {
+            mainRequest = new MainRequest();
+        }
+        return mainRequest;
+    }
+
+    // 异步get
+    public void makeAsyncGetRequest(Call call, final RequestTag tag) {
+        call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    httpErrorEvent(e, tag);
+                }
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    httpSuccessEvent(response.body().string(), tag);
+                }
+            });
+    }
+    // 同步get
+    public void makeSyncGetRequest(final Call call, final RequestTag tag) {
+        new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Response response = call.execute();
+                        if (response.isSuccessful()) {
+                            httpSuccessEvent(response.body().string(), tag);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        httpErrorEvent(e, tag);
+                    }
+                }
+            }).start();
+    }
+    // 异步post
+    public void makeSyncPostRequest(Call call, final RequestTag tag) {
+        call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    httpErrorEvent(e, tag);
+                }
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    httpSuccessEvent(response.body().string(), tag);
+                }
+            });
+    }
+    // 同步post
+    public void makeAsyncPostRequest(final Call call, final RequestTag tag) {
+        new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Response response = call.execute();
+                        if (response.isSuccessful()) {
+                            httpSuccessEvent(response.body().string(), tag);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        httpErrorEvent(e, tag);
+                    }
+                }
+            }).start();
+    }
+    private void httpErrorEvent(IOException e, RequestTag tag) {
+        Log.d("error", "error=" + e.getMessage().toString());
+        HttpErrorEvent event = new HttpErrorEvent();
+        event.setErrorMessage("" + e.getMessage().toString());
+        event.setRequestTag(tag);
+        EventBus.getDefault().post(event);
+    }
+    private void httpSuccessEvent(String json, RequestTag tag) {
+        Log.d("response", "response=" + json);
+        HttpSuccessEvent event = new HttpSuccessEvent();
+        event.setJson(json);
+        event.setRequestTag(tag);
+        EventBus.getDefault().post(event);
+    }
+}
+   #+END_SRC 
+** UserRequest
+- app中所有的请求都放在这个类中，类名比较随意，可以自己修改成AppRequest，比较好理解。
+   #+BEGIN_SRC csharp
+public class UserRequest {
+    private OkHttpClient http;
+
+    private UserRequest() {
+        super();
+        http = new OkHttpClient();
+    }
+    private static UserRequest userRequest;
+    public static UserRequest getInstance() {
+        if (userRequest == null) 
+            userRequest = new UserRequest();
+        return userRequest;
+    }
+
+    // get请求 不带参数
+    //  同步get
+    public void syncGet(String name, String pwd) {
+        String url = "http:// 192.168.1.11:8080/okhttp/json1";
+        RequestTag tag = RequestTag.GET1;
+        Request request = new Request.Builder().url(url).get().build();
+        Call call = http.newCall(request);
+        MainRequest.getInstance().makeSyncGetRequest(call, tag);
+    }
+    // 异步get
+    public void AsyncGet(String name, String pwd) {
+        String url = "http:// 192.168.1.11:8080/okhttp/json2";
+        RequestTag tag = RequestTag.GET2;
+        Request request = new Request.Builder().url(url).get().build();
+        Call call = http.newCall(request);
+        MainRequest.getInstance().makeAsyncGetRequest(call, tag);
+    }
+    // 同步post
+    public void syncPost(String name, String pwd) {
+        String url = "http:// 192.168.1.11:8080/okhttp/json3";
+        RequestTag tag = RequestTag.POST1;
+        FormBody formBody = new FormBody.Builder().add("name", name).add("pwd", pwd).build();
+        Request request = new Request.Builder().post(formBody).url(url).build();
+        Call call = http.newCall(request);
+        MainRequest.getInstance().makeSyncPostRequest(call, tag);
+    }
+    // 异步post
+    public void AsyncPost(String name, String pwd) {
+        String url = "http:// 192.168.1.11:8080/okhttp/json4";
+        RequestTag tag = RequestTag.POST2;
+        FormBody formBody = new FormBody.Builder().add("name", name).add("pwd", pwd).build();
+        Request request = new Request.Builder().url(url).post(formBody).build();
+        Call call = http.newCall(request);
+        MainRequest.getInstance().makeAsyncPostRequest(call, tag);
+    }
+}
+   #+END_SRC 
+** BaseActivity
+- 订阅事件，其余activity只需要继承即可
+   #+BEGIN_SRC csharp
+public class BaseActivity extends AppCompatActivity {
+    private ProgressDialogUtil progressDialogUtil;
+    @Override
+        protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
+        progressDialogUtil = new ProgressDialogUtil(this);
+    }
+    @Override
+        protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+        public final void onEventBack(BaseEvent event) {
+        if (event instanceof HttpErrorEvent) {
+            // mark error
+            httpErrorEvent((HttpErrorEvent) event);
+        } else if (event instanceof HttpSuccessEvent) {
+            httpSuccessEvent((HttpSuccessEvent) event);
+        } else {
+            applicationEvent((AppEvent) event);
+        }
+    }
+    /**
+     * 处理网络失败/错误请求
+     * <p>直接判断HttpEvent的RequestTag即可
+     * @param event 错误事件
+     */
+    public void httpErrorEvent(HttpErrorEvent event) {}
+    /**
+     * 处理网络成功请求
+     * <p>直接判断HttpEvent的RequestTag即可
+     * @param event 成功事件
+     */
+    public void httpSuccessEvent(HttpSuccessEvent event) {}
+    /**
+     * 处理app内部事件
+     * @param event app内部事件
+     */
+    public void applicationEvent(AppEvent event) {}
+    public void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+    public void showProgressDialog() {
+        progressDialogUtil.showDialog();
+    }
+    public void dismissProgressDialog() {
+        progressDialogUtil.dismissDialog();
+    }
+}
+   #+END_SRC 
+** 使用封装
+- 这样我们只需要调用一行代码就可以实现请求数据，提高了代码的简洁性。
+#+BEGIN_SRC csharp
+UserRequest.getInstance().AsyncPost("cui", "123456");
+#+END_SRC 
+- 重写这3个方法用于处理请求的数据
+   #+BEGIN_SRC csharp
+@Override
+public void httpSuccessEvent(HttpSuccessEvent event) {
+    super.httpSuccessEvent(event);
+    if (event.getRequestTag() == RequestTag.GET1 || event.getRequestTag() == RequestTag.GET2
+        || event.getRequestTag() == RequestTag.POST1 || event.getRequestTag() == RequestTag.POST2) {
+        String json = event.getJson();
+        tv.setText(json);
+        //  TODO:  解析数据可以再写一个类JsonParser,将解析结果用EventBus发送过来，EventBus.getDefault().post(event);其中event是AppEvent
+    }
+}
+
+@Override
+public void httpErrorEvent(HttpErrorEvent event) {
+    super.httpErrorEvent(event);
+    if (event.getRequestTag() == RequestTag.GET1 || event.getRequestTag() == RequestTag.GET2
+        || event.getRequestTag() == RequestTag.POST1 || event.getRequestTag() == RequestTag.POST2) {
+        String json = event.getErrorMessage();
+        tv.setText(json);
+    }
+}
+@Override
+public void applicationEvent(AppEvent event) {
+    super.applicationEvent(event);
+    //  TODO: 接收httpSuccessEvent(...)中JsonParser成功后发送的结果
+}
+   #+END_SRC 
+** 怎么设置网络请求的缓存？
+   #+BEGIN_SRC csharp
+OkHttpClient client = new OkHttpClient.Builder()  
+    .connectTimeout(5, TimeUnit.SECONDS)  
+    .cache(new Cache(new File(this.getExternalCacheDir(), "okhttpcache"), 10 * 1024 * 1024))  
+    .build();
+   #+END_SRC 
 
 * Retrofit
 - 首先来了解下Retrofit是什么，在官网中对于Retrofit的描述是这样的：

@@ -16,7 +16,7 @@
 
     <com.me.sample.view.CustomImageView
         android:id="@+id/img"
-        imgUrl="@{emp.photoUrlSmall"
+        imgUrl="@{emp.photoUrlSmall}"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_margin="5dp"
