@@ -114,7 +114,7 @@ public final class KLog {
 
 
     private static void printLog(int type, String tagStr, String msg) {
-
+        Log.d("KLog", "KLog printLog msg: " + msg);
         if (!IS_SHOW_LOG) {
             return;
         }

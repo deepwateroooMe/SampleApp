@@ -1,5 +1,7 @@
 package com.me.sample.network;
 
+import java.io.IOException;
+
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
@@ -18,7 +20,11 @@ public abstract class BaseObserver<T> implements Observer<T> {
     // 继续
     @Override
         public void onNext(T t) {
-        onSuccess(t);
+        try {
+            onSuccess(t);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // 异常
@@ -32,7 +38,7 @@ public abstract class BaseObserver<T> implements Observer<T> {
         public void onComplete() {}
 
     // 成功
-    public abstract void onSuccess(T t);
+    public abstract void onSuccess(T t) throws IOException;
 
     // 失败
     public abstract void onFailure(Throwable e);

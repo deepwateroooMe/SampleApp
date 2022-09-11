@@ -6,7 +6,7 @@
   <data>
     <variable
         name="emp"
-        type="com.me.sample.model.EmployeeResponse.EmployeesBean" />
+        type="com.me.sample.model.Employee" />
   </data>
 
   <LinearLayout
@@ -15,22 +15,24 @@
       android:orientation="horizontal">
 
     <com.me.sample.view.CustomImageView
-        imgUrl="@{emp.imgUrlSmall}"
+        android:id="@+id/img"
+        imgUrl="@{emp.photoUrlSmall"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:id="@+id/img"
-        android:src="@mipmap/ic_launcher"
+        android:layout_margin="5dp"
+        android:scaleType="centerCrop"
         app:shapeAppearanceOverlay="@style/roundedImageStyle"/>
+    <!-- android:src="@mipmap/ic_launcher" -->
 
     <TextView
+        android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@{emp.name}"
-        android:id="@+id/name"
-        android:layout_toRightOf="@+id/img"
+        android:text="@{emp.fullName}"
         android:textColor="#000"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="30dp"
+        android:layout_marginLeft="100dp"
         android:textSize="17sp"/>
+    <!-- android:layout_toRightOf="@+id/img" -->
   </LinearLayout>
 </layout>

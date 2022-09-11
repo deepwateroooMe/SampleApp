@@ -1,5 +1,7 @@
 package com.me.sample.network;
 
+import android.util.Log;
+
 import com.me.sample.network.errorhandler.ExceptionHandle;
 import com.me.sample.network.errorhandler.HttpErrorHandler;
 import com.me.sample.network.interceptor.RequestInterceptor;
@@ -31,7 +33,7 @@ public class NetworkApi {
     private static INetworkRequiredInfo iNetworkRequiredInfo;
 
     // API访问地址
-    private static String BASE_URL = "https://s3.amazonaws.com/sq-mobile-interview/";
+    private static String BASE_URL = "https://s3.amazonaws.com//sq-mobile-interview/";
 
     // OkHttp客户端
     private static OkHttpClient okHttpClient;
@@ -130,37 +132,58 @@ public class NetworkApi {
      * @return Observable
      */
     public static <T> ObservableTransformer<T, T> applySchedulers(final Observer<T> observer) {
-        return new ObservableTransformer<T, T>() {
-            @Override
-                public ObservableSource<T> apply(Observable<T> upstream) {
-                Observable<T> observable = upstream
-                    .subscribeOn(Schedulers.io()) // 线程订阅: 在子线程中进行http访问
-                    .observeOn(AndroidSchedulers.mainThread()) // 观察者：Android主线程，处理返回接口
-                    .map(NetworkApi.<T>getAppErrorHandler())   // 判断有没有500的错误，有则进入getAppErrorHandler
-                    .onErrorResumeNext(new HttpErrorHandler<T>());// 判断有没有400的错误
-                // 订阅观察者
-                observable.subscribe(observer);
-                return observable;
-            }
+        return upstream -> {
+            Observable<T> observable = upstream
+                .subscribeOn(Schedulers.io())// 线程订阅
+                .observeOn(AndroidSchedulers.mainThread())// 观察Android主线程
+                .map(NetworkApi.getAppErrorHandler())// 判断有没有500的错误，有则进入getAppErrorHandler
+                .onErrorResumeNext(new HttpErrorHandler<>());// 判断有没有400的错误
+            // 订阅观察者
+            observable.subscribe(observer);
+            return observable;
         };
+        // return new ObservableTransformer<T, T>() {
+        //     @Override
+        //         public ObservableSource<T> apply(Observable<T> upstream) {
+        //         Observable<T> observable = upstream
+        //             .subscribeOn(Schedulers.io()) // 线程订阅: 在子线程中进行http访问
+        //             .observeOn(AndroidSchedulers.mainThread()) // 观察者：Android主线程，处理返回接口
+        //             .map(NetworkApi.<T>getAppErrorHandler())   // 判断有没有500的错误，有则进入getAppErrorHandler
+        //             .onErrorResumeNext(new HttpErrorHandler<T>());// 判断有没有400的错误
+        //         // 订阅观察者
+        //         observable.subscribe(observer);
+        //         return observable;
+        //     }
+        // };
     }
     
     /**
      * 错误码处理
      */
     protected static <T> Function<T, T> getAppErrorHandler() {
-        return new Function<T, T>() {
-            @Override public T apply(T response) throws Exception {
-                // 当response返回出现500之类的错误时
-                if (response instanceof BaseResponse && ((BaseResponse) response).responseCode >= 500) {
-                    // 通过这个异常处理，得到用户可以知道的原因
-                    ExceptionHandle.ServerException exception = new ExceptionHandle.ServerException();
-                    exception.code = ((BaseResponse) response).responseCode;
-                    exception.message = ((BaseResponse) response).responseError != null ? ((BaseResponse) response).responseError : "";
-                    throw exception;
-                }
-                return response;
+        return response -> {
+            // 当response返回出现500之类的错误时
+            if (response instanceof BaseResponse && ((BaseResponse) response).responseCode >= 500) {
+                // 通过这个异常处理，得到用户可以知道的原因
+                ExceptionHandle.ServerException exception = new ExceptionHandle.ServerException();
+                exception.code = ((BaseResponse) response).responseCode;
+                exception.message = ((BaseResponse) response).responseError != null ? ((BaseResponse) response).responseError : "";
+                throw exception;
             }
+            return response;
         };
+        // return new Function<T, T>() {
+        //     @Override public T apply(T response) throws Exception {
+        //         // 当response返回出现500之类的错误时
+        //         if (response instanceof BaseResponse && ((BaseResponse) response).responseCode >= 500) {
+        //             // 通过这个异常处理，得到用户可以知道的原因
+        //             ExceptionHandle.ServerException exception = new ExceptionHandle.ServerException();
+        //             exception.code = ((BaseResponse) response).responseCode;
+        //             exception.message = ((BaseResponse) response).responseError != null ? ((BaseResponse) response).responseError : "";
+        //             throw exception;
+        //         }
+        //         return response;
+        //     }
+        // };
     }
 }

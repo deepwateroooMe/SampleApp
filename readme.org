@@ -250,6 +250,353 @@ CacheManager.setCacheModel(CacheMode.READ_CACHE_NETWORK_PUT)// 设置全局缓�
 - *Constraint Layout vs Coordinate Layout*: 暂时先用任何简单的layout先能运行起一个大致的框架来，再进一步优化 
 - 我丢掉了的文件呀，我写过的项目呀，不是在进Lucid之前写得好好的一个项目，现在源码全丢了。。。。。该死的GitHub.....
 
+* OkHttp Call 实现的简单案例: 最简单的小例子
+- https://www.cnblogs.com/wjtaigwh/p/6210534.html
+** 简单的异步Get请求
+  #+BEGIN_SRC csharp
+// okHttp的基本使用 --- get方法
+String url = "https:// api.douban.com/v2/movie/top250?start=0&count=10";
+// 1,创建OKHttpClient对象
+OkHttpClient mOkHttpClient = new OkHttpClient();
+// 2,创建一个Request
+Request request = new Request.Builder().url(url).build();
+// 3,创建一个call对象
+Call call = mOkHttpClient.newCall(request);
+// 4,将请求添加到调度中
+call.enqueue(new Callback() {
+        @Override
+        public void onFailure(Request request, IOException e) {
+         }
+         @Override
+        public void onResponse(Response response) throws IOException {
+            if (response.isSuccessful()) {
+                final String message = response.body().string();
+//  由于我们调用的enqueue（）方法，是运行在网络线程中的，
+//  所以当我们得到json数据后想要获取更新UI的话，可以开使用handle.post()方法在run方法里面更新UI。                
+                handler.post(new Runnable() { //  <<<<<<<<<<<<<<<<<<<<  将从网络请求的线程结果传到主线程上
+                        @Override
+                        public void run() {
+                            tv_message.setText(message);
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
+ 
+            }
+        }
+ 
+    });
+  #+END_SRC 
+** 简单的异步Post请求
+- 这里的Post请求我们以最常见的注册登录来举例。post请求的步骤和get是相似的只是在创建Request的 时候将服务器需要的参数传递进去.
+   #+BEGIN_SRC csharp
+String url = "http:// 192.168.1.123:8081/api/login";
+// 1,创建OKhttpClient对象
+OkHttpClient mOkHttpClient = new OkHttpClient();
+// 2,创建Request
+RequestBody formBody = new FormEncodingBuilder() //  <<<<<<<<<< 
+    .add("username", "superadmin")
+    .add("pwd", "ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413")
+    .build();
+ 
+Request request = new Request.Builder().url(url).post(formBody).build(); //  <<<<<<<<<< 
+// 3，创建call对象并将请求对象添加到调度中
+mOkHttpClient.newCall(request).enqueue(new Callback() {
+        @Override
+        public void onFailure(Request request, IOException e) {
+        }
+        @Override
+        public void onResponse(Response response) throws IOException {
+            Log.i("wangjitao", response.body().string());
+        }
+    });   
+#+END_SRC 
+** OkHttp的封装
+*** CallBack的创建　　
+- 首选我们知道，当接口请求成功或者失败的时候我们需要将这个信息通知给用户，那么我们就需要创建一个抽象类RequestCallBack，请求前、成功、失败、请求后这几个方法，创建OnBefore（）、OnAfter（）、OnError（）、OnResponse（）对应
+   #+BEGIN_SRC csharp
+// 在请求之前的方法，一般用于加载框展示
+// @param request
+public void onBefore(Request request) {}
+ 
+// 在请求之后的方法，一般用于加载框隐藏
+public void onAfter() {}
+ 
+// 请求失败的时候
+// @param request
+// @param e
+public abstract void onError(Request request, Exception e);
+ 
+// @param response
+public abstract void onResponse(T response);
+   #+END_SRC 
+- 由于我们每次想要的数据不一定，所以这里我们用<T>来接收想要装成的数据格式，并通过反射得到想要的数据类型（一般是Bean、List）之类　，所以RequestCallBack的整体代码如下：
+#+BEGIN_SRC csharp
+// import com.google.gson.internal.$Gson$Types;
+import com.squareup.okhttp.Request;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+ 
+/**
+ * Created by wangjitao on 15/10/16.
+ * 抽象类，用于请求成功后的回调
+ */
+public abstract class ResultCallback<T> {
+    //这是请求数据的返回类型，包含常见的（Bean，List等）
+    Type mType;
+ 
+    public ResultCallback() {
+        mType = getSuperclassTypeParameter(getClass());
+    }
+ 
+    /**
+     * 通过反射想要的返回类型
+     * @param subclass
+     * @return
+     */
+    static Type getSuperclassTypeParameter(Class<?> subclass) {
+        Type superclass = subclass.getGenericSuperclass();
+        if (superclass instanceof Class) {
+            throw new RuntimeException("Missing type parameter.");
+        }
+        ParameterizedType parameterized = (ParameterizedType) superclass;
+        return $Gson$Types.canonicalize(parameterized.getActualTypeArguments()[0]);
+    }
+ 
+    /**
+     * 在请求之前的方法，一般用于加载框展示
+     * @param request
+     */
+    public void onBefore(Request request) {}
+ 
+    /**
+     * 在请求之后的方法，一般用于加载框隐藏
+     */
+    public void onAfter() {}
+ 
+    /**
+     * 请求失败的时候
+     * @param request
+     * @param e
+     */
+    public abstract void onError(Request request, Exception e);
+ 
+    /**
+     * @param response
+     */
+    public abstract void onResponse(T response);
+}
+#+END_SRC 
+*** 对Get、Post方法的简单封装　
+- 首先我们创建一个OkHttpClientManager类，由于是管理类，所以，单例加静态对象搞起
+#+BEGIN_SRC csharp
+private static OkHttpClientManager mInstance;
+public static OkHttpClientManager getInstance() {
+    if (mInstance == null){
+        synchronized (OkHttpClientManager.class) {
+            if (mInstance == null) 
+                mInstance = new OkHttpClientManager();
+        }
+    }
+    return mInstance;
+}
+#+END_SRC 
+- 在创建Manager对象的时候我们要把OkHttp的一些参数配置一下，顺便一提一下，由于我们我们异步get、post方法是运行在子线程中，所以这里我们添加了分发的 Handler mDelivery;，重写的OkHttpClientManager构造方法如下：
+#+BEGIN_SRC csharp
+private OkHttpClientManager() {
+    mOkHttpClient = new OkHttpClient();
+    mOkHttpClient.setConnectTimeout(10, TimeUnit.SECONDS);
+    mOkHttpClient.setWriteTimeout(10, TimeUnit.SECONDS);
+    mOkHttpClient.setReadTimeout(30, TimeUnit.SECONDS);
+    //cookie enabled
+    mOkHttpClient.setCookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
+    mDelivery = new Handler(Looper.getMainLooper());
+    mGson = new Gson();
+}
+#+END_SRC 
+- 前面的外部调用对象封装好了，这里我们开始来封装Get或Post方法，我这里以Post方法为例子，首先分析一下，post方法会有几个参数，参数一url，参数二参数params，参数三Callback（及我们上面的RequestCallBack）参数四flag（用于取消请求操作，可为空），基础代码如下：
+    #+BEGIN_SRC csharp
+/**
+ * 通用基础的异步的post请求
+ * @param url
+ * @param callback
+ * @param tag
+ */
+public void postAsyn(String url, Param[] params, final ResultCallback callback, Object tag) {
+    Request request = buildPostFormRequest(url, params, tag);
+    deliveryResult(callback, request);
+}
+#+END_SRC 
+- 那么我们再看一下deliveryResult方法到底是干什么的
+#+BEGIN_SRC csharp
+/**
+ * 请求回调处理方法并传递返回值
+ * @param callback Map类型请求参数
+ * @param request Request请求
+ */
+private void deliveryResult(ResultCallback callback, Request request) {
+    if (callback == null)
+        callback = DEFAULT_RESULT_CALLBACK;
+    final ResultCallback resCallBack = callback;
+    // UI thread
+    callback.onBefore(request);
+    mOkHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(final Request request, final IOException e) {
+                sendFailedStringCallback(request, e, resCallBack);
+            }
+            @Override
+            public void onResponse(final Response response) {
+                try {
+                    final String responseMessage=response.message();
+                    final String responseBody = response.body().string();
+                    if(response.code()==200){
+                        if (resCallBack.mType == String.class) {
+                            sendSuccessResultCallback(responseBody, resCallBack);
+                        } else {
+                            Object o = mGson.fromJson(responseBody, resCallBack.mType);
+                            sendSuccessResultCallback(o, resCallBack);
+                        }
+                    }else{
+                        Exception exception=new Exception(response.code()+":"+responseMessage);
+                        sendFailedStringCallback(response.request(), exception, resCallBack);
+                    }
+                } catch (IOException e) {
+                    sendFailedStringCallback(response.request(), e, resCallBack);
+                } catch (com.google.gson.JsonParseException e) {//Json解析的错误
+                    sendFailedStringCallback(response.request(), e, resCallBack);
+                }
+            }
+        });
+}
+    #+END_SRC 
+- 可以看到，这个方法主要是发出请求并对请求后的数据开始回调，这样我们就基本上封装好了一个post方法了  ，把代码这一部分的代码贴出来看看
+#+BEGIN_SRC csharp
+public class OkHttpClientManager {
+    private static final String TAG = "com.qianmo.httprequest.http.OkHttpClientManager";
+ 
+    private static OkHttpClientManager mInstance;
+    public static OkHttpClientManager getInstance() {
+        if (mInstance == null) {
+            synchronized (OkHttpClientManager.class) {
+                if (mInstance == null) 
+                    mInstance = new OkHttpClientManager();
+            }
+        }
+        return mInstance;
+    }
+
+    // 默认的请求回调类
+    private final ResultCallback<String> DEFAULT_RESULT_CALLBACK = new ResultCallback<String>(){
+        @Override
+        public void onError(Request request, Exception e) {}
+        @Override
+        public void onResponse(String response) {}
+    };
+
+    private OkHttpClient mOkHttpClient;
+    private Handler mDelivery;
+    private Gson mGson;
+    private GetDelegate mGetDelegate = new GetDelegate();
+    private PostDelegate mPostDelegate = new PostDelegate();
+    private DownloadDelegate mDownloadDelegate = new DownloadDelegate();
+ 
+    private OkHttpClientManager() {
+        mOkHttpClient = new OkHttpClient();
+        mOkHttpClient.setConnectTimeout(10, TimeUnit.SECONDS);
+        mOkHttpClient.setWriteTimeout(10, TimeUnit.SECONDS);
+        mOkHttpClient.setReadTimeout(30, TimeUnit.SECONDS);
+        // cookie enabled
+        mOkHttpClient.setCookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
+        mDelivery = new Handler(Looper.getMainLooper());
+        mGson = new Gson();
+    }
+ 
+    /**
+     * 外部可调用的Post异步请求方法
+     * @param url 请求url
+     * @param params
+     * @param callback 请求完成后回调类
+     */
+    public static void postAsyn(String url, Map<String, String> params, final ResultCallback callback) {
+        getInstance().getPostDelegate().postAsyn(url, params, callback, null);
+    }
+ 
+    /**
+     * 异步的post请求
+     * @param url
+     * @param params
+     * @param callback
+     * @param tag
+     */
+    public void postAsyn(String url, Map<String, String> params, final ResultCallback callback, Object tag) {
+        Param[] paramsArr = map2Params(params);
+        postAsyn(url, paramsArr, callback, tag);
+    }
+    /**
+     * 通用基础的异步的post请求
+     * @param url
+     * @param callback
+     * @param tag
+     */
+    public void postAsyn(String url, Param[] params, final ResultCallback callback, Object tag) {
+        Request request = buildPostFormRequest(url, params, tag);
+        deliveryResult(callback, request);
+    }
+     
+    /**
+     * 请求回调处理方法并传递返回值
+     * @param callback Map类型请求参数
+     * @param request Request请求
+     */
+    private void deliveryResult(ResultCallback callback, Request request) {
+        if (callback == null)
+            callback = DEFAULT_RESULT_CALLBACK;
+        final ResultCallback resCallBack = callback;
+        // UI thread
+        callback.onBefore(request);
+        mOkHttpClient.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(final Request request, final IOException e) {
+                    sendFailedStringCallback(request, e, resCallBack);
+                }
+                @Override
+                public void onResponse(final Response response) {
+                    try {
+                        final String responseMessage=response.message();
+                        final String responseBody = response.body().string();
+                        if (response.code()==200){
+                            if (resCallBack.mType == String.class) {
+                                sendSuccessResultCallback(responseBody, resCallBack);
+                            } else {
+                                Object o = mGson.fromJson(responseBody, resCallBack.mType);
+                                sendSuccessResultCallback(o, resCallBack);
+                            }
+                        } else{
+                            Exception exception=new Exception(response.code()+":"+responseMessage);
+                            sendFailedStringCallback(response.request(), exception, resCallBack);
+                        }
+                    } catch (IOException e) {
+                        sendFailedStringCallback(response.request(), e, resCallBack);
+                    } catch (com.google.gson.JsonParseException e) {// Json解析的错误
+                        sendFailedStringCallback(response.request(), e, resCallBack);
+                    }
+                }
+            });
+    }
+    /**
+     * 处理请求成功的回调信息方法
+     * @param object 服务器响应信息
+     * @param callback 回调类
+     */
+    private void sendSuccessResultCallback(final Object object, final      ResultCallback callback) {
+        mDelivery.post(() -> {
+                callback.onResponse(object);
+                callback.onAfter();
+            });
+    }
+}    
+#+END_SRC 
+
 * Retrofit
 - 首先来了解下Retrofit是什么，在官网中对于Retrofit的描述是这样的：
   - A type-safe HTTP client for Android and Java.

@@ -7,16 +7,18 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.me.sample.model.Employee;
 import com.me.sample.model.EmployeeResponse;
 import com.me.sample.repository.MainRepository;
+
+import java.util.List;
 
 public class MainActivityViewModel extends BaseViewModel {
     private final String TAG = "MainViewModel";
 
-    public LiveData<EmployeeResponse> mEmpList; // 改成是公用的，数据得到更新了，应该就不会丢失了
-    private final MainRepository mainRepository;
+    public LiveData<List<Employee>> mEmpList; // 改成是公用的，数据得到更新了，应该就不会丢失了
 
-    // private MutableLiveData<Boolean> mIsUpdating = new MutableLiveData<>();
+    private final MainRepository mainRepository;
 
     @ViewModelInject
         MainActivityViewModel(MainRepository mainRepository) {

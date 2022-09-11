@@ -1,6 +1,8 @@
 package com.me.sample.network.interceptor;
 
 
+import android.util.Log;
+
 import com.me.sample.network.utils.KLog;
 
 import java.io.IOException;
@@ -24,6 +26,8 @@ public class ResponseInterceptor implements Interceptor {
         long requestTime = System.currentTimeMillis();
         Response response = chain.proceed(chain.request());
         KLog.i(TAG, "requestSpendTime=" + (System.currentTimeMillis() - requestTime) + "ms");
+        int cnt = response.body().toString().length();
+        Log.d(TAG, "cnt: " + cnt);
         return response;
     }
 }

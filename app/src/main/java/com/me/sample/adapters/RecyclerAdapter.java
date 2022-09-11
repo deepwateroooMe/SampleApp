@@ -15,7 +15,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.me.sample.R;
 import com.me.sample.databinding.ItemEmpBinding;
-import com.me.sample.model.EmployeeResponse;
+import com.me.sample.model.Employee;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -27,26 +27,20 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     /**
      * 传递过来的数据
      */
-    // private final List<WallPaperResponse.ResBean.VerticalBean> verticalBeans;
-    private List<EmployeeResponse.EmployeesBean> mEmpList;
+    private List<Employee> mEmpList;
 
-    // private Context context;
-
-    // public WallPaperAdapter(List<WallPaperResponse.ResBean.VerticalBean> verticalBeans) {
-    //     this.verticalBeans = verticalBeans;
-    // }
-    public RecyclerAdapter(List<EmployeeResponse.EmployeesBean> mEmpList) {
+    // 现在的实现是乱作一团，没有区别MVVM的功能模块，但是先把它弄出来再说
+    private Context context;
+    private PostItemListener mItemListener; 
+    
+    public RecyclerAdapter(List<Employee> mEmpList) {
         this.mEmpList = mEmpList;
     }
-    // public RecyclerAdapter(Context context, EmployeeResponse mEmpList) {
-    //     this.context = context;
-    //     this.mEmpList = mEmpList;
-    // }
-    
 
     @NonNull
         @Override
-        public ViewHolderItemEmp onCreateViewHolder(@NonNull ViewGroup parent, int i) {
+        // public ViewHolderItemEmp onCreateViewHolder(@NonNull ViewGroup parent, int i) { // 这里 返回类型 可能是写错了
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         ItemEmpBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.item_emp, parent, false);
         return new ViewHolderItemEmp(binding);   
     }
@@ -55,39 +49,27 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         ItemEmpBinding binding = ((ViewHolderItemEmp)holder).getBinding();
         binding.setEmp(mEmpList.get(position));
         binding.executePendingBindings();
-        // // Set the image
-        // RequestOptions defaultOptions = new RequestOptions()
-        //     .error(R.drawable.ic_launcher_background);
-        // Glide.with(context)
-        //     .setDefaultRequestOptions(defaultOptions)
-        //     .load(mEmpList.getEmployees().get(i).getImgUrlSmall())
-        //     .into(((ViewHolder)viewHolder).mImage);
     }
+
     @Override
         public int getItemCount() {
-        // if (mEmpList == null) return 0;
         return mEmpList.size();
     }
+    public void updateAnswers(List<Employee> items) {
+        mEmpList = items;
+        notifyDataSetChanged();
+    }
 
-    // @NonNull
-    //     @NotNull
-    //     @Override
-    //     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
-    //     ItemWallPaperBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.item_wall_paper, parent, false);
-    //     return new ViewHolderWallPaper(binding);
-    // }
-    // @Override
-    //     public void onBindViewHolder(@NonNull @NotNull RecyclerView.ViewHolder holder, int position) {
-    //     ItemWallPaperBinding binding = ((ViewHolderWallPaper) holder).getBinding();
-    //     binding.setWallPaper(verticalBeans.get(position));
-    //     binding.executePendingBindings();
-    // }
-    // @Override
-    //     public int getItemCount() {
-    //     return verticalBeans.size();
-    // }
-    public static class ViewHolderItemEmp extends RecyclerView.ViewHolder { // <<<<<<<<<< static
+    public interface PostItemListener {
+        void onPostClick(long id);
+    }
+    
+    public static class ViewHolderItemEmp extends RecyclerView.ViewHolder
+    { // <<<<<<<<<< static
+        // implements View.OnClickListener { // <<<<<<<<<< static
 
+        // PostItemListener mItemListener;
+        
         private ItemEmpBinding binding;
         public ItemEmpBinding getBinding() {
             return binding;
@@ -100,26 +82,15 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             super(binding.getRoot());
             this.binding = binding;
         }
-        // private CircleImageView mImage;
-        // private TextView mName;
-        // public ViewHolder(@NonNull View itemView) {
-        //     super(itemView);
-        //     mImage = itemView.findViewById(R.id.img);
-        //     mName = itemView.findViewById(R.id.name);
-        // }
     }
-
-    // private static class ViewHolderWallPaper extends RecyclerView.ViewHolder {
-    //     private ItemWallPaperBinding binding;
-    //     public ItemWallPaperBinding getBinding() {
-    //         return binding;
-    //     }
-    //     public void setBinding(ItemWallPaperBinding binding) {
-    //         this.binding = binding;
-    //     }
-    //     public ViewHolderWallPaper(ItemWallPaperBinding inflate) {
-    //         super(inflate.getRoot());
-    //         this.binding = inflate;
-    //     }
-    // }
+    
+//     // 这个功能是：从RecycleView 中点击某张图片时，时入观看该小图的大图片模式，实现点击回调绑定
+//     public static class ClickBinding {
+//         public void itemClick(EmployeeResponse.EmployeesBean verticalBean, View view) {
+// // <<<<<<<<<< 需要定义一个特定的Activity这里我没有实现，没有要求
+//             Intent intent = new Intent(view.getContext(), PictureViewActivity.class); 
+//             intent.putExtra("img", verticalBean.getImg());
+//             view.getContext().startActivity(intent);
+//         }
+//     }
 }

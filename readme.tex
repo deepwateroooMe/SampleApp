@@ -1,4 +1,4 @@
-% Created 2022-09-08 Thu 16:13
+% Created 2022-09-11 Sun 15:16
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -72,13 +72,44 @@
 \item 搜索关键字：Retrofit + OkHttp +RxJava 网络库构建
 \item \textbf{OkHttp}: 网络请求处理,主要是在应用启动的时候，什么时机开始发布和调用网络请求。所以这个可以不用了，大家都喜欢新的更好用的库
 \end{itemize}
+\item \textbf{网络数据解析} ：我这里得到了网络数据，可是好像我并没有解析数据出来，这整个过程我可能还少了这比较关键的一个步骤
+\begin{itemize}
+\item 需要一个如下的步骤来解析从网络上拿到返回回来的数据
+\end{itemize}
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+Retrofit retrofit = new Retrofit.Builder()
+    .baseUrl("http://www.kuaidi100.com/")
+    .addConverterFactory(GsonConverterFactory.create())
+    .build();
+        
+RetrofitService service = retrofit.create(RetrofitService.class);
+Call<PostInfo> call = service.getPostInfo("yuantong", "11111111111");
+call.enqueue(new Callback<PostInfo>() {
+        @Override
+            public void onResponse(Call<PostInfo> call, Response<PostInfo> response) {
+            Log.i("http返回：", response.body().toString() + "");
+        }
+        @Override
+            public void onFailure(Call<PostInfo> call, Throwable t) {
+        }
+    });
+\end{minted}
+\begin{itemize}
+\item \textbf{RxJava基本原理} ：RxJava is a Java VM implementation of Reactive Extensions: a library for composing asynchronous and event-based programs by using observable sequences.(一个通过使用可观察序列来组成异步的、基于事件的程序的库。)
+\begin{itemize}
+\item 从介绍中我们可以提取出一个关键词：异步,但安卓中已经有很多解决异步操作的方法了，比如Handler和AsyncTask等, \textbf{为什么还选择RxJava呢，其实目的就是为了让代码更简洁，而且它的简洁是与众不同的，因为RxJava的使用方式是基于事件流的链式调用，这就保证了随着程序复杂性的提高，RxJava依然能保持代码的简洁和优雅} 。
+\end{itemize}
+
 \item \textbf{图片本地缓存}: 第三方库找一个，还是用AndroidX的Room
 \begin{itemize}
 \item 上面可能想错了，就是使用的第三方图片库Glide本身已经具备了缓存图片到本地的功能，所有我大可不必再多此一举，再来一个AndroidX Jetpack的Room数据库
 \item 现将所有的room数据库相送的源码全部删除， \textbf{现只负责将RecyclerView的所有相送逻辑连通就可以了}
 \end{itemize}
 \item 小问题：根据返回来数据的url链接来加载员工头像图片，可能并不需要我来实现什么网络请求的串接执行，更多应该是 \textbf{Recyclerview的双向数据绑定就可以了}
+\item 头像图片加载：现有两套思路，一套Mitch的MVVM但是非数据绑定的版本，一套双向数据绑定的自动化绑定的版本。
 \begin{itemize}
+\item 按照项目的要求与缓存机制的要求，我觉得用Mitch的版本更为简洁，主要由第三方库Glide帮助缓存处理。自己需要必理的逻辑比较少，更简洁方便好用。
 \item 那么下面的这些关于缓存的问题都可以暂时不思考了，先运行起一个可以执行运行不出错的应用再说再优化。
 \item 我 \textbf{现在数据库的问题} 是：我 \textbf{缓存保存了员工数据进数据库} ，但是这里说得很清楚了， \textbf{不用保存员工数据，只保存每个员工id所对应的图片就可以了}
 \item 说到网络缓存,肯定都不陌生，多多少少使用过不同的缓存方案。使用网络缓存有什么作用:
@@ -280,10 +311,412 @@ CacheManager.setCacheModel(CacheMode.READ_CACHE_NETWORK_PUT)// 设置全局缓�
 \item 我丢掉了的文件呀，我写过的项目呀，不是在进Lucid之前写得好好的一个项目，现在源码全丢了。。。。。该死的GitHub\ldots{}..
 \end{itemize}
 
-\section{room 数据库相关的部分: 几个相关可以用作参考的例子}
+\section{OkHttp Call 实现的简单案例: 最简单的小例子}
 \label{sec-3}
-\subsection{另一个更好的参考例子： dagger + RecyclerView 和相应的 Adapters + BufferKnife View auto-injections}
+\begin{itemize}
+\item \url{https://www.cnblogs.com/wjtaigwh/p/6210534.html}
+\end{itemize}
+\subsection{简单的异步Get请求}
 \label{sec-3-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// okHttp的基本使用 --- get方法
+String url = "https:// api.douban.com/v2/movie/top250?start=0&count=10";
+// 1,创建OKHttpClient对象
+OkHttpClient mOkHttpClient = new OkHttpClient();
+// 2,创建一个Request
+Request request = new Request.Builder().url(url).build();
+// 3,创建一个call对象
+Call call = mOkHttpClient.newCall(request);
+// 4,将请求添加到调度中
+call.enqueue(new Callback() {
+        @Override
+        public void onFailure(Request request, IOException e) {
+         }
+         @Override
+        public void onResponse(Response response) throws IOException {
+            if (response.isSuccessful()) {
+                final String message = response.body().string();
+//  由于我们调用的enqueue（）方法，是运行在网络线程中的，
+//  所以当我们得到json数据后想要获取更新UI的话，可以开使用handle.post()方法在run方法里面更新UI。                
+                handler.post(new Runnable() { //  <<<<<<<<<<<<<<<<<<<<  将从网络请求的线程结果传到主线程上
+                        @Override
+                        public void run() {
+                            tv_message.setText(message);
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
+ 
+            }
+        }
+ 
+    });
+\end{minted}
+\subsection{简单的异步Post请求}
+\label{sec-3-2}
+\begin{itemize}
+\item 这里的Post请求我们以最常见的注册登录来举例。post请求的步骤和get是相似的只是在创建Request的 时候将服务器需要的参数传递进去.
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+String url = "http:// 192.168.1.123:8081/api/login";
+// 1,创建OKhttpClient对象
+OkHttpClient mOkHttpClient = new OkHttpClient();
+// 2,创建Request
+RequestBody formBody = new FormEncodingBuilder() //  <<<<<<<<<< 
+    .add("username", "superadmin")
+    .add("pwd", "ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413")
+    .build();
+ 
+Request request = new Request.Builder().url(url).post(formBody).build(); //  <<<<<<<<<< 
+// 3，创建call对象并将请求对象添加到调度中
+mOkHttpClient.newCall(request).enqueue(new Callback() {
+        @Override
+        public void onFailure(Request request, IOException e) {
+        }
+        @Override
+        public void onResponse(Response response) throws IOException {
+            Log.i("wangjitao", response.body().string());
+        }
+    });
+\end{minted}
+\end{itemize}
+\subsection{OkHttp的封装}
+\label{sec-3-3}
+\subsubsection{CallBack的创建　　}
+\label{sec-3-3-1}
+\begin{itemize}
+\item 首选我们知道，当接口请求成功或者失败的时候我们需要将这个信息通知给用户，那么我们就需要创建一个抽象类RequestCallBack，请求前、成功、失败、请求后这几个方法，创建OnBefore（）、OnAfter（）、OnError（）、OnResponse（）对应
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// 在请求之前的方法，一般用于加载框展示
+// @param request
+public void onBefore(Request request) {}
+ 
+// 在请求之后的方法，一般用于加载框隐藏
+public void onAfter() {}
+ 
+// 请求失败的时候
+// @param request
+// @param e
+public abstract void onError(Request request, Exception e);
+ 
+// @param response
+public abstract void onResponse(T response);
+\end{minted}
+\item 由于我们每次想要的数据不一定，所以这里我们用<T>来接收想要装成的数据格式，并通过反射得到想要的数据类型（一般是Bean、List）之类　，所以RequestCallBack的整体代码如下：
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// import com.google.gson.internal.$Gson$Types;
+import com.squareup.okhttp.Request;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+ 
+/**
+ * Created by wangjitao on 15/10/16.
+ * 抽象类，用于请求成功后的回调
+ */
+public abstract class ResultCallback<T> {
+    //这是请求数据的返回类型，包含常见的（Bean，List等）
+    Type mType;
+ 
+    public ResultCallback() {
+        mType = getSuperclassTypeParameter(getClass());
+    }
+ 
+    /**
+     * 通过反射想要的返回类型
+     * @param subclass
+     * @return
+     */
+    static Type getSuperclassTypeParameter(Class<?> subclass) {
+        Type superclass = subclass.getGenericSuperclass();
+        if (superclass instanceof Class) {
+            throw new RuntimeException("Missing type parameter.");
+        }
+        ParameterizedType parameterized = (ParameterizedType) superclass;
+        return $Gson$Types.canonicalize(parameterized.getActualTypeArguments()[0]);
+    }
+ 
+    /**
+     * 在请求之前的方法，一般用于加载框展示
+     * @param request
+     */
+    public void onBefore(Request request) {}
+ 
+    /**
+     * 在请求之后的方法，一般用于加载框隐藏
+     */
+    public void onAfter() {}
+ 
+    /**
+     * 请求失败的时候
+     * @param request
+     * @param e
+     */
+    public abstract void onError(Request request, Exception e);
+ 
+    /**
+     * @param response
+     */
+    public abstract void onResponse(T response);
+}
+\end{minted}
+\subsubsection{对Get、Post方法的简单封装　}
+\label{sec-3-3-2}
+\begin{itemize}
+\item 首先我们创建一个OkHttpClientManager类，由于是管理类，所以，单例加静态对象搞起
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+private static OkHttpClientManager mInstance;
+public static OkHttpClientManager getInstance() {
+    if (mInstance == null){
+        synchronized (OkHttpClientManager.class) {
+            if (mInstance == null) 
+                mInstance = new OkHttpClientManager();
+        }
+    }
+    return mInstance;
+}
+\end{minted}
+\begin{itemize}
+\item 在创建Manager对象的时候我们要把OkHttp的一些参数配置一下，顺便一提一下，由于我们我们异步get、post方法是运行在子线程中，所以这里我们添加了分发的 Handler mDelivery;，重写的OkHttpClientManager构造方法如下：
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+private OkHttpClientManager() {
+    mOkHttpClient = new OkHttpClient();
+    mOkHttpClient.setConnectTimeout(10, TimeUnit.SECONDS);
+    mOkHttpClient.setWriteTimeout(10, TimeUnit.SECONDS);
+    mOkHttpClient.setReadTimeout(30, TimeUnit.SECONDS);
+    //cookie enabled
+    mOkHttpClient.setCookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
+    mDelivery = new Handler(Looper.getMainLooper());
+    mGson = new Gson();
+}
+\end{minted}
+\begin{itemize}
+\item 前面的外部调用对象封装好了，这里我们开始来封装Get或Post方法，我这里以Post方法为例子，首先分析一下，post方法会有几个参数，参数一url，参数二参数params，参数三Callback（及我们上面的RequestCallBack）参数四flag（用于取消请求操作，可为空），基础代码如下：
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+/**
+ * 通用基础的异步的post请求
+ * @param url
+ * @param callback
+ * @param tag
+ */
+public void postAsyn(String url, Param[] params, final ResultCallback callback, Object tag) {
+    Request request = buildPostFormRequest(url, params, tag);
+    deliveryResult(callback, request);
+}
+\end{minted}
+\item 那么我们再看一下deliveryResult方法到底是干什么的
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+/**
+ * 请求回调处理方法并传递返回值
+ * @param callback Map类型请求参数
+ * @param request Request请求
+ */
+private void deliveryResult(ResultCallback callback, Request request) {
+    if (callback == null)
+        callback = DEFAULT_RESULT_CALLBACK;
+    final ResultCallback resCallBack = callback;
+    // UI thread
+    callback.onBefore(request);
+    mOkHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(final Request request, final IOException e) {
+                sendFailedStringCallback(request, e, resCallBack);
+            }
+            @Override
+            public void onResponse(final Response response) {
+                try {
+                    final String responseMessage=response.message();
+                    final String responseBody = response.body().string();
+                    if(response.code()==200){
+                        if (resCallBack.mType == String.class) {
+                            sendSuccessResultCallback(responseBody, resCallBack);
+                        } else {
+                            Object o = mGson.fromJson(responseBody, resCallBack.mType);
+                            sendSuccessResultCallback(o, resCallBack);
+                        }
+                    }else{
+                        Exception exception=new Exception(response.code()+":"+responseMessage);
+                        sendFailedStringCallback(response.request(), exception, resCallBack);
+                    }
+                } catch (IOException e) {
+                    sendFailedStringCallback(response.request(), e, resCallBack);
+                } catch (com.google.gson.JsonParseException e) {//Json解析的错误
+                    sendFailedStringCallback(response.request(), e, resCallBack);
+                }
+            }
+        });
+}
+\end{minted}
+\begin{itemize}
+\item 可以看到，这个方法主要是发出请求并对请求后的数据开始回调，这样我们就基本上封装好了一个post方法了  ，把代码这一部分的代码贴出来看看
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class OkHttpClientManager {
+    private static final String TAG = "com.qianmo.httprequest.http.OkHttpClientManager";
+ 
+    private static OkHttpClientManager mInstance;
+    public static OkHttpClientManager getInstance() {
+        if (mInstance == null) {
+            synchronized (OkHttpClientManager.class) {
+                if (mInstance == null) 
+                    mInstance = new OkHttpClientManager();
+            }
+        }
+        return mInstance;
+    }
+
+    // 默认的请求回调类
+    private final ResultCallback<String> DEFAULT_RESULT_CALLBACK = new ResultCallback<String>(){
+        @Override
+        public void onError(Request request, Exception e) {}
+        @Override
+        public void onResponse(String response) {}
+    };
+
+    private OkHttpClient mOkHttpClient;
+    private Handler mDelivery;
+    private Gson mGson;
+    private GetDelegate mGetDelegate = new GetDelegate();
+    private PostDelegate mPostDelegate = new PostDelegate();
+    private DownloadDelegate mDownloadDelegate = new DownloadDelegate();
+ 
+    private OkHttpClientManager() {
+        mOkHttpClient = new OkHttpClient();
+        mOkHttpClient.setConnectTimeout(10, TimeUnit.SECONDS);
+        mOkHttpClient.setWriteTimeout(10, TimeUnit.SECONDS);
+        mOkHttpClient.setReadTimeout(30, TimeUnit.SECONDS);
+        // cookie enabled
+        mOkHttpClient.setCookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER));
+        mDelivery = new Handler(Looper.getMainLooper());
+        mGson = new Gson();
+    }
+ 
+    /**
+     * 外部可调用的Post异步请求方法
+     * @param url 请求url
+     * @param params
+     * @param callback 请求完成后回调类
+     */
+    public static void postAsyn(String url, Map<String, String> params, final ResultCallback callback) {
+        getInstance().getPostDelegate().postAsyn(url, params, callback, null);
+    }
+ 
+    /**
+     * 异步的post请求
+     * @param url
+     * @param params
+     * @param callback
+     * @param tag
+     */
+    public void postAsyn(String url, Map<String, String> params, final ResultCallback callback, Object tag) {
+        Param[] paramsArr = map2Params(params);
+        postAsyn(url, paramsArr, callback, tag);
+    }
+    /**
+     * 通用基础的异步的post请求
+     * @param url
+     * @param callback
+     * @param tag
+     */
+    public void postAsyn(String url, Param[] params, final ResultCallback callback, Object tag) {
+        Request request = buildPostFormRequest(url, params, tag);
+        deliveryResult(callback, request);
+    }
+     
+    /**
+     * 请求回调处理方法并传递返回值
+     * @param callback Map类型请求参数
+     * @param request Request请求
+     */
+    private void deliveryResult(ResultCallback callback, Request request) {
+        if (callback == null)
+            callback = DEFAULT_RESULT_CALLBACK;
+        final ResultCallback resCallBack = callback;
+        // UI thread
+        callback.onBefore(request);
+        mOkHttpClient.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(final Request request, final IOException e) {
+                    sendFailedStringCallback(request, e, resCallBack);
+                }
+                @Override
+                public void onResponse(final Response response) {
+                    try {
+                        final String responseMessage=response.message();
+                        final String responseBody = response.body().string();
+                        if (response.code()==200){
+                            if (resCallBack.mType == String.class) {
+                                sendSuccessResultCallback(responseBody, resCallBack);
+                            } else {
+                                Object o = mGson.fromJson(responseBody, resCallBack.mType);
+                                sendSuccessResultCallback(o, resCallBack);
+                            }
+                        } else{
+                            Exception exception=new Exception(response.code()+":"+responseMessage);
+                            sendFailedStringCallback(response.request(), exception, resCallBack);
+                        }
+                    } catch (IOException e) {
+                        sendFailedStringCallback(response.request(), e, resCallBack);
+                    } catch (com.google.gson.JsonParseException e) {// Json解析的错误
+                        sendFailedStringCallback(response.request(), e, resCallBack);
+                    }
+                }
+            });
+    }
+    /**
+     * 处理请求成功的回调信息方法
+     * @param object 服务器响应信息
+     * @param callback 回调类
+     */
+    private void sendSuccessResultCallback(final Object object, final      ResultCallback callback) {
+        mDelivery.post(() -> {
+                callback.onResponse(object);
+                callback.onAfter();
+            });
+    }
+}
+\end{minted}
+
+\section{Retrofit}
+\label{sec-4}
+\begin{itemize}
+\item 首先来了解下Retrofit是什么，在官网中对于Retrofit的描述是这样的：
+\begin{itemize}
+\item A type-safe HTTP client for Android and Java.
+\item 适用于Android和Java的类型安全的HTTP客户端。
+\item 可以理解成一个封装好的网络请求库。
+\end{itemize}
+\end{itemize}
+\section{RxJava线程调度}
+\label{sec-5}
+\begin{itemize}
+\item 在RxJava中，我们可以自行指定事件产生和事件消费的线程，可以通过RxJava中的Scheduler来实现。 Scheduler
+\end{itemize}
+\subsection{RxJava内置的5个Scheduler}
+\label{sec-5-1}
+\begin{itemize}
+\item Schedulers. \textbf{immediate()}: 直接在当前线程运行，相当于不指定线程。这是默认的 Scheduler，但是为了防止被错误使用，在RxJava2中已经被移除了。
+\item Schedulers. \textbf{newThread()}: 开启新线程，并在新线程执行操作。
+\item Schedulers. \textbf{io()}: I/O 操作（ \textbf{读写文件、读写数据库、网络信息交互等} ）所使用的 Scheduler。行为模式和 newThread() 差不多，区别在于 io() 的内部实现是是用一个无数量上限的线程池，可以重用空闲的线程，因此 \textbf{多数情况下 io() 比 newThread() 更有效率。不要把计算工作放在 io() 中，可以避免创建不必要的线程。}
+\item Schedulers. \textbf{computation()}: 计算所使用的 Scheduler，例如图形的计算。这个 Scheduler 使用的固定的线程池，大小为 CPU 核数。不要把 I/O 操作放在 computation() 中，否则 I/O 操作的等待时间会浪费 CPU。
+\item Schedulers. \textbf{trampoline()}:主要用于延迟工作任务的执行。当我们想在当前线程执行一个任务时，但并不是立即，我们可以用.trampoline()将它入队，trampoline将会处理它的队列并且按序运行队列中每一个任务。
+\item Android特有的Scheduler
+\begin{itemize}
+\item AndroidSchedulers. \textbf{mainThread()}:指定的操作将在Android的主线程中进行，如UI界面的更新操作。
+\end{itemize}
+\end{itemize}
+\subsection{线程的控制}
+\label{sec-5-2}
+\begin{itemize}
+\item \textbf{subscribeOn():指定事件产生的线程} ，例如subscribeOn(Schedulers.io())可以指定被观察者的网络请求、文件读写等操作放置在io线程。
+\item \textbf{observeOn():指定事件消费的线程} ，例如observeOn(AndroidSchedulers.mainThread())指定Subscriber中的方法在主线程中运行。
+\item 在subscribe()之前写上两句subscribeOn(Scheduler.io())和observeOn(AndroidSchedulers.mainThread())的使用方式非常常见，它适用于多数的 <后台线程取数据，主线程显示> 的程序策略。
+\end{itemize}
+\section{room 数据库相关的部分: 几个相关可以用作参考的例子}
+\label{sec-6}
+\subsection{另一个更好的参考例子： dagger + RecyclerView 和相应的 Adapters + BufferKnife View auto-injections}
+\label{sec-6-1}
 \begin{itemize}
 \item \url{https://github.com/SpikeKing/wcl-rx-cache-demo}
 \item 这个 \textbf{设计思路可能显得相对过时了一点儿，四年前的仓库} ，应该还有很多更好的设计与实现，但仍然是一个非常值得自己参考与学习的仓库
@@ -299,7 +732,7 @@ CacheManager.setCacheModel(CacheMode.READ_CACHE_NETWORK_PUT)// 设置全局缓�
 \item 这里网络数据的刷新与获取是在activity 的 onResume()里自动刷新并更新UI数据，MVVM用了吗分工明确了吗？仍然感觉不是很好
 \end{itemize}
 \subsection{ApiModule.java}
-\label{sec-3-2}
+\label{sec-6-2}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 /**
  * 模块
@@ -328,7 +761,7 @@ public class ApiModule {
 }
 \end{minted}
 \subsection{ApiComponent.java}
-\label{sec-3-3}
+\label{sec-6-3}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 /**
  * 组件
@@ -340,7 +773,7 @@ public interface ApiComponent {
 }
 \end{minted}
 \subsection{NocacheActivity extends Activity}
-\label{sec-3-4}
+\label{sec-6-4}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 /**
  * 无缓存Activity
@@ -384,15 +817,15 @@ public class NocacheActivity extends Activity {
 }
 \end{minted}
 \subsection{这里有个小例子： \url{https://github.com/Tom1881/Jet-pack/tree/master/app}}
-\label{sec-3-5}
+\label{sec-6-5}
 \begin{itemize}
 \item 但是我感觉上面的例子中，关于MVVM中的M, V, VM的分工逻辑处理得不好，dao不应该出现在view (activity/fragment)中，应该是在ViewModel或是Model中，应用是在数据的管理中， 而不是View/Ui中。
 \end{itemize}
 
 \section{Glide的缓存分为两种，Resource缓存、Bitmap缓存。}
-\label{sec-4}
+\label{sec-7}
 \subsection{一、Resource缓存：}
-\label{sec-4-1}
+\label{sec-7-1}
 \begin{itemize}
 \item 首先Resource缓存就是缓存整体的图片资源文件，缓存它是为了当首次从服务器端下载下来之后，缓存到本地，如果再次使用这个图片，不用去跑网络请求，直接从本地读取，节省流量也提高访问速度。它使用的是三级缓存原理：
 \begin{itemize}
@@ -403,7 +836,7 @@ public class NocacheActivity extends Activity {
 \item 1和2都是内存缓存，只不过功能不一样，1是使用LRU算法缓存被GC回收的资源，2是用弱引用缓存正在使用的资源。在复用图片资源的时候首先从回收的内存缓存集合中查找，内存缓存的集合中没有的时候，去弱引用集合查找是否是当前正在使用，没有的话，去磁盘中查找，再没有的时候去网络中查找。
 \end{itemize}
 \subsection{二、Bitmap缓存：Bitmap所占的内存大小由其三部分组成：图片宽，高和Bitmap质量参数。}
-\label{sec-4-2}
+\label{sec-7-2}
 \begin{itemize}
 \item bitmap内存大小 = 宽*高*质量参数所占的位数，单位是字节b
 \begin{itemize}
@@ -417,7 +850,7 @@ public class NocacheActivity extends Activity {
 \item Bitmap的缓存是以键值对的方式进行缓存的，Resource和Bitmap都作为Value，而这些值是需要一个key来标识缓存的内容，根据key可以查找和移除对应的缓存。
 \end{itemize}
 \section{下载图片并保存到本地： rxjava 2.x+retrofit 通过动态url保存网络图片到本地}
-\label{sec-5}
+\label{sec-8}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // HttpManager 类：就是一个通过单例模式实现的类，获取retrofit的一个实例来调用NetApi接口内声明的方法，此处只写关键的一部分，别的相信你们都会
 public <T> T getHttpApi(Class<T> service) {
@@ -523,7 +956,7 @@ mPresenter.downloadFile("https://www.baidu.com/img/superlogo_c4d7df0a003d3db9b65
 \end{minted}
 
 \section{关于图片的处理：不仅要下载，下载后还需要自动保存到数据库}
-\label{sec-6}
+\label{sec-9}
 \begin{itemize}
 \item \url{https://blog.csdn.net/ANDROID_WangWeiDa/article/details/62284675}
 \item 主要源码参考如下：
@@ -658,7 +1091,7 @@ protected void onCreate(Bundle savedInstanceState) {
 \end{minted}
 
 \section{用Retrofit+Rxjava上传图片支持多张图片的上传}
-\label{sec-7}
+\label{sec-10}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
 // 1.这是一个接口
 @POST
