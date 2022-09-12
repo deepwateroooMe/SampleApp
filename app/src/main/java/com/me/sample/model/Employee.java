@@ -1,11 +1,14 @@
 package com.me.sample.model;
 
+import android.util.Log;
+
 import javax.annotation.Generated;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 @Generated("jsonschema2pojo")
 public class Employee {
+    private final String TAG = "Employee"; 
 
     @SerializedName("uuid")
     @Expose
@@ -42,6 +45,16 @@ public class Employee {
     @SerializedName("employee_type")
     @Expose
     private String employeeType;
+
+    // @Override
+    // public String toString() {
+    //     Log.d(TAG, "uuid: " + uuid);
+    //     Log.d(TAG, "fullName: " + fullName);
+    //     Log.d(TAG, "emailAddress: " + emailAddress);
+    //     Log.d(TAG, "team: " + team);
+    //     Log.d(TAG, "employeeType: " + employeeType);
+    //     return "";
+    // }
 
     public String getUuid() {
         return uuid;

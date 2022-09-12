@@ -3,23 +3,31 @@
 #+author: deepwaterooo 
 
 * 要求
-- Overview
-  - Build an *employee directory app* that shows a list of employees from the provided endpoint.
-  - The app should display a list (or any kind of *collection view*!) which shows all the employees returned from the JSON endpoint described below. 
-  - Each item in the view should contain a *summary of the employee*, including their *photo, name, and team* at minimum. You may add more information to the summary if you want, or *sort employees in any fashion* you’d like – sort and group by name, team, etc.
-  - There should be some UX to reload the employee list from within the app at any time. The UX can be done in any way you want: *a button, pull-to-refresh*, etc.
-  - If there is any additional UI/UX you would like to add, feel free to do so! We only ask that you please *do not build any more screens* than this list. Do not worry about building custom controls or UI elements – using *system-provided, standard elements* is totally fine.
-  - Be sure to *appropriately handle the normal variety of errors when querying an endpoint*. The app should *display useful loading, empty, and error states* where appropriate. *If images fail to load, displaying a placeholder* is fine.
-  - One extra thing we ask is that you please ensure you *do not use more network bandwidth than necessary* – *load expensive resources such as photos on-demand only*.
-  - The *employee list should not be persisted to disk*. You can reload it from the network *on each app launch and when refresh is requested* — but no more often than that unintentionally. (Android developers in particular should take care *not to make redundant network calls* when the *phone is rotated, or when memory is low*).
-  - *Images*, however, should *be cached on disk* so as to not waste device bandwidth. You may use an *open source image caching solution*, or write your own caching. Do not rely upon HTTP caching for image caching.
-  - Note that photos at a given URL will never change. Once one is loaded, you do not need to reload the photo. If an employee’s photo changes, they will be given a new photo URL.
-  - Tests should be provided for the app. We do not expect 100% code coverage, so please use your best judgment for what should be tested. We’re also interested only in unit tests. Feel free to skip snapshot or app tests.
+- Build an *employee directory app* that shows a list of employees from the provided endpoint.
+- The app should display a list (or any kind of *collection view*!) which shows all the employees returned from the JSON endpoint described below. 
+- Each item in the view should contain a *summary of the employee*, including their *photo, name, and team* at minimum. You may add more information to the summary if you want, or *sort employees in any fashion* you’d like – sort and group by name, team, etc.
+  - 这个很好实现：加一个ListView的下拉列表框以提供可选择的排序标准；因为是MVVM设计，由数据来驱动UI,用户选择排序后，只需要操作viewModel里的链表按标准排序，并刷新UI就可以了，因为简单，不作这个项目的重点。
+- There should be some UX to reload the employee list from within the app at any time. The UX can be done in any way you want: *a button, pull-to-refresh*, etc.
+- If there is any additional UI/UX you would like to add, feel free to do so! We only ask that you please *do not build any more screens* than this list. Do not worry about building custom controls or UI elements – using *system-provided, standard elements* is totally fine.
+- Be sure to *appropriately handle the normal variety of errors when querying an endpoint*. The app should *display useful loading, empty, and error states* where appropriate. *If images fail to load, displaying a placeholder* is fine.
+  - *网络请求的异常处理* ：这个我想要把它作为项目的重中之重来处理
+- One extra thing we ask is that you please ensure you *do not use more network bandwidth than necessary* – *load expensive resources such as photos on-demand only*.
+  - *网络请求处理* ：在且仅在必要的时候网络请求
+- The *employee list should not be persisted to disk*. You can reload it from the network *on each app launch and when refresh is requested* — but no more often than that unintentionally. 
+- Android developers in particular should take care *not to make redundant network calls* when the *phone is rotated, or when memory is low*.
+  - 旋转手机屏的时候，或手机内存低的时候，不能重新申请网络请求。就是 *转手机屏的时候，activity不能重建* ，只更改视图就可以了；低内存的情况需要自己再考虑一下
+- *Images*, however, should *be cached on disk* so as to not waste device bandwidth. You may use an *open source image caching solution*, or write your own caching. Do not rely upon HTTP caching for image caching.
+  - 我不担心这个，觉得Glide已经最大限度地优化了这个整个过程。只需要选对这个库就可以了
+- Note that photos at a given URL will never change. Once one is loaded, you do not need to reload the photo. If an employee’s photo changes, they will be given a new photo URL.
+  - *不懂这句话说的是什么意思，有什么影响？*
+- *Tests should be provided for the app*. We do not expect 100% code coverage, so please use your best judgment for what should be tested. We’re also interested only in *unit tests*. Feel free to skip snapshot or app tests.
+  - 不喜欢测试，但是这里可能 *需要加一两个测试用例*
 - MVVM: 需要数据驱动，viewModel里定义一个状态变量，来标记当前的活动状态
-  - If any employee is malformed, it is fine to invalidate the entire list of employees in the response - there is no need to exclude only malformed employees.
-  - If there are no employees to show, the app should present an *empty state* view instead of an empty list. 
+- If any employee is malformed, it is fine to invalidate the entire list of employees in the response - there is no need to exclude only malformed employees.
+- If there are no employees to show, the app should present an *empty state* view instead of an empty list. 
 * 主要思路
 - 现在终于改掉了自己网址写错的小bug了，可以再往前迈进一步，深入深解拦截器与OkHttp底层的原理了。。。
+- 顺着这个例子https://github.com/xitu/gold-miner/blob/master/TODO/getting-started-with-retrofit.md 把进阶的部分看完，弄懂
 - 终于找到了先前 *今年二三月份参考过的一个很好的案例日志序列* ： MVVM https://blog.csdn.net/qq_38436214/category_11482619.html?spm=1001.2014.3001.5482
   - 里面有十几篇博文都作了最新的更新，上次自己那个项目，可能就只工作笔记本上还有一个版本吧，其它的两台电脑我都找过了没有了
   - 今天刚到家，只休息了三个小时，脑袋昏昏的，会明天后天再花两三天的时间在这个项目上，把它实现完，理解得再深入透彻一点儿
@@ -1484,3 +1492,16 @@ protected void onActivityResult(int requestCode, int resultCode, @Nullable Inten
 }
   #+END_SRC 
 
+* 其它相对比较有参考价值的链接
+- https://blog.51cto.com/u_15456329/4799618
+
+* Library Hours
+1. 34007 Alvarado-Niles Rd, *Union City*, CA 94587 (4.3 miles)
+2. 37055 Newark Blvd, *Newark*, CA 94560 (5-7 miles)
+3. 2400 Stevenson Blvd, *Fremont*, CA 94538 (太远了)
+|---+--------+---------+----------+------------+----------+----------+------------|
+|   | Sunday | Monday  | Tuesday  | Wednesday  | Thursday | Friday   | Saturday   |
+|---+--------+---------+----------+------------+----------+----------+------------|
+| 1 | Closed | *2–8PM* | 10AM–6PM | *10AM–6PM* | *2–8PM*  | *2–6PM*  | *10AM–5PM* |
+| 2 | Closed | 12–8PM  | *12–8PM* | 10AM–6PM   | 10AM-6PM | Closed   | 10AM–5PM   |
+| 3 | 1–5PM  | 12–8PM  | 12–8PM   | 11AM–6PM   | 11AM–6PM | 10AM–5PM | 10AM–5PM   |

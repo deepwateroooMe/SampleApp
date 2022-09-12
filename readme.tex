@@ -1,4 +1,4 @@
-% Created 2022-09-11 Sun 16:05
+% Created 2022-09-11 Sun 20:33
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -59,6 +59,8 @@
 \section{主要思路}
 \label{sec-2}
 \begin{itemize}
+\item 现在终于改掉了自己网址写错的小bug了，可以再往前迈进一步，深入深解拦截器与OkHttp底层的原理了。。。
+\item 顺着这个例子\url{https://github.com/xitu/gold-miner/blob/master/TODO/getting-started-with-retrofit.md} 把进阶的部分看完，弄懂
 \item 终于找到了先前 \textbf{今年二三月份参考过的一个很好的案例日志序列} ： MVVM \url{https://blog.csdn.net/qq_38436214/category_11482619.html?spm=1001.2014.3001.5482}
 \begin{itemize}
 \item 里面有十几篇博文都作了最新的更新，上次自己那个项目，可能就只工作笔记本上还有一个版本吧，其它的两台电脑我都找过了没有了
@@ -74,6 +76,11 @@
 \end{itemize}
 \item \textbf{网络数据解析} ：我这里得到了网络数据，可是好像我并没有解析数据出来，这整个过程我可能还少了这比较关键的一个步骤
 \begin{itemize}
+\item 当对这类框架和OOP设计有了更好的了解，就可以自定义解析类来在获得数据前自动解析为自己想要的类型
+\begin{itemize}
+\item 注意这里提供的API其实并没有code msg之类的信息，而是直接的结果；再想一下：为什么OkHttp的拦截器能够得到code 200呢？这里Response返回基本信息还有点儿糊涂
+\item 可以参考这个例子： \url{https://developer.aliyun.com/article/609862}
+\end{itemize}
 \item 需要一个如下的步骤来解析从网络上拿到返回回来的数据
 \end{itemize}
 \end{itemize}
@@ -1628,5 +1635,23 @@ protected void onActivityResult(int requestCode, int resultCode, @Nullable Inten
     }
 }
 \end{minted}
+
+\section{Library Hours}
+\label{sec-12}
+\begin{enumerate}
+\item 34007 Alvarado-Niles Rd, \textbf{Union City}, CA 94587 (4.3 miles)
+\item 37055 Newark Blvd, \textbf{Newark}, CA 94560 (5-7 miles)
+\item 2400 Stevenson Blvd, \textbf{Fremont}, CA 94538 (太远了)
+\end{enumerate}
+\begin{center}
+\begin{tabular}{rlllllll}
+\hline
+ & Sunday & Monday & Tuesday & Wednesday & Thursday & Friday & Saturday\\
+\hline
+1 & Closed & \textbf{2–8PM} & 10AM–6PM & \textbf{10AM–6PM} & \textbf{2–8PM} & \textbf{2–6PM} & \textbf{10AM–5PM}\\
+2 & Closed & 12–8PM & \textbf{12–8PM} & 10AM–6PM & 10AM-6PM & Closed & 10AM–5PM\\
+3 & 1–5PM & 12–8PM & 12–8PM & 11AM–6PM & 11AM–6PM & 10AM–5PM & 10AM–5PM\\
+\end{tabular}
+\end{center}
 % Emacs 27.1 (Org mode 8.2.7c)
 \end{document}

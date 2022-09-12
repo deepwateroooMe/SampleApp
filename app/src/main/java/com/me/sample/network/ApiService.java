@@ -17,7 +17,8 @@ public interface ApiService {
 // https://s3.amazonaws.com/sq-mobile-interview/employees_malformed.json
 // https://s3.amazonaws.com/sq-mobile-interview/employees_empty.json
 
-    @GET("/sq-mobile-interview/employees.json")
+    // @GET("/sq-mobile-interview/employees.json")
     // @GET("/sq-mobile-interview/employees_malformed.json")
-    Observable<EmployeeResponse> getEmployees();
+    @GET("/sq-mobile-interview/employees_empty.json")
+    Observable<EmployeeResponse> getEmployees(); 
 } 

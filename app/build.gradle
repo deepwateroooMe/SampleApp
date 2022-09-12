@@ -43,6 +43,9 @@ dependencies {
     implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha02'
     annotationProcessor 'androidx.hilt:hilt-compiler:1.0.0-alpha02'
 
+    // Androidx CardView
+    implementation "androidx.cardview:cardview:1.0.0"
+
     // Support Design for Coordinator layout
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
 
