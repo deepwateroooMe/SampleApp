@@ -19,6 +19,5 @@ public interface ApiService {
 
     @GET("/sq-mobile-interview/employees.json")
     // @GET("/sq-mobile-interview/employees_malformed.json")
-    // @GET("/sq-mobile-interview/employees.json")
     Observable<EmployeeResponse> getEmployees();
 } 

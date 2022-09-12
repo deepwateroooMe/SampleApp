@@ -28,6 +28,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.http.HEAD;
 
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity {
@@ -48,23 +49,22 @@ public class MainActivity extends BaseActivity {
 
 // OkHttp Call for fetching data
         mMainActivityViewModel.getEmployees();
-        
+
 // 应该是不需要每次都重新设置viewModel，也不需要每次都重启RecyclerView
         // 返回数据时更新ViewModel，ViewModel更新则xml更新 ???
         dataBinding.setViewModel(mMainActivityViewModel);
         initRecyclerView(); 
 // 感觉这里每次都New 一个新的 RecyclerAdapter也不是很好，暂时用不优雅的公用API的方式重置数据               
         mAdapter = new RecyclerAdapter(new ArrayList<Employee>(0));
+        // dataBinding.rv.setAdapter(new RecyclerAdapter(empListResponse.getEmployees()));
         dataBinding.rv.setAdapter(mAdapter);
         dataBinding.rv.setHasFixedSize(true);
 
         mMainActivityViewModel.mEmpList.observe(this, empListResponse -> {
-                // dataBinding.rv.setAdapter(new RecyclerAdapter(empListResponse.getEmployees()));
                 mAdapter.updateEmpList(empListResponse.getEmployees());
-
 //                dataBinding.pb.setVisibility(INVISIBLE);
             });
-
+        
         mMainActivityViewModel.failed.observe(this, failed -> dismissLoading());
 
         dataBinding.fab.setOnClickListener(new View.OnClickListener() {
