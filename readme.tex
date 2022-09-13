@@ -1,4 +1,4 @@
-% Created 2022-09-12 Mon 22:16
+% Created 2022-09-13 Tue 09:40
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -126,7 +126,6 @@
 \end{itemize}
 \end{itemize}
 \item 应用的 \textbf{启动优化} ：重中之重，需要借助这个小应用弄懂弄清楚， \textbf{不知道如何拆解网络请求的步骤,什么时候加载，初始化之类的？} 以达到较好的启动优化
-\item 
 \item \textbf{MVVM设计} ：只有一个页面，相对就简单方便多了。工作中的案例是使用MVVM但自己编辑逻辑处理信号下发，与数据驱动的UI更新，没有实现双向数据绑定的；可是这里感觉 \textbf{双向数据绑定} 更简单，会有哪些可能的问题呢？这里基本可以当作不需要双向，因为一个UI按钮要求刷新是唯一的UI需求；更多的只是需要时候的数据往UI加载更新；所以 \textbf{可以简单使用观察者模式，UI观察数据的变化} 就可以了
 \item \textbf{图片的加载与处理} ：用样可以使用么第三方库 \textbf{glide}
 \item \textbf{图片的加载与处理} ：用样可以使用么第三方库 \textbf{CircularImageView}
@@ -1263,7 +1262,16 @@ protected void onActivityResult(int requestCode, int resultCode, @Nullable Inten
 \item 屏幕旋转、键盘可用性改变、 语言改变都可以归结为第二种情况；
 \begin{itemize}
 \item 值得一提的是，如果需要模拟这种情况的Activity销毁，可以打开开发者选项，选择不保留活动（英文为Do not keep activities），即可模拟内存不足时的系统行为。
+\item 如何模仿Android系统在内存紧张的情况下把我的activity给kill掉了呢？
+\begin{itemize}
+\item 虽然上面用到的横竖屏切换 可以解决“不是用户主动调用的情况下，进程destory了”，但是我还是想解决这个问题
+\item ①开个模拟器，内存给小点（比较lower）
+\item ②adb shell am kill 包名（注意：一定要将当前进程弄后台后，再运行命令）
+\item adb（Android Debug Bridge），am（Android Manege）有什么命令我一并贴过来
+\item \url{http://blog.csdn.net/soslinken/article/details/50245865}
 \end{itemize}
+\end{itemize}
+\item 原文链接：\url{https://blog.csdn.net/yyd_Diablo/article/details/53489840}
 \item 总结下， \textbf{onSaveInstanceState} (Bundle outState)会在以下情况被调用：
 \begin{itemize}
 \item 1、当用户按下HOME键时。
@@ -1727,7 +1735,34 @@ public class OkHttpClientManager {
 
 \section{转屏等几种情况下activity的销毁与否，销毁与重建，数据保存}
 \label{sec-14}
+\subsection{activity 被系统超脱用户期望被销毁时数据的保存与恢复}
+\label{sec-14-1}
 \begin{itemize}
+\item 缺省状态下， \textbf{系统会把每一个View对象保存起来（比如EditText对象中的文本，ListView中的滚动条位置等），} 即如果activity实例被销毁和重建，那么不需要你编码，layout状态会恢复到前次状态。
+\item 默认的实现中存储了activity的view系列的状态，比如文本和滚动条位置等。要存储额外的信息，必须自己实现onSaveInstanceState()，并且给Bundle object加上键值对。
+\item 但是如果你的activity需要恢复更多的信息，比如成员变量信息，则需要自己动手写了
+\item ListView RecyclerView位点数据的保存与恢复(当前选择或是活动位点index position)
+\item List<Object> 的保存：数据库
+\end{itemize}
+
+\subsection{对图片的保存}
+\label{sec-14-2}
+\begin{itemize}
+\item \url{https://blog.csdn.net/candy_rainbow/article/details/54381949?spm=1001.2101.3001.6661.1&utm_medium=distribute.pc_relevant_t0.none-task-blog-2\%7Edefault\%7ETopNSimilar\%7Edefault-1-54381949-blog-100525959.topnsimilarv1&depth_1-utm_source=distribute.pc_relevant_t0.none-task-blog-2\%7Edefault\%7ETopNSimilar\%7Edefault-1-54381949-blog-100525959.topnsimilarv1&utm_relevant_index=1}
+\item \textbf{onRetainNonConfigurationInstance()方法：}
+\item 这个方法也会在活动倍销毁钱调用，我是在做头像上传的时候遇到了这样的一个问题：每次选择好照片显示在Activity中的时候，如果横竖屏切换了，那么会重新加载布局，也就是说重新调用onCreate方法，之前的活动中的图片当然也就没有了.那么问题来了，如何保存已经加载好的图片呢，我使用的就是Activity提供的onRetainNonConfigurationInstance()方法，这个方法与getLastNonConfigurationInstance()（也是Activity提供的）是一起用的，我们可以重写这个方法对图片Uri进行保存：
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public Object onRetainNonConfigurationInstance() {
+    return imageUri;
+}
+\end{minted}
+然后，在onCreate方法里面通过getLastNonConfigurationInstance方法进行接收：
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+imageUri = (Uri)getLastNonConfigurationInstance();
+\end{minted}
+\begin{itemize}
+\item 接受到了之后，进行判断，如果是null则不加载图片，如果不是null，则直接加载
 \item 横竖屏切换时候activity的生命周期：这个就打印日志再验证一遍吧。。。。。
 \end{itemize}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{text}
@@ -1853,5 +1888,660 @@ call.enqueue(new Callback<PostInfo>() {
 \begin{itemize}
 \item \url{https://blog.51cto.com/u_15456329/4799618}
 \end{itemize}
+
+\section{Retrofit + RxJava 的进一步深入理解：一个详尽的封装讲解与归纳}
+\label{sec-18}
+\begin{itemize}
+\item 封装特点： 
+\begin{itemize}
+\item \url{https://blog.51cto.com/jun5753/4925616} 居然复制不下来，死破网太慢了。。。。。
+\end{itemize}
+\end{itemize}
+\subsection{BaseResponse就是对基础数据进行封装处理。}
+\label{sec-18-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{text}
+实现步骤：
+1、根据基础数据定义BaseResponse
+2、修改API接口返回数据类型
+3、对基础数据统一处理
+\end{minted}
+\subsubsection{1、根据基础数据定义BaseResponse}
+\label{sec-18-1-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class BaseResponse<T> {
+    private int res_code;
+    private String err_msg;
+    private T demo;
+    public int getRes_code() {
+        return res_code;
+    }
+    public void setRes_code(int res_code) {
+        this.res_code = res_code;
+    }
+    public String getErr_msg() {
+        return err_msg;
+    }
+    public void setErr_msg(String err_msg) {
+        this.err_msg = err_msg;
+    }
+    public T getDemo() {
+        return demo;
+    }
+    public void setDemo(T demo) {
+        this.demo = demo;
+    }
+}
+\end{minted}
+\begin{itemize}
+\item 当然我们需求数据也需重新定义
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class Demo {
+    @Override
+    public String toString() {
+        return "Demo{" + "id='" + id + '\'' +
+                ", appid='" + appid + '\'' +
+                ", name='" + name + '\'' +
+                ", showtype='" + showtype + '\'' +
+                '}';
+    }
+    private String id;
+    private String appid;
+    private String name;
+    private String showtype;
+    public String getId() {
+        return id;
+    }
+    public void setId(String id) {
+        this.id = id;
+    }
+    public String getAppid() {
+        return appid;
+    }
+    public void setAppid(String appid) {
+        this.appid = appid;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public String getShowtype() {
+        return showtype;
+    }
+    public void setShowtype(String showtype) {
+        this.showtype = showtype;
+    }
+}
+\end{minted}
+\subsubsection{2、修改API接口返回数据类型}
+\label{sec-18-1-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+// @GET(Constans.retrofit)
+// Observable<Bean> getRetrofit1();
+// 把原先的Bean类分成BaseResponse基础数据与Demo需求数据两个类
+@GET(Constans.retrofit)
+Observable<BaseResponse<Demo>> getRetrofit2();
+\end{minted}
+\subsubsection{3、对基础数据统一处理}
+\label{sec-18-1-3}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+/**
+ * 创建Base抽象类实现Observer
+ */
+public abstract class BaseObserver<T> implements Observer<BaseResponse<T>> {
+    private static final String TAG = "BaseObserver";
+    @Override
+    public void onSubscribe(Disposable d) {
+        Log.e(TAG, "onSubscribe: " );
+    }
+    @Override
+    public void onNext(BaseResponse<T> response) {
+        //在这边对 基础数据 进行统一处理  举个例子：
+        if(response.getRes_code()==200){
+            onSuccess(response.getDemo());
+        }else{
+            onFailure(null,response.getErr_msg());
+        }
+    }
+    @Override
+    public void onError(Throwable e) {
+        Log.e(TAG, "Throwable: " + e.getMessage());
+    }
+    @Override
+    public void onComplete() {
+        Log.e(TAG, "onComplete: " );
+    }
+    public abstract void onSuccess(T demo);
+    public abstract void onFailure(Throwable e,String errorMsg);
+}
+\end{minted}
+\subsubsection{请求网络数据}
+\label{sec-18-1-4}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+ retrofit.create(ApiUrl.class)
+                .getRetrofit2()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                // 绑定生命周期 // <<<<<<<<<<<<<<<<<<<< 
+                .compose(bindUntilEvent(ActivityEvent.DESTROY)) // <<<<<<<<<<<<<<<<<<<< 
+                .subscribe(new BaseObserver<Demo>(){
+                    @Override
+                    public void onSuccess(Demo demo) {
+                    }
+                    @Override
+                    public void onFailure(Throwable e, String errorMsg) {
+                    }
+                });
+// 打印结果： onSuccess: Demo{id='1001', appid='1021', name='sss', showtype='text'}
+\end{minted}
+\subsection{RxHelper调度类封装}
+\label{sec-18-2}
+\begin{itemize}
+\item RxHelper主要是对执行线程和绑定生命周期几个方法进行封装，
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+/**
+ * 调度类: 通过这个调度类封闭订阅线程IO与观察者线程主线程的全自动切换
+ */
+public class RxHelper {
+    public static <T> ObservableTransformer<T, T> observableIO2Main(final Context context) {
+        return upstream -> {
+            Observable<T> observable = upstream.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread());
+            return composeContext(context, observable);
+        };
+    }
+    public static <T> ObservableTransformer<T, T> observableIO2Main(final RxFragment fragment) {
+        return upstream -> upstream.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).compose(fragment.<T>bindToLifecycle());
+    }
+    public static <T> FlowableTransformer<T, T> flowableIO2Main() {
+        return upstream -> upstream
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+    private static <T> ObservableSource<T> composeContext(Context context, Observable<T> observable) {
+        if(context instanceof RxActivity) {
+            return observable.compose(((RxActivity) context).bindUntilEvent(ActivityEvent.DESTROY));
+        } else if(context instanceof RxFragmentActivity){
+            return observable.compose(((RxFragmentActivity) context).bindUntilEvent(ActivityEvent.DESTROY));
+        }else if(context instanceof RxAppCompatActivity){
+            return observable.compose(((RxAppCompatActivity) context).bindUntilEvent(ActivityEvent.DESTROY));
+        }else {
+            return observable;
+        }
+    }
+}
+\end{minted}
+\subsection{Retrofit初始化封装}
+\label{sec-18-3}
+\begin{itemize}
+\item 我们不可能每次要请求网络就重复去创建初始化Retrofit。所以我们需要对Retrofit进行单例封装。
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+import android.support.annotation.NonNull;
+import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import java.util.concurrent.TimeUnit;
+import okhttp3.OkHttpClient;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+/**
+ * Retrofit封装
+ */
+public class RetrofitUtils {
+    private static final String TAG = "RetrofitUtils";
+    private static ApiUrl mApiUrl;
+     // 单例模式
+    public static ApiUrl getApiUrl() {
+        if (mApiUrl == null) { // <<<<<<<<<<<<<<<<<<<< 
+            synchronized (RetrofitUtils.class) {
+                if (mApiUrl == null) // <<<<<<<<<<<<<<<<<<<< 
+                    mApiUrl = new RetrofitUtils().getRetrofit();
+            }
+        }
+        return mApiUrl;
+    }
+    private RetrofitUtils(){ }
+
+    public ApiUrl getRetrofit() {
+        // 初始化Retrofit
+        ApiUrl apiUrl = initRetrofit(initOkHttp()) .create(ApiUrl.class);
+        return apiUrl;
+    }
+     // 初始化Retrofit
+    @NonNull
+    private Retrofit initRetrofit(OkHttpClient client) {
+        return new Retrofit.Builder()
+            .client(client)
+            .baseUrl(Constans.BaseUrl)
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
+    }
+    // 初始化okhttp
+    @NonNull
+    private OkHttpClient initOkHttp() {
+        return new OkHttpClient().newBuilder()
+            .readTimeout(Constans.DEFAULT_TIME, TimeUnit.SECONDS)   // 设置读取超时时间
+            .connectTimeout(Constans.DEFAULT_TIME, TimeUnit.SECONDS)// 设置请求超时时间
+            .writeTimeout(Constans.DEFAULT_TIME,TimeUnit.SECONDS)   // 设置写入超时时间
+            .addInterceptor(new LogInterceptor()) // 添加打印拦截器
+            .retryOnConnectionFailure(true)       // 设置出现错误进行重新连接。
+            .build();
+    }
+}
+\end{minted}
+\subsection{细节完善}
+\label{sec-18-4}
+\subsubsection{1、服务错误信息处理}
+\label{sec-18-4-1}
+\begin{itemize}
+\item BaseObserver 对请求成功数进行了统一处理 ，但并未对服务器返回错误进行处理。
+\item 这里从某个大神Copy了个工具类RxExceptionUtils来对错误信息进行处理。
+\item 具体代码如下：
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+import org.json.JSONException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.text.ParseException;
+import retrofit2.HttpException;
+/**
+ * 异常处理
+ */
+public class RxExceptionUtil {
+    public static String exceptionHandler(Throwable e){
+        String errorMsg = "未知错误";
+        if (e instanceof UnknownHostException) {
+            errorMsg = "网络不可用";
+        } else if (e instanceof SocketTimeoutException) {
+            errorMsg = "请求网络超时";
+        } else if (e instanceof HttpException) {
+            HttpException httpException = (HttpException) e;
+            errorMsg = convertStatusCode(httpException);
+        } else if (e instanceof ParseException || e instanceof JSONException
+                   || e instanceof JSONException) {
+            errorMsg = "数据解析错误";
+        }
+        return errorMsg;
+    }
+    private static String convertStatusCode(HttpException httpException) {
+        String msg;
+        if (httpException.code() >= 500 && httpException.code() < 600) {
+            msg = "服务器处理请求出错";
+        } else if (httpException.code() >= 400 && httpException.code() < 500) {
+            msg = "服务器无法处理请求";
+        } else if (httpException.code() >= 300 && httpException.code() < 400) {
+            msg = "请求被重定向到其他页面";
+        } else {
+            msg = httpException.message();
+        }
+        return msg;
+    }
+}
+\end{minted}
+\subsubsection{2、添加“正在加载”弹窗}
+\label{sec-18-4-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.widget.Toast;
+import io.reactivex.disposables.Disposable;
+/**
+ * Observer加入加载框: 就是把加载框封装到抽象蕨类里去
+ * @param <T>
+ */
+public abstract class MyObserver<T> extends BaseObserver<T> {
+    private Context mContext;
+
+    private boolean mShowDialog;
+    private ProgressDialog dialog;
+    private Disposable d; // <<<<<<<<<<<<<<<<<<<< 这个需要再好好理解一下
+
+    public MyObserver(Context context, Boolean showDialog) {
+        mContext = context;
+        mShowDialog = showDialog;
+    }
+    public MyObserver(Context context) {
+        this(context,true);
+    }
+
+    @Override public void onSubscribe(Disposable d) {
+        this.d = d;
+        if (!isConnected(mContext)) {
+            Toast.makeText(mContext,"未连接网络",Toast.LENGTH_SHORT).show();
+            if (d.isDisposed())
+                d.dispose();
+        } else {
+            if (dialog == null && mShowDialog == true) {
+                dialog = new ProgressDialog(mContext);
+                dialog.setMessage("正在加载中");
+                dialog.show();
+            }
+        }
+    }
+    @Override public void onError(Throwable e) {
+        if (d.isDisposed()) 
+            d.dispose();
+        hidDialog();
+        super.onError(e);
+    }
+    @Override public void onComplete() {
+        if (d.isDisposed()) 
+            d.dispose();
+        hidDialog();
+        super.onComplete();
+    }
+    public void hidDialog() {
+        if (dialog != null && mShowDialog == true)
+            dialog.dismiss();
+        dialog = null;
+    }
+    /**
+     * 是否有网络连接，不管是wifi还是数据流量
+     * @param context
+     */
+    public static boolean isConnected(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        if (info == null) return false;
+        boolean available = info.isAvailable();
+        return available;
+    }
+}
+\end{minted}
+\subsubsection{3、Retorfit请求方法汇总}
+\label{sec-18-4-3}
+\begin{itemize}
+\item ApiUrl类
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+import io.reactivex.Observable;
+
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.DELETE;
+import retrofit2.http.Field;
+import retrofit2.http.FieldMap;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.Header;
+import retrofit2.http.HeaderMap;
+import retrofit2.http.Headers;
+import retrofit2.http.Multipart;
+import retrofit2.http.Part;
+import retrofit2.http.PartMap;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
+import retrofit2.http.QueryMap;
+import retrofit2.http.Streaming;
+import retrofit2.http.Url;
+
+public interface ApiUrl {
+
+    @GET(Constans.retrofit)
+    Call<Bean> getRetrofit();
+
+    @GET(Constans.retrofit)
+    Observable<BaseResponse<Demo>> getDemo();
+
+    /**
+     * TODO Get请求：带参数 和 不带参数
+     */
+    // 第一种方式：GET不带参数
+    @GET("retrofit.txt")
+    Observable<BaseResponse<Demo>> getUser();
+    @GET
+    Observable<Demo> getUser(@Url String url); 
+    @GET
+    Observable<Demo> getUser1(@Url String url); // 简洁方式，直接获取所需数据
+
+    // 第二种方式：GET带参数
+    @GET("api/data/{type}/{count}/{page}")
+    Observable<Demo> getUser(@Path("type") String type, @Path("count") int count, @Path("page") int page);
+    // 第三种方式：GET带请求参数：https://api.github.com/users/whatever?client_id=xxxx&client_secret=yyyy
+    @GET("users/whatever")
+    Observable<Demo> getUser(@Query("client_id") String id, @Query("client_secret") String secret);
+    @GET("users/whatever")
+    Observable<Demo> getUser(@QueryMap Map<String, String> info);
+
+     // TODO POST请求
+    // 第一种方式：@Body
+    @Headers("Accept:application/json")
+    @POST("login")
+    Observable<Demo> postUser(@Body RequestBody body);
+    // 第二种方式：@Field
+    @Headers("Accept:application/json")
+    @POST("auth/login")
+    @FormUrlEncoded
+    Observable<Demo> postUser(@Field("username") String username, @Field("password") String password);
+    // 多个参数
+    Observable<Demo> postUser(@FieldMap Map<String, String> map);
+
+     // TODO DELETE
+    @DELETE("member_follow_member/{id}")
+    Observable<Demo> delete(@Header("Authorization") String auth, @Path("id") int id);
+
+     // TODO PUT
+    @PUT("member")
+    Observable<Demo> put(@HeaderMap Map<String, String> headers,
+                         @Query("nickname") String nickname);
+
+     // TODO 文件上传
+    @Multipart
+    @POST("upload")
+    Observable<ResponseBody> upload(@Part("description") RequestBody description, @Part MultipartBody.Part file);
+
+    // 亲测可用
+    @Multipart
+    @POST("member/avatar")
+    Observable<Demo> uploadImage(@HeaderMap Map<String, String> headers, @Part MultipartBody.Part file);
+
+     // 多文件上传
+    @Multipart
+    @POST("register")
+    Observable<ResponseBody> upload(@PartMap Map<String, RequestBody> params, @Part("description") RequestBody description);
+    // Observable<ResponseBody> upload(@Part() List<MultipartBody.Part> parts);
+
+    @Multipart
+    @POST("member/avatar")
+    Observable<Demo> uploadImage1(@HeaderMap Map<String, String> headers, @Part List<MultipartBody.Part> file);
+
+     // 来自https://blog.csdn.net/impure/article/details/79658098
+     // @Streaming 这个注解必须添加，否则文件全部写入内存，文件过大会造成内存溢出
+    @Streaming
+    @GET
+    Observable<ResponseBody> download(@Header("RANGE") String start, @Url String url);
+}
+\end{minted}
+\subsubsection{4、提交参数方式汇总（可忽略）}
+\label{sec-18-4-4}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+/**
+ * 提交参数方式
+ */
+public class RequestUtils {
+
+    // Get 请求demo
+    // @param context
+    // @param observer
+    public static void getDemo(RxAppCompatActivity context, MyObserver<Demo> observer){
+        RetrofitUtils.getApiUrl()
+            .getDemo().compose(RxHelper.observableIO2Main(context))
+            .subscribe(observer);
+    }
+
+    // Post 请求demo
+    // @param context
+    // @param consumer
+    public static void postDemo(RxAppCompatActivity context, String name, String password, Observer<Demo> consumer){
+        RetrofitUtils.getApiUrl()
+            .postUser(name,password).compose(RxHelper.observableIO2Main(context))
+            .subscribe(consumer);
+    }
+
+    // Put 请求demo
+    // @param context
+    // @param consumer
+    public static void putDemo(RxFragment context, String access_token,Observer<Demo> consumer){
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("Accept","application/json");
+        headers.put("Authorization",access_token);
+        RetrofitUtils.getApiUrl()
+            .put(headers,"厦门").compose(RxHelper.observableIO2Main(context))
+            .subscribe(consumer);
+    }
+
+    // Delete 请求demo
+    // @param context
+    // @param consumer
+    public static void deleteDemo(RxFragment context, String access_token,Observer<Demo> consumer){
+        RetrofitUtils.getApiUrl()
+            .delete(access_token,1).compose(RxHelper.observableIO2Main(context))
+            .subscribe(consumer);
+    }
+
+    // 上传图片
+    // @param context
+    // @param observer
+    public static void upImagView(RxFragment context, String  access_token,String str, Observer<Demo>  observer){
+        File file = new File(str);
+//        File file = new File(imgPath);
+        Map<String,String> header = new HashMap<String, String>();
+        header.put("Accept","application/json");
+        header.put("Authorization",access_token);
+//        File file =new File(filePath);
+        RequestBody reqFile = RequestBody.create(MediaType.parse("image/*"), file);
+//        RequestBody requestFile =
+//                RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        MultipartBody.Part body =
+            MultipartBody.Part.createFormData("file", file.getName(), reqFile);
+        RetrofitUtils.getApiUrl().uploadImage(header,body).compose(RxHelper.observableIO2Main(context))
+            .subscribe(observer);
+    }
+
+    // 上传多张图片
+    // @param files
+    public static void upLoadImg(RxFragment context,String access_token,List<File> files, Observer<Demo>  observer1){
+        Map<String,String> header = new HashMap<String, String>();
+        header.put("Accept","application/json");
+        header.put("Authorization",access_token);
+        MultipartBody.Builder builder = new MultipartBody.Builder()
+            .setType(MultipartBody.FORM);//表单类型
+        for (int i = 0; i < files.size(); i++) {
+            File file = files.get(i);
+            RequestBody photoRequestBody = RequestBody.create(MediaType.parse("image/*"), file);
+            builder.addFormDataPart("file", file.getName(), photoRequestBody);
+        }
+        List<MultipartBody.Part> parts = builder.build().parts();
+        RetrofitUtils.getApiUrl().uploadImage1(header,parts).compose(RxHelper.observableIO2Main(context))
+            .subscribe(observer1);
+    }
+}
+\end{minted}
+\subsection{总结}
+\label{sec-18-5}
+\begin{itemize}
+\item 如若加上RequestUtils则代码中请求网络方式如下：
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+RequestUtils.getDemo(this, new MyObserver<Demo>(this) {
+    @Override
+    public void onSuccess(Demo result) {
+        tv_retrofit.setText(result.toString());
+    }
+    @Override
+    public void onFailure(Throwable e, String errorMsg) {
+        tv_retrofit.setText(errorMsg);
+    }
+});
+\end{minted}
+\begin{itemize}
+\item 若后台返回的Demo不是个对象 而是数组咋办 不用慌
+\item 其他相关的地方也要加上 List<>
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+RequestUtils.getDemoList(
+    this,
+    new MyObserver<List<Demo>>(this) {
+        @Override
+            public void onSuccess(List<Demo> result) {
+            for (Demo demo : result){
+                Log.e(TAG, "onSuccess: "+demo.toString() );
+            }
+            tv_retrofit.setText(result.toString());
+        }
+        @Override
+            public void onFailure(Throwable e, String errorMsg) {
+            tv_retrofit.setText(errorMsg);
+        }
+    });
+\end{minted}
+\begin{itemize}
+\item 附上Url链接:
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public final static  String BaseUrl = "http://120.78.186.81/api/";
+public final static  String retrofit = "values/5";
+public final static  String retrofitList = "values";
+\end{minted}
+\begin{itemize}
+\item 项目的GitHub地址： \url{https://github.com/DayorNight/RxjavaRetrofit2}
+\end{itemize}
+
+\subsection{RxJava 观察者模式，与公用接口回调类的设计实现}
+\label{sec-18-6}
+\section{RxJava: 防止Rxjava引发的内存泄漏: 需要把这部分理解清楚并整合到自己的项目中去}
+\label{sec-19}
+\begin{itemize}
+\item 当使用RxJava订阅并执行耗时任务后，当Activity被finish时，如果耗时任务还未完成，没有及时取消订阅，就会导致Activity无法被回收，从而引发内存泄漏。为了解决这个问题，就产生了RxLifecycle，让RxJava变得有生命周期感知，使得其能及时取消订阅，避免出现内存泄漏问题。
+\end{itemize}
+\subsection{（1）添加依赖}
+\label{sec-19-1}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{gradle}
+    implementation 'com.trello.rxlifecycle2:rxlifecycle-components:2.1.0'
+\end{minted}
+\subsection{（2）基本使用}
+\label{sec-19-2}
+\begin{itemize}
+\item Activity 需继承自 RxAppCompatActivity 或 RxFragmentActivity 或 RxActivity
+\item Fragment 需继承  RxFragment
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+retrofit.create(ApiUrl.class)
+    .getRetrofit1()
+    .subscribeOn(Schedulers.io())
+    .observeOn(AndroidSchedulers.mainThread())
+    // 绑定生命周期
+.compose(bindUntilEvent(ActivityEvent.DESTROY)) // <<<<<<<<<<<<<<<<<<<< 
+.subscribe(new Observer<Bean>() {
+        @Override
+            public void onSubscribe(Disposable d) {
+            Log.e(TAG, "onSubscribe: " );
+        }
+        @Override
+            public void onNext(Bean demo) {
+            Log.e(TAG, "onNext: " +demo.toString());
+        }
+        @Override
+            public void onError(Throwable e) {
+            Log.e(TAG, "Throwable: " + e.getMessage());
+        }
+        @Override
+            public void onComplete() {
+            Log.e(TAG, "onComplete: " );
+        }
+    });
+\end{minted}
 % Emacs 27.1 (Org mode 8.2.7c)
 \end{document}

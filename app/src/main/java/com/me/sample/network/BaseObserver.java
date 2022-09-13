@@ -11,6 +11,8 @@ import io.reactivex.disposables.Disposable;
  * 自定义Observer: 自定义一个BaseObserver类，继承自rxjava的Observer
  * @author llw
  */
+// 这里使用的是订阅观察者模式；
+// 其它比较传统或是死板一点儿的也可以用接口监听回调的方式，就是通过实现公用接口类的方式把结果一个一个串连起来返回给感兴趣的注册过的监听者
 public abstract class BaseObserver<T> implements Observer<T> {
 
     // 开始

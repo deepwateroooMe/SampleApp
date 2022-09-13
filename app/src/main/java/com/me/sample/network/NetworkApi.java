@@ -1,11 +1,15 @@
 package com.me.sample.network;
 
+import static com.trello.rxlifecycle2.RxLifecycle.bindUntilEvent;
+
 import android.util.Log;
 
 import com.me.sample.network.errorhandler.ExceptionHandle;
 import com.me.sample.network.errorhandler.HttpErrorHandler;
 import com.me.sample.network.interceptor.RequestInterceptor;
 import com.me.sample.network.interceptor.ResponseInterceptor;
+import com.me.sample.utils.Constant;
+import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +37,7 @@ public class NetworkApi {
     private static INetworkRequiredInfo iNetworkRequiredInfo;
 
     // API访问地址
-                                      // https://s3.amazonaws.com/sq-mobile-interview/employees.json
+    // https://s3.amazonaws.com/sq-mobile-interview/employees.json
     private static String BASE_URL = "https://s3.amazonaws.com";
 
     // OkHttp客户端
@@ -66,9 +70,13 @@ public class NetworkApi {
         // 设置缓存大小
         int cacheSize = 100 * 1024 * 1024;
         // 设置OkHttp网络缓存
-        builder.cache(new Cache(iNetworkRequiredInfo.getApplicationContext().getCacheDir(),cacheSize));
+        builder.cache(new Cache(iNetworkRequiredInfo.getApplicationContext().getCacheDir(), cacheSize));
+
+        builder.readTimeout(Constant.DEFAULT_TIME, TimeUnit.SECONDS);    // 设置读取超时时间
         // 设置网络请求超时时长，这里设置为6s
-        builder.connectTimeout(6, TimeUnit.SECONDS);
+        builder.connectTimeout(6, TimeUnit.SECONDS);                     // 设置请求超时时间
+        // builder.connectTimeout(Constant.DEFAULT_TIME, TimeUnit.SECONDS); 
+        builder.writeTimeout(Constant.DEFAULT_TIME,TimeUnit.SECONDS);    // 设置写入超时时间
 
         // // 添加请求拦截器，如果接口有请求头的话，可以放在这个拦截器里面
         // builder.addInterceptor(new RequestInterceptor(iNetworkRequiredInfo));
@@ -114,7 +122,7 @@ public class NetworkApi {
         builder.baseUrl(BASE_URL); //  基础的地址是在这里设置的
         // 设置OkHttp客户端，传入上面写好的方法即可获得配置后的OkHttp客户端。
         builder.client(getOkHttpClient());
-        // 设置数据解析器 会自动把请求返回的结果（json字符串）通过Gson转化工厂自动转化成与其结构相符的实体Bean
+        // 设置数据解析器: 会自动把请求返回的结果（json字符串）通过Gson转化工厂自动转化成与其结构相符的实体Bean
         builder.addConverterFactory(GsonConverterFactory.create());
         // 设置请求回调，使用RxJava 对网络返回进行处理
         builder.addCallAdapterFactory(RxJava2CallAdapterFactory.create()); // 支持RxJava2
@@ -133,11 +141,19 @@ public class NetworkApi {
      * @param <T>      泛型
      * @return Observable
      */
+// 什么意思呢？当有多个Api接口的时候，如果每个接口都这么写的话，代码量太多，而且不优雅。
+// 这里是提取公用部分浓缩在一个方法里，可供每个相同流程的api调用实现线程的自动切换以及结果的观察订阅
+// RxJava 的好处是帮我处理线程之间的切换，我们可以在指定订阅的在哪个线程，观察在哪个线程。我们可以通过操作符进行数据变换。整个过程都是链式的，简化逻辑。
     public static <T> ObservableTransformer<T, T> applySchedulers(final Observer<T> observer) {
         return upstream -> {
             Observable<T> observable = upstream
                 .subscribeOn(Schedulers.io())// 线程订阅
                 .observeOn(AndroidSchedulers.mainThread())// 观察Android主线程
+
+                // 绑定生命周期: 防止内存泄露，
+                // 与lifecycleOwner结合，网络请求可以根据lifecyclerOwner生命周期选择执行请求或是自动取消请求
+                .compose(bindUntilEvent(ActivityEvent.DESTROY))
+
                 .map(NetworkApi.getAppErrorHandler())// 判断有没有500的错误，有则进入getAppErrorHandler
                 .onErrorResumeNext(new HttpErrorHandler<>());// 判断有没有400的错误
             // 订阅观察者
