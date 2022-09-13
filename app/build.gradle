@@ -53,7 +53,8 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.12'
     // 防止Rxjava引发的内存泄漏: 为RxJava添加生命周期感知能力
-    implementation 'com.trello.rxlifecycle2:rxlifecycle-components:2.2.2'
+    implementation 'com.trello.rxlifecycle3:rxlifecycle:3.1.0'
+    implementation 'com.trello.rxlifecycle2:rxlifecycle-components:3.1.0'
 
     // 解析json 数据: 实体解析库
     implementation 'com.google.code.gson:gson:2.8.7'

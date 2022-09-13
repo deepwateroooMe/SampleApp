@@ -3,7 +3,7 @@ package com.me.sample.utils;
 public class Constant {
 
     // 设置默认超时时间
-    public static final int DEFAULT_TIME=10    
+    public static final int DEFAULT_TIME=10;
 
 /**
      * 今日请求接口返回数据的时间戳

@@ -2237,7 +2237,59 @@ public final static  String retrofitList = "values";
 
 ** RxJava 观察者模式，与公用接口回调类的设计实现
 * RxJava: 防止Rxjava引发的内存泄漏: 需要把这部分理解清楚并整合到自己的项目中去
+** 哪些场景会出现
+- 使用RxJava发布一个订阅后，当页面被finish，此时订阅逻辑还未完成，如果没有及时取消订阅，就会导致Activity/Fragment无法被回收，从而引发内存泄漏.场景还比较多：Activity中执行异步任务、Presenter或ViewModel中执行异步任务、Manager、Adapter相关类中执行异步任务。
+- 如果代码如下：
+#+BEGIN_SRC csharp
+Observable.create(new ObservableOnSubscribe<XXX>() {
+        @Override
+            public void subscribe(final ObservableEmitter<XXX> emitter) throws Exception {
+            Observable.zip(.....)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<ImpressionBean>() {
+                        @Override
+                            public void accept(XXX impressionBean) throws Exception {
+                            emitter.onNext(impressionBean);
+                        }
+                    }, new Consumer<Throwable>() {
+                        @Override
+                            public void accept(Throwable throwable) throws Exception {
+                            emitter.onNext(new XXX());
+                        }
+                    });
+        }
+    });
+#+END_SRC 
 - 当使用RxJava订阅并执行耗时任务后，当Activity被finish时，如果耗时任务还未完成，没有及时取消订阅，就会导致Activity无法被回收，从而引发内存泄漏。为了解决这个问题，就产生了RxLifecycle，让RxJava变得有生命周期感知，使得其能及时取消订阅，避免出现内存泄漏问题。
+** 解决办法
+- 把整个Observable.create() ...执行subscribe（）方法后赋值为Disposable，然后再销毁页面调用下面方法
+#+BEGIN_SRC csharp
+if (disposable != null && !disposable.isDisposed()) {
+    disposable.dispose();
+}
+#+END_SRC 
+- Presenter或ViewModel中执行异步任务，自定义控件，Manager相关类，自定义Adapter中执行异步任务应该如何防止内存泄露？
+- 在BaseActivity中实现代码:
+#+BEGIN_SRC csharp
+private CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+public void addDisposable(Disposable disposable) {
+    mCompositeDisposable.add(disposable);
+}
+
+@Override
+protected void onDestroy() {
+    super.onDestroy();
+    mCompositeDisposable.dispose();
+}
+#+END_SRC 
+- 每次Rxjava异步任务时，把相关的disposable对象传入，onDestroy中统一解绑
+- 在Activity的onDestory()生命周期时，自动解除订阅，以防止因生命周期组件的生命周期而导致的RxJava内存泄漏事件。
+- 其他的解决方式
+    - Rxlife解决内存泄露
+    - autoDisposable解决内存泄露
+    - RxLifecycle解决内存泄露
+
 ** （1）添加依赖
 #+begin_SRC gradle
     implementation 'com.trello.rxlifecycle2:rxlifecycle-components:2.1.0'
@@ -2271,3 +2323,869 @@ retrofit.create(ApiUrl.class)
         }
     });
 #+END_SRC 
+
+* RxLifecycle 第三方库： 解决内存泄露，原理详解
+  #+BEGIN_SRC groovy
+compile 'com.trello.rxlifecycle2:rxlifecycle-components:2.2.2'
+compile 'com.trello.rxlifecycle2:rxlifecycle-navi:2.2.2'
+  #+END_SRC
+- 主要有下面几种使用方式：
+#+BEGIN_SRC text
+1 bindToLifecycle
+2 bindUntilEvent
+3 LifecycleProvider
+#+END_SRC 
+** 1.bindToLifecycle
+- 这种方式可以自动根据Activity或者Fragment的生命周期进行解绑，用起来也很方便,Avtivity需要继承RxActivity， Fragment则需要继承RxFragment
+#+BEGIN_SRC csharp
+public class MainActivity extends BaseActivity{
+    @Override
+        protected void onStart() {
+        super.onStart();
+        Observable.interval(1, TimeUnit.SECONDS)
+            .subscribeOn(Schedulers.io())
+            .compose(this.<Long>bindToLifecycle())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(new Consumer<Long>() {
+                    @Override
+                        public void accept(Long num) throws Exception {
+                        Timber.tag(TAG).d("onStart, running num : " + num);
+                    }
+                });
+    }
+}
+#+END_SRC 
+- 这里在onStart中进行绑定，如果Activity进入onStop生命周期的时候就会停止Observable，看一下日志：
+- bindToLifecycle就是会自动绑定生命周期，我们看下Activity生命周期,很明显在onCreate中bindToLifecycle就会在onDestroy中进行解绑，其他的一一对应就是。
+** ActivityEvent FragmentEvent
+   #+BEGIN_SRC csharp
+/**
+ * Lifecycle events that can be emitted by Activities.
+ */
+public enum ActivityEvent {
+    CREATE,
+    START,
+    RESUME,
+    PAUSE,
+    STOP,
+    DESTROY
+}
+/**
+ * Lifecycle events that can be emitted by Fragments.
+ */
+public enum FragmentEvent {
+    ATTACH,
+    CREATE,
+    CREATE_VIEW,
+    START,
+    RESUME,
+    PAUSE,
+    STOP,
+    DESTROY_VIEW,
+    DESTROY,
+    DETACH
+}
+   #+END_SRC 
+** 2.bindUntilEvent
+- 见名知意，就是可以和制定的生命周期进行绑定，这种方式比上面的灵活，比如可以在一个按钮中绑定onStart的事件，而不必要一定要卸载onStart中。
+- 我在上面的Activity中添加一个按钮，点击事件在getData(View view)中，看下代码：
+#+BEGIN_SRC csharp
+public void getData(View view) {
+    Observable observable = Observable.interval(1, TimeUnit.SECONDS).
+        subscribeOn(Schedulers.io())
+        .compose(this.bindUntilEvent(ActivityEvent.PAUSE));
+    observable.observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new Consumer<Long>() {
+                @Override
+                    public void accept(Long num) throws Exception {
+                    Timber.tag(TAG).d("getData, running until num : " + num);
+                }
+            });
+}
+#+END_SRC 
+- 按我们的预期，就是在Activity进入onPause时，Observable会停止发送数据，看下打印的日志是不是这样的：   bindUntilEvent.PNG
+- 基本上面这两种方式就够用了，下面的方式LifecycleProvider在MVP的模式中用处就比较大了。我们接着往下看。
+** 3.LifecycleProvider
+- 使用方式就是，首先继承NaviActivity，然后在Activity中加上这句话
+- LifecycleProvider<ActivityEvent> provider = NaviLifecycle.createActivityLifecycleProvider(this);
+- 这样就可以通过provider监听生命周期了。我这里在初始化presenter的时候传递过去
+#+BEGIN_SRC csharp
+@Override
+protected void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    //初始化Presenter
+    presenter = new Presenter(provider);
+}
+#+END_SRC 
+- 在Activity中添加一个按钮，通过延时3秒模拟网络请求，请求成功后更新UI。这里通过 provider发送生命周期事件，然后在onNext中判断事件类型，如果已经Activity已经进入onPause onStop onDestroy中的其中一个，就不再更新UI了，并且通过Disposable断开连接。
+#+BEGIN_SRC csharp
+FactoryModel.getModel(Token.STRING_MODEL).params(params)
+    .execute(new CallBack<String>() {
+        @Override
+            public void onSuccess(final String data) {
+            provider.lifecycle().subscribe(new Observer<ActivityEvent>() {
+                    @Override
+                        public void onSubscribe(Disposable d) {
+                        disposable = d;
+                    }
+                    @Override
+                        public void onNext(ActivityEvent activityEvent) {
+                        Timber.tag("Presenter_TAG").i("received activityEvent, activityEvent = %s" , activityEvent.name());
+                        if (null != disposable && disposable.isDisposed()){
+                            Timber.tag("Presenter_TAG").i("disposable isDisposed");
+                            return;
+                        }
+                        if (activityEvent == ActivityEvent.PAUSE || activityEvent == ActivityEvent.STOP
+                            || activityEvent == ActivityEvent.DESTROY) {
+                            Timber.tag("Presenter_TAG").e("do not refresh UI, activityEvent = %s", activityEvent.name());
+                            onComplete();
+                            return;
+                        }
+                        if (isViewAttached()) {
+                            Timber.tag("Presenter_TAG").i("refresh UI, activityEvent = %s" , activityEvent.name());
+                            view.showData(data);
+                        }
+                    }
+                    @Override
+                        public void onError(Throwable e) {
+                    }
+                    @Override
+                        public void onComplete() {
+                        if (null != disposable && !disposable.isDisposed()){
+                            disposable.dispose();
+                            Timber.tag("Presenter_TAG").d("LifecycleProvider disposed");
+                        }
+                    }
+                });
+        }
+    });
+#+END_SRC 
+- 看一下正常请求成功的日志,和预期一样，正常更新UI了。   请求成功.PNG
+- 下面我们来搞一下破坏，在刚发起网络请求后，按home按键将APP切到后台，这样Activity就进入onStop的生命周期，那么即使网络请求成功也应该再更新UI了，看下日志是不是这样的：   破坏.PNG  最终UI也是没有更新的。我们在下面的逻辑中切断了订阅关系，那么下次再次点击按钮发起网络请求是还能正常使用provider吗？
+#+BEGIN_SRC csharp
+if (activityEvent == ActivityEvent.PAUSE
+    || activityEvent == ActivityEvent.STOP
+    || activityEvent == ActivityEvent.DESTROY) {
+    Timber.tag("Presenter_TAG").e("do not refresh UI, activityEvent = %s", activityEvent.name());
+    onComplete();
+    return;
+}
+#+END_SRC 
+- 其实是可以的，看一下Demo的日志：  切断订阅关系后再次监听生命周期.PNG
+- 那么是怎么回事？其实就在下面这个代码中：
+#+BEGIN_SRC csharp
+provider.lifecycle()
+#+END_SRC q
+- 在获取Observable时会清楚原先的特征，我们看下源码：
+#+BEGIN_SRC csharp
+private final BehaviorSubject<ActivityEvent> lifecycleSubject = BehaviorSubject.create();
+@Override
+@NonNull
+@CheckResult
+public Observable<ActivityEvent> lifecycle() {
+    return lifecycleSubject.hide();
+}
+#+END_SRC 
+- 再跟进去BehaviorSubject,其中以后一句注释Hides the identity of this Observable and its Disposable，最后会返回一个新的Observable :
+#+BEGIN_SRC csharp
+/**
+ * Hides the identity of this Observable and its Disposable.
+ * <p>Allows hiding extra features such as {@link io.reactivex.subjects.Subject}'s
+ * {@link Observer} methods or preventing certain identity-based
+ * optimizations (fusion).
+ * <dl>
+ *  <dt><b>Scheduler:</b></dt>
+ *  <dd>{@code hide} does not operate by default on a particular {@link Scheduler}.</dd>
+ * </dl>
+ * @return the new Observable instance
+ *
+ * @since 2.0
+ */
+@CheckReturnValue
+@SchedulerSupport(SchedulerSupport.NONE)
+public final Observable<T> hide() {
+    return RxJavaPlugins.onAssembly(new ObservableHide<T>(this));
+}
+#+END_SRC 
+** 4.总结
+- RxLifecycle的侵入性还是比较低的，基本不需要改动原来的代码就可以实现生命周期的监听，也提供了防止RxJava订阅关系内存泄漏的另外一种解决方案，还是很不错的。
+- 今天的分享就到这了，后面有机会和大家分享下RxLifecycle的源码。
+- 平时工作也比较忙，写博客真的是需要耐力，如果对大家有帮助欢迎关注和点赞哈。
+** 一个MVP设计中的小例子
+- GitHub： https://github.com/makeloveandroid/dagger2 四年前的了，有点儿过时了
+#+BEGIN_SRC csharp
+// 所有的网络请求都使用BaseObserver
+public abstract class BaseObserver<T> extends DisposableObserver<T> {
+    public BaseObserver(CompositeDisposable compositeDisposable) {
+        compositeDisposable.add(this);
+    }
+}
+// 在BasePresenter
+public abstract class BaseMvpPresenter<V> {
+    public CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+    public V mView;
+    public void setView(V view){
+        mView=view;
+    }
+    public void unSubscription(){
+        mCompositeDisposable.clear();
+    }
+}
+// 重写BaseActivity的onDestroy方法
+@Override
+protected void onDestroy() {
+    super.onDestroy();
+    presenter.unSubscription();//在activity销毁的时候,取消当前Activity的所有订阅
+}
+// 这样在Activity销毁的时候,会执行取消订阅的方法
+#+END_SRC 
+
+* 另一个MVP的封装
+** IBaseMvpView
+- 1.创建一个基类View，让所有View接口都必须实现
+   #+BEGIN_SRC csharp
+package com.winfo.wenjie.mvp.base;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName com.winfo.wenjie.mvp.base
+ * FileName: com.winfo.wenjie.mvp.base.IBaseMvpView.java
+ * Author: wenjie
+ * Date: 2016-12-12 14:47
+ * Description: IBaseMvpView
+ */
+public interface IBaseMvpView {
+}
+   #+END_SRC 
+** BaseMvpPresenter
+- 2.创建一个基类的Presenter，在类上规定View泛型，然后定义绑定和解绑的方法，对外在提供一个获取View的方法，让子类直接通过方法来获取View使用即可 
+#+BEGIN_SRC csharp
+package com.winfo.wenjie.mvp.base;
+import java.lang.ref.WeakReference;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName com.winfo.wenjie.mvp.base
+ * FileName: com.winfo.wenjie.mvp.base.BaseMvpPresenter.java
+ * Author: wenjie
+ * Date: 2016-12-12 14:47
+ * Description: BaseMvpPresenter
+ */
+public class BaseMvpPresenter<V extends IBaseMvpView> {
+    /**
+     * v层泛型引用
+     */
+    protected V mView;
+    private WeakReference<V> weakReferenceView;
+    public void attachMvpView(V view) {
+        weakReferenceView = new WeakReference<>(view);
+        this.mView = weakReferenceView.get();
+    }
+    public void detachMvpView() {
+        weakReferenceView.clear();
+        weakReferenceView = null;
+        mView = null;
+    }
+}
+#+END_SRC 
+** BaseMvpActivity
+- 3.创建一个基类的Activity，声明一个创建Presenter的抽象方法，因为要帮子类去绑定和解绑那么就需要拿到子类的Presenter才行，但是又不能随便一个类都能绑定的，因为只有基类的Presenter中才定义了绑定和解绑的方法，所以同样的在类上可以声明泛型在方法上使用泛型来达到目的 
+#+BEGIN_SRC csharp
+package com.winfo.wenjie.mvp.base;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName com.winfo.wenjie.mvp.base
+ * FileName: com.winfo.wenjie.mvp.base.BaseMvpActivity.java
+ * Author: wenjie
+ * Date: 2016-12-12 14:47
+ * Description: BaseMvpActivity
+ */
+public abstract class BaseMvpActivity<V extends IBaseMvpView, P extends BaseMvpPresenter<V>> extends AppCompatActivity implements IBaseMvpView {
+    protected P mPresenter;
+    @SuppressWarnings("unchecked")
+        @Override
+        protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (mPresenter == null) {
+            mPresenter = createPresenter();
+        }
+        mPresenter.attachMvpView((V) this);
+    }
+    protected abstract P createPresenter();
+    @Override
+        protected void onDestroy() {
+        super.onDestroy();
+        if (mPresenter != null) {
+            mPresenter.detachMvpView();
+        }
+    }
+}
+#+END_SRC 
+** LoginPresenter
+- 4、新建自己的prsenter继承presenter基类
+#+BEGIN_SRC csharp
+package com.winfo.wenjie.mvp.presenter;
+import android.text.TextUtils;
+import com.winfo.wenjie.domain.Token;
+import com.winfo.wenjie.mvp.base.BaseMvpPresenter;
+import com.winfo.wenjie.mvp.model.OnLoadDatasListener;
+import com.winfo.wenjie.mvp.model.impl.LoginModel;
+import com.winfo.wenjie.mvp.view.ILoginView;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName com.winfo.wenjie.mvp.presenter
+ * FileName: com.winfo.wenjie.mvp.presenter.LoginPresenter.java
+ * Author: wenjie
+ * Date: 2016-12-12 14:12
+ * Description: p层
+ */
+public class LoginPresenter extends BaseMvpPresenter<ILoginView> {
+    /**
+     * m层
+     */
+    private LoginModel loginModel;
+    /**
+     * mvp模式  p层持有  v 和m 的接口引用 来进行数据的传递  起一个中间层的作用
+     */
+    public LoginPresenter() {
+        /*
+         *示例化loginmodel对象  固定写法  Retrofit.create(Class);
+         */
+        this.loginModel = new LoginModel();
+    }
+    /**
+     * 登陆
+     */
+    public void login() {
+        if (mView == null) return;
+        if (TextUtils.isEmpty(mView.getUserName()) || TextUtils.isEmpty(mView.getPassword())) {
+            mView.showMsg("用户名或密码不能为空");
+            return;
+        }
+        loginModel.login(mView.getDialog(), "", "", "password", mView.getUserName(), mView.getPassword(), new OnLoadDatasListener<Token>() {
+                @Override
+                    public void onSuccess(Token token) {
+                    //请求成功服务器返回的数据s
+                    mView.setText(token.getAccess_token());
+                }
+                @Override
+                    public void onFailure(String eroor) {
+                    //请求成功服务器返回的错误信息
+                    mView.showMsg(eroor);
+                }
+            });
+    }
+}
+#+END_SRC 
+** MainActivity
+- 5、新建activity继承activity基类
+#+BEGIN_SRC csharp
+package com.winfo.wenjie.mvp.view.impl;
+import android.app.Dialog;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.winfo.wenjie.R;
+import com.winfo.wenjie.mvp.base.BaseMvpActivity;
+import com.winfo.wenjie.mvp.presenter.LoginPresenter;
+import com.winfo.wenjie.mvp.view.ILoginView;
+import com.winfo.wenjie.utils.DialogUtils;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName com.winfo.wenjie.mvp.view.impl
+ * FileName: com.winfo.wenjie.mvp.view.impl.MainActivity.java
+ * Author: wenjie
+ * Date: 2016-12-12 14:47
+ * Description: v层
+ */
+public class MainActivity extends BaseMvpActivity<ILoginView, LoginPresenter> implements ILoginView {
+    @BindView(R.id.username)
+        EditText etUserName;
+    @BindView(R.id.password)
+        EditText etPassword;
+    @BindView(R.id.result)
+        TextView textView;
+    @BindView(R.id.login)
+        Button btnLogin;
+    private Dialog dialog;
+
+    @Override
+        protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
+        dialog = DialogUtils.createLoadingDialog(this, "登陆中...");
+    }
+    @Override
+        public Dialog getDialog() {
+        return dialog;
+    }
+    @Override
+        public String getUserName() {
+        return etUserName.getText().toString();
+    }
+    @Override
+        public String getPassword() {
+        return etPassword.getText().toString();
+    }
+    @Override
+        public void showMsg(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+    @Override
+        public void setText(String result) {
+        textView.setText("登录成功！Token：\n"+result);
+    }
+    @OnClick(R.id.login)
+        public void onClick() {
+        /*
+         * 调用登录方法进行登陆
+         */
+        mPresenter.login();
+    }
+    @Override
+        protected LoginPresenter createPresenter() {
+        return new LoginPresenter();
+    }
+}
+#+END_SRC 
+** ILoginView
+- 6、抽象出View的一个接口，提供M层所需要的参数数据，不直接将Activity传递到P，并继承v层基类
+#+BEGIN_SRC csharp
+package com.winfo.wenjie.mvp.view;
+import android.app.Dialog;
+import com.winfo.wenjie.mvp.base.IBaseMvpView;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName com.winfo.wenjie.mvp.view.impl
+ * FileName: com.winfo.wenjie.mvp.view.impl.ILoginView.java
+ * Author: wenjie
+ * Date: 2016-12-12 14:11
+ * Description: view层的接口 由view来实现也就是mainactivity来实现该接口
+ */
+public interface ILoginView extends IBaseMvpView{
+    /**
+     * 获取view层的dialog
+     * @return retuen
+     */
+    Dialog getDialog();
+    /**
+     * 获取用户名 参数
+     * @return username
+     */
+    String getUserName();
+    /**
+     * 获取密码
+     * @return password
+     */
+    String getPassword();
+    /**
+     * 弹出消息
+     * @param msg msg
+     */
+    void showMsg(String msg);
+    /**
+     * 将数据返回给view
+     * @param result resuklt
+     */
+    void setText(String result);
+}
+#+END_SRC 
+** ILoginModel
+- 7、新建m层接口和m层实现类实现解耦
+   #+BEGIN_SRC csharp
+package com.winfo.wenjie.mvp.model;
+import android.app.Dialog;
+import com.winfo.wenjie.domain.Token;
+import com.winfo.wenjie.mvp.model.impl.LoginModel;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName: com.winfo.wenjie.mvp.model
+ * FileName: com.winfo.wenjie.mvp.model.ILoginModel.java
+ * Author: wenjie
+ * Date: 2017-01-03 13:54
+ * Description: m层接口
+ */
+public interface ILoginModel {
+    /**
+     * 登陆方法
+     * @param dialog 对话框这里传递到model不是很好，但是也没办法，因为要做一个对话框消失，同时取消请求的操作
+     * @param client_id client_id
+     * @param client_secret client_secret
+     * @param grant_type grant_type
+     * @param username 用户名
+     * @param password  用户密码
+     * @param onLoadDatasListener 监听函数
+     */
+    void login(Dialog dialog,String client_id, String client_secret, String grant_type, String username, String password, OnLoadDatasListener<Token> onLoadDatasListener);
+}
+   #+END_SRC 
+** 
+   #+BEGIN_SRC csharp
+   #+END_SRC 
+
+** 
+   #+BEGIN_SRC csharp
+   #+END_SRC 
+** 
+   #+BEGIN_SRC csharp
+   #+END_SRC 
+
+   #+BEGIN_SRC csharp
+
+
+package com.winfo.wenjie.mvp.model;
+/**
+ * ProjectName: DiycodeApp
+ * PackageName: com.wenjie.diycode.mvp.model
+ * FileName: com.wenjie.diycode.mvp.model.OnLoadDatasListener.java
+ * Author: wenjie
+ * Date: 2017-08-29 11:20
+ * Description:
+ */
+public interface OnLoadDatasListener<T> {
+    /**
+     * 成功
+     * @param t 数据
+     */
+    void onSuccess(T t);
+    /**
+     * 失败
+     * @param eroor 错误信息
+     */
+    void onFailure(String eroor);
+}
+
+// M层实现类
+package com.winfo.wenjie.mvp.model.impl;
+import android.app.Dialog;
+import com.winfo.wenjie.domain.Token;
+import com.winfo.wenjie.mvp.model.ILoginModel;
+import com.winfo.wenjie.mvp.model.OnLoadDatasListener;
+import com.winfo.wenjie.request.ApiService;
+import com.winfo.wenjie.request.DialogSubscriber;
+import com.winfo.wenjie.request.OkHttpUtils;
+import com.winfo.wenjie.request.ResponseResult;
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName com.winfo.wenjie.mvp.model
+ * FileName: com.winfo.wenjie.mvp.model.impl.LoginModel.java
+ * Author: wenjie
+ * Date: 2016-12-12 14:47
+ * Description: m层实现类
+ */
+public class LoginModel implements ILoginModel {
+    @Override
+        public void login(Dialog dialog, String client_id, String client_secret, String grant_type, String username, String password, final OnLoadDatasListener<Token> onLoadDatasListener) {
+        /*
+         * 被订阅者
+         */
+        Observable<Token> observable = OkHttpUtils.getRetrofit().create(ApiService.class).getToken(client_id, client_secret, grant_type, username, password);
+        /*
+         * 订阅者
+         */
+        Subscriber<Token> subscriber = new DialogSubscriber<Token>(dialog , true) {
+            @Override
+            protected void onSuccess(Token token) {
+                onLoadDatasListener.onSuccess(token);
+            }
+            @Override
+            protected void onFailure(String msg) {
+                onLoadDatasListener.onFailure(msg);
+            }
+        };
+        observable.subscribeOn(Schedulers.io())
+            .unsubscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(subscriber);
+    }
+}
+
+// rxjava和retrofit+okhttp具体应用在M层中，通过rxjava的异步，以及okhttp网络请求结合获取数据请求接口
+// 下面封装了一个网络请求
+// ApiService主要是项目中所有需要调用的的接口，具体为什么这么写，不做多介绍了
+package com.winfo.wenjie.request;
+import com.winfo.wenjie.domain.Token;
+import com.winfo.wenjie.utils.Constant;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.POST;
+import rx.Observable;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName: com.winfo.wenjie.request
+ * FileName: com.winfo.wenjie.request.ApiService.java
+ * Author: wenjie
+ * Date: 2017-01-17 16:54
+ * Description:
+ */
+public interface ApiService {
+    /**
+     * 获取 Token (一般在登录时调用)
+     *
+     * @param client_id     客户端 id
+     * @param client_secret 客户端私钥
+     * @param grant_type    授权方式 - 密码
+     * @param username      用户名
+     * @param password      密码
+     * @return Token 实体类
+     */
+    @POST("oauth/token")
+    @FormUrlEncoded
+    Observable<Token> getToken(
+        @Field("client_id") String client_id, @Field("client_secret") String client_secret,
+        @Field("grant_type") String grant_type, @Field("username") String username,
+        @Field("password") String password);
+}
+
+package com.winfo.wenjie.request;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName com.winfo.wenjie.request
+ * FileName: com.winfo.wenjie.request.DialogCancelListener.java
+ * Author: wenjie
+ * Date: 2016-12-12 14:32
+ * Description: 对话框隐藏或者消失之后取消请求
+ */
+public interface DialogCancelListener {
+    /**
+     * 取消网络请求
+     */
+    void onCancel();
+}
+// 创建一个Handler操作对话框，可以取消请求
+package com.winfo.wenjie.request;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.os.Handler;
+import android.os.Message;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName com.winfo.wenjie.request
+ * FileName: com.winfo.wenjie.request.DialogHandler.java
+ * Author: wenjie
+ * Date: 2016-12-12 14:28
+ * Description: 创建一个dialoghandler类来操作dialog加载进度框  以便于 请求取消的处理
+ */
+public class DialogHandler extends Handler {
+    /**
+     * 显示加载框
+     */
+    static final int SHOW_PROGRESS_DIALOG = 1;
+    /**
+     * 隐藏加载框
+     */
+    static final int DISMISS_PROGRESS_DIALOG = 2;
+    private Dialog loadingDialog;
+    private DialogCancelListener dialogCancelListener;
+    /**
+     * 构造方法接收一个加载框的对象  由各个view层创建之后传进来  因为每个对话框所提示的内容有所不同
+     * @param dialog dialog
+     */
+    DialogHandler(Dialog dialog, DialogCancelListener dialogCancelListener) {
+        this.loadingDialog = dialog;
+        this.dialogCancelListener = dialogCancelListener;
+        initDialogDismissListenner();
+    }
+    private void initDialogDismissListenner() {
+        loadingDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                    public void onDismiss(DialogInterface dialog) {
+                    dialogCancelListener.onCancel();
+                }
+            });
+    }
+    /**
+     * 显示加载框
+     */
+    private void showLodingDialog() {
+        loadingDialog.show();
+    }
+    /**
+     * 隐藏加载框
+     */
+    private void dismissLodingDialog() {
+        loadingDialog.dismiss();
+    }
+    @Override
+        public void handleMessage(Message msg) {
+        switch (msg.what) {
+        case SHOW_PROGRESS_DIALOG:
+            showLodingDialog();
+            break;
+        case DISMISS_PROGRESS_DIALOG:
+            dismissLodingDialog();
+            break;
+        }
+    }
+}
+
+package com.winfo.wenjie.request;
+import android.app.Dialog;
+import android.text.TextUtils;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
+import rx.Subscriber;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName com.winfo.wenjie.request
+ * FileName: com.winfo.wenjie.request.DialogSubscriber.java
+ * Author: wenjie
+ * Date: 2016-12-12 14:23
+ * Description: 订阅者
+ */
+public abstract class DialogSubscriber<T> extends Subscriber<T> implements DialogCancelListener {
+    private boolean isShowDialog;
+    /**
+     * 定义一个请求成功的抽象方法 子类必须实现并在实现中进行处理服务器返回的数据
+     *
+     * @param t 服务器返回的数据
+     */
+    protected abstract void onSuccess(T t);
+    /**
+     * 定义一个请求失败的抽象方法 子类必须实现并在实现中进行服务器返回数据的处理
+     *
+     * @param msg 服务器返回的错误信息
+     */
+    protected abstract void onFailure(String msg);
+    private DialogHandler dialogHandler;
+    /**
+     *
+     * @param dialog 对话框
+     * @param isShowDialog 是否显示加载的对话框
+     */
+    protected DialogSubscriber(Dialog dialog, boolean isShowDialog) {
+        this.isShowDialog = isShowDialog;
+        dialogHandler = new DialogHandler(dialog , this);
+    }
+    /**
+     * 显示对话框 发送一个显示对话框的消息给dialoghandler  由他自己处理（也就是dialog中hanldermesage处理该消息）
+     */
+    private void showProgressDialog() {
+        if (dialogHandler != null) {
+            dialogHandler.obtainMessage(DialogHandler.SHOW_PROGRESS_DIALOG).sendToTarget();
+        }
+    }
+    /**
+     * 隐藏对话框 ....
+     */
+    private void dismissProgressDialog() {
+        if (dialogHandler != null) {
+            dialogHandler.obtainMessage(DialogHandler.DISMISS_PROGRESS_DIALOG).sendToTarget();
+            dialogHandler = null;
+        }
+    }
+    /**
+     * 请求开始
+     * 先判断isShowDialog的值，如果为false就不显示对话框，为true才显示
+     */
+    @Override
+        public void onStart() {
+        if(isShowDialog){
+            showProgressDialog();
+        }
+    }
+    /**
+     * 请求完成，隐藏对话框
+     */
+    @Override
+        public void onCompleted() {
+        dismissProgressDialog();
+    }
+    /**
+     * 请求出错
+     * 这里异常处理的不是很完善，你们自己多写一些请求可能出现的异常
+     * 进行捕获，这样可以直接将异常信息返回到view层可见页面，开发时一眼也可以看出具体的问题
+     * @param e e
+     */
+    @Override
+        public void onError(Throwable e) {
+        dismissProgressDialog();
+        String msg;
+        if (e instanceof SocketTimeoutException) {
+            msg = "请求超时。请稍后重试！";
+        } else if (e instanceof ConnectException) {
+            msg = "请求超时。请稍后重试！";
+        } else {
+            msg = "请求未能成功，请稍后重试！";
+        }
+        if (!TextUtils.isEmpty(msg)) {
+            onFailure(msg);
+        }
+    }
+    /**
+     * 请求成功
+     *
+     * @param t t
+     */
+    @Override
+        public void onNext(T t) {
+        /*
+         * 请求成功将数据发出去
+         */
+        onSuccess(t);
+    }
+    /**
+     * 请求被取消
+     */
+    @Override
+        public void onCancel() {
+        package com.winfo.wenjie.request;
+        import java.util.concurrent.TimeUnit;
+        import okhttp3.OkHttpClient;
+        import retrofit2.Retrofit;
+        import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+        import retrofit2.converter.gson.GsonConverterFactory;
+/**
+ * ProjectName: MvpRxjavaRetrofitDemo
+ * PackageName: com.winfo.wenjie.request
+ * FileName: com.winfo.wenjie.request.OkHttpUtils.java
+ * Author: wenjie
+ * Date: 2016-12-12 14:17
+ * Description: 网络请求的工具类
+ */
+        public class OkHttpUtils {
+            /**
+             * okhttp
+             */
+            private static OkHttpClient okHttpClient;
+            /**
+             * Retrofit
+             */
+            private static Retrofit retrofit;
+            /**
+             * 获取Retrofit的实例
+             *
+             * @return retrofit
+             */
+            public static Retrofit getRetrofit() {
+                if (retrofit == null) {
+                    retrofit = new Retrofit.Builder()
+                        .baseUrl("https://www.diycode.cc/")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .client(getOkHttpClient())
+                        .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                        .build();
+                }
+                return retrofit;
+            }
+            private static OkHttpClient getOkHttpClient() {
+                if (okHttpClient == null) {
+                    OkHttpClient.Builder builder = new OkHttpClient.Builder();
+                    builder.connectTimeout(15, TimeUnit.SECONDS);
+                    okHttpClient = builder.build();
+                }
+                return okHttpClient;
+            }
+        }
+   #+END_SRC 

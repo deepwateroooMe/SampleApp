@@ -150,9 +150,9 @@ public class NetworkApi {
                 .subscribeOn(Schedulers.io())// 线程订阅
                 .observeOn(AndroidSchedulers.mainThread())// 观察Android主线程
 
-                // 绑定生命周期: 防止内存泄露，
-                // 与lifecycleOwner结合，网络请求可以根据lifecyclerOwner生命周期选择执行请求或是自动取消请求
-                .compose(bindUntilEvent(ActivityEvent.DESTROY))
+                // // 绑定生命周期: 防止内存泄露;这里暂时还不知道该如何实现，暂时先放一下
+                // // 与lifecycleOwner结合，网络请求可以根据lifecyclerOwner生命周期选择执行请求或是自动取消请求
+                // .compose(bindUntilEvent(ActivityEvent.DESTROY))
 
                 .map(NetworkApi.getAppErrorHandler())// 判断有没有500的错误，有则进入getAppErrorHandler
                 .onErrorResumeNext(new HttpErrorHandler<>());// 判断有没有400的错误

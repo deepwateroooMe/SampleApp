@@ -1,4 +1,4 @@
-% Created 2022-09-13 Tue 09:40
+% Created 2022-09-13 Tue 11:09
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -2503,16 +2503,80 @@ public final static  String retrofitList = "values";
 \label{sec-18-6}
 \section{RxJava: 防止Rxjava引发的内存泄漏: 需要把这部分理解清楚并整合到自己的项目中去}
 \label{sec-19}
+\subsection{哪些场景会出现}
+\label{sec-19-1}
+\begin{itemize}
+\item 使用RxJava发布一个订阅后，当页面被finish，此时订阅逻辑还未完成，如果没有及时取消订阅，就会导致Activity/Fragment无法被回收，从而引发内存泄漏.场景还比较多：Activity中执行异步任务、Presenter或ViewModel中执行异步任务、Manager、Adapter相关类中执行异步任务。
+\item 如果代码如下：
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+Observable.create(new ObservableOnSubscribe<XXX>() {
+        @Override
+            public void subscribe(final ObservableEmitter<XXX> emitter) throws Exception {
+            Observable.zip(.....)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<ImpressionBean>() {
+                        @Override
+                            public void accept(XXX impressionBean) throws Exception {
+                            emitter.onNext(impressionBean);
+                        }
+                    }, new Consumer<Throwable>() {
+                        @Override
+                            public void accept(Throwable throwable) throws Exception {
+                            emitter.onNext(new XXX());
+                        }
+                    });
+        }
+    });
+\end{minted}
 \begin{itemize}
 \item 当使用RxJava订阅并执行耗时任务后，当Activity被finish时，如果耗时任务还未完成，没有及时取消订阅，就会导致Activity无法被回收，从而引发内存泄漏。为了解决这个问题，就产生了RxLifecycle，让RxJava变得有生命周期感知，使得其能及时取消订阅，避免出现内存泄漏问题。
 \end{itemize}
+\subsection{解决办法}
+\label{sec-19-2}
+\begin{itemize}
+\item 把整个Observable.create() \ldots{}执行subscribe（）方法后赋值为Disposable，然后再销毁页面调用下面方法
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+if (disposable != null && !disposable.isDisposed()) {
+    disposable.dispose();
+}
+\end{minted}
+\begin{itemize}
+\item Presenter或ViewModel中执行异步任务，自定义控件，Manager相关类，自定义Adapter中执行异步任务应该如何防止内存泄露？
+\item 在BaseActivity中实现代码:
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+private CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+public void addDisposable(Disposable disposable) {
+    mCompositeDisposable.add(disposable);
+}
+
+@Override
+protected void onDestroy() {
+    super.onDestroy();
+    mCompositeDisposable.dispose();
+}
+\end{minted}
+\begin{itemize}
+\item 每次Rxjava异步任务时，把相关的disposable对象传入，onDestroy中统一解绑
+\item 在Activity的onDestory()生命周期时，自动解除订阅，以防止因生命周期组件的生命周期而导致的RxJava内存泄漏事件。
+\item 其他的解决方式
+\begin{itemize}
+\item Rxlife解决内存泄露
+\item autoDisposable解决内存泄露
+\item RxLifecycle解决内存泄露
+\end{itemize}
+\end{itemize}
+
 \subsection{（1）添加依赖}
-\label{sec-19-1}
+\label{sec-19-3}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{gradle}
     implementation 'com.trello.rxlifecycle2:rxlifecycle-components:2.1.0'
 \end{minted}
 \subsection{（2）基本使用}
-\label{sec-19-2}
+\label{sec-19-4}
 \begin{itemize}
 \item Activity 需继承自 RxAppCompatActivity 或 RxFragmentActivity 或 RxActivity
 \item Fragment 需继承  RxFragment
@@ -2543,5 +2607,211 @@ retrofit.create(ApiUrl.class)
         }
     });
 \end{minted}
+
+\section{RxLifecycle 第三方库： 解决内存泄露，原理详解}
+\label{sec-20}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{groovy}
+compile 'com.trello.rxlifecycle2:rxlifecycle-components:2.2.2'
+compile 'com.trello.rxlifecycle2:rxlifecycle-navi:2.2.2'
+\end{minted}
+\begin{itemize}
+\item 主要有下面几种使用方式：
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{text}
+1 bindToLifecycle
+2 bindUntilEvent
+3 LifecycleProvider
+\end{minted}
+\subsection{1.bindToLifecycle}
+\label{sec-20-1}
+\begin{itemize}
+\item 这种方式可以自动根据Activity或者Fragment的生命周期进行解绑，用起来也很方便,Avtivity需要继承RxActivity， Fragment则需要继承RxFragment
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public class MainActivity extends BaseActivity{
+    @Override
+        protected void onStart() {
+        super.onStart();
+        Observable.interval(1, TimeUnit.SECONDS)
+            .subscribeOn(Schedulers.io())
+            .compose(this.<Long>bindToLifecycle())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(new Consumer<Long>() {
+                    @Override
+                        public void accept(Long num) throws Exception {
+                        Timber.tag(TAG).d("onStart, running num : " + num);
+                    }
+                });
+    }
+}
+\end{minted}
+\begin{itemize}
+\item 这里在onStart中进行绑定，如果Activity进入onStop生命周期的时候就会停止Observable，看一下日志：
+\item bindToLifecycle就是会自动绑定生命周期，我们看下Activity生命周期,很明显在onCreate中bindToLifecycle就会在onDestroy中进行解绑，其他的一一对应就是。
+\end{itemize}
+\subsection{ActivityEvent FragmentEvent}
+\label{sec-20-2}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+/**
+ * Lifecycle events that can be emitted by Activities.
+ */
+public enum ActivityEvent {
+    CREATE,
+    START,
+    RESUME,
+    PAUSE,
+    STOP,
+    DESTROY
+}
+/**
+ * Lifecycle events that can be emitted by Fragments.
+ */
+public enum FragmentEvent {
+    ATTACH,
+    CREATE,
+    CREATE_VIEW,
+    START,
+    RESUME,
+    PAUSE,
+    STOP,
+    DESTROY_VIEW,
+    DESTROY,
+    DETACH
+}
+\end{minted}
+\subsection{2.bindUntilEvent}
+\label{sec-20-3}
+\begin{itemize}
+\item 见名知意，就是可以和制定的生命周期进行绑定，这种方式比上面的灵活，比如可以在一个按钮中绑定onStart的事件，而不必要一定要卸载onStart中。
+\item 我在上面的Activity中添加一个按钮，点击事件在getData(View view)中，看下代码：
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+public void getData(View view) {
+    Observable observable = Observable.interval(1, TimeUnit.SECONDS).
+        subscribeOn(Schedulers.io())
+        .compose(this.bindUntilEvent(ActivityEvent.PAUSE));
+    observable.observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new Consumer<Long>() {
+                @Override
+                    public void accept(Long num) throws Exception {
+                    Timber.tag(TAG).d("getData, running until num : " + num);
+                }
+            });
+}
+\end{minted}
+\begin{itemize}
+\item 按我们的预期，就是在Activity进入onPause时，Observable会停止发送数据，看下打印的日志是不是这样的：   bindUntilEvent.PNG
+\item 基本上面这两种方式就够用了，下面的方式LifecycleProvider在MVP的模式中用处就比较大了。我们接着往下看。
+\end{itemize}
+\subsection{3.LifecycleProvider}
+\label{sec-20-4}
+\begin{itemize}
+\item 使用方式就是，首先继承NaviActivity，然后在Activity中加上这句话
+\item LifecycleProvider<ActivityEvent> provider = NaviLifecycle.createActivityLifecycleProvider(this);
+\item 这样就可以通过provider监听生命周期了。我这里在初始化presenter的时候传递过去
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+@Override
+protected void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    //初始化Presenter
+    presenter = new Presenter(provider);
+}
+\end{minted}
+\begin{itemize}
+\item 在Activity中添加一个按钮，通过延时3秒模拟网络请求，请求成功后更新UI。这里通过 provider发送生命周期事件，然后在onNext中判断事件类型，如果已经Activity已经进入onPause onStop onDestroy中的其中一个，就不再更新UI了，并且通过Disposable断开连接。
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+FactoryModel.getModel(Token.STRING_MODEL).params(params)
+    .execute(new CallBack<String>() {
+        @Override
+            public void onSuccess(final String data) {
+            provider.lifecycle().subscribe(new Observer<ActivityEvent>() {
+                    @Override
+                        public void onSubscribe(Disposable d) {
+                        disposable = d;
+                    }
+                    @Override
+                        public void onNext(ActivityEvent activityEvent) {
+                        Timber.tag("Presenter_TAG").i("received activityEvent, activityEvent = %s" , activityEvent.name());
+                        if (null != disposable && disposable.isDisposed()){
+                            Timber.tag("Presenter_TAG").i("disposable isDisposed");
+                            return;
+                        }
+                        if (activityEvent == ActivityEvent.PAUSE || activityEvent == ActivityEvent.STOP
+                            || activityEvent == ActivityEvent.DESTROY) {
+                            Timber.tag("Presenter_TAG").e("do not refresh UI, activityEvent = %s", activityEvent.name());
+                            onComplete();
+                            return;
+                        }
+                        if (isViewAttached()) {
+                            Timber.tag("Presenter_TAG").i("refresh UI, activityEvent = %s" , activityEvent.name());
+                            view.showData(data);
+                        }
+                    }
+                    @Override
+                        public void onError(Throwable e) {
+                    }
+                    @Override
+                        public void onComplete() {
+                        if (null != disposable && !disposable.isDisposed()){
+                            disposable.dispose();
+                            Timber.tag("Presenter_TAG").d("LifecycleProvider disposed");
+                        }
+                    }
+                });
+        }
+    });
+\end{minted}
+\begin{itemize}
+\item 看一下正常请求成功的日志,和预期一样，正常更新UI了。   请求成功.PNG
+\item 下面我们来搞一下破坏，在刚发起网络请求后，按home按键将APP切到后台，这样Activity就进入onStop的生命周期，那么即使网络请求成功也应该再更新UI了，看下日志是不是这样的：   破坏.PNG  最终UI也是没有更新的。我们在下面的逻辑中切断了订阅关系，那么下次再次点击按钮发起网络请求是还能正常使用provider吗？
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+if (activityEvent == ActivityEvent.PAUSE
+    || activityEvent == ActivityEvent.STOP
+    || activityEvent == ActivityEvent.DESTROY) {
+    Timber.tag("Presenter_TAG").e("do not refresh UI, activityEvent = %s", activityEvent.name());
+    onComplete();
+    return;
+}
+\end{minted}
+\begin{itemize}
+\item 其实是可以的，看一下Demo的日志：  切断订阅关系后再次监听生命周期.PNG
+\item 那么是怎么回事？其实就在下面这个代码中：
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+provider.lifecycle()
+\end{minted}
+\begin{itemize}
+\item 再跟进去BehaviorSubject,其中以后一句注释Hides the identity of this Observable and its Disposable，最后会返回一个新的Observable :
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{csharp}
+/**
+ * Hides the identity of this Observable and its Disposable.
+ * <p>Allows hiding extra features such as {@link io.reactivex.subjects.Subject}'s
+ * {@link Observer} methods or preventing certain identity-based
+ * optimizations (fusion).
+ * <dl>
+ *  <dt><b>Scheduler:</b></dt>
+ *  <dd>{@code hide} does not operate by default on a particular {@link Scheduler}.</dd>
+ * </dl>
+ * @return the new Observable instance
+ *
+ * @since 2.0
+ */
+@CheckReturnValue
+@SchedulerSupport(SchedulerSupport.NONE)
+public final Observable<T> hide() {
+    return RxJavaPlugins.onAssembly(new ObservableHide<T>(this));
+}
+\end{minted}
+\subsection{4.总结}
+\label{sec-20-5}
+\begin{itemize}
+\item RxLifecycle的侵入性还是比较低的，基本不需要改动原来的代码就可以实现生命周期的监听，也提供了防止RxJava订阅关系内存泄漏的另外一种解决方案，还是很不错的。
+\item 今天的分享就到这了，后面有机会和大家分享下RxLifecycle的源码。
+\item 平时工作也比较忙，写博客真的是需要耐力，如果对大家有帮助欢迎关注和点赞哈。
+\end{itemize}
 % Emacs 27.1 (Org mode 8.2.7c)
 \end{document}

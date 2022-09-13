@@ -42,6 +42,8 @@ public class MainActivity extends BaseActivity {
 
         // 数据绑定视图
         dataBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        dataBinding.setLifecycleOwner(this); // 绑定生命周期 ？？？ 怎么用呢？
+
         mMainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
 // OkHttp Call for fetching data：网络申请有延迟，希望早点儿下发请求
         mMainActivityViewModel.getEmployees();
@@ -108,7 +110,6 @@ public class MainActivity extends BaseActivity {
         super.onDestroy();
         Log.d(TAG, "onDestroy() ");
     }
-
     
 // onRestoreInstanceState()会在onStart()和onResume()之间执行或者在onCreate()方法中判断
     // 只有在activity销毁重建的时候,才会调用
