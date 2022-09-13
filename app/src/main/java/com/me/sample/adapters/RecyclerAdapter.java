@@ -3,25 +3,19 @@ package com.me.sample.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
 import com.me.sample.R;
 import com.me.sample.databinding.ItemEmpBinding;
-import com.me.sample.model.Employee;
+import com.me.sample.db.bean.Employee;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     /**

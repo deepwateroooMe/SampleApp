@@ -1,15 +1,22 @@
-package com.me.sample.model;
+package com.me.sample.db.bean;
 
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 import javax.annotation.Generated;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 @Generated("jsonschema2pojo")
+@Entity(tableName = "employee")
 public class Employee {
-    private final String TAG = "Employee"; 
+//    private final String TAG = "Employee";
 
+    @PrimaryKey
+    @NonNull
     @SerializedName("uuid")
     @Expose
     private String uuid;

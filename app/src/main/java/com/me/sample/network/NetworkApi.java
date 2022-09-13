@@ -70,26 +70,27 @@ public class NetworkApi {
         // 设置网络请求超时时长，这里设置为6s
         builder.connectTimeout(6, TimeUnit.SECONDS);
 
-        // 添加请求拦截器，如果接口有请求头的话，可以放在这个拦截器里面
-        builder.addInterceptor(new RequestInterceptor(iNetworkRequiredInfo));
-        // 添加返回拦截器，可用于查看接口的请求耗时，对于网络优化有帮助
-        builder.addInterceptor(new ResponseInterceptor());
+        // // 添加请求拦截器，如果接口有请求头的话，可以放在这个拦截器里面
+        // builder.addInterceptor(new RequestInterceptor(iNetworkRequiredInfo));
+        // // 添加返回拦截器，可用于查看接口的请求耗时，对于网络优化有帮助
+        // builder.addInterceptor(new ResponseInterceptor());
 
-        // 当程序在debug过程中则打印数据日志，方便调试用。
-        if (iNetworkRequiredInfo != null && iNetworkRequiredInfo.isDebug()){
-            // iNetworkRequiredInfo不为空且处于debug状态下则初始化日志拦截器
-            HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
-            // HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-            //         @Override
-            //         public void log(String message) {
-            //             Log.i("Http请求参数：", message);
-            //         }
-            //     });
-            // 设置要打印日志的内容等级，BODY为主要内容，还有BASIC、HEADERS、NONE。
-            httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-            // 将拦截器添加到OkHttp构建器中
-            builder.addInterceptor(httpLoggingInterceptor);
-        }
+        // // 当程序在debug过程中则打印数据日志，方便调试用。
+        // if (iNetworkRequiredInfo != null && iNetworkRequiredInfo.isDebug()){
+        //     // iNetworkRequiredInfo不为空且处于debug状态下则初始化日志拦截器
+        //     HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
+        //     // HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+        //     //         @Override
+        //     //         public void log(String message) {
+        //     //             Log.i("Http请求参数：", message);
+        //     //         }
+        //     //     });
+        //     // 设置要打印日志的内容等级，BODY为主要内容，还有BASIC、HEADERS、NONE。
+        //     httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        //     // 将拦截器添加到OkHttp构建器中
+        //     builder.addInterceptor(httpLoggingInterceptor);
+        // }
+
         // OkHttp配置完成
         okHttpClient = builder.build();
         return okHttpClient;

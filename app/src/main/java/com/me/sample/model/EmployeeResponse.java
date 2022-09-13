@@ -4,6 +4,8 @@ import java.util.List;
 import javax.annotation.Generated;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.me.sample.db.bean.Employee;
+
 /**
  * 员工访问接口返回数据实体
  * @author llw

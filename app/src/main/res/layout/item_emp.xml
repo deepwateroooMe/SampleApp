@@ -6,7 +6,7 @@
   <data>
     <variable
         name="emp"
-        type="com.me.sample.model.Employee" />
+        type="com.me.sample.db.bean.Employee" />
   </data>
 
   <androidx.cardview.widget.CardView

@@ -1,37 +1,25 @@
 package com.me.sample.activities;
 
-import static android.view.View.INVISIBLE;
-import static android.view.View.VISIBLE;
-
 import android.os.Bundle;
 
 import com.me.sample.R;
 import com.me.sample.adapters.RecyclerAdapter;
 import com.me.sample.databinding.ActivityMainBinding;
-import com.me.sample.model.Employee;
+import com.me.sample.db.bean.Employee;
 import com.me.sample.model.EmployeeResponse;
-import com.me.sample.network.ApiService;
-import com.me.sample.network.NetworkApi;
 import com.me.sample.viewmodels.MainActivityViewModel;
 
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import dagger.hilt.android.AndroidEntryPoint;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.http.HEAD;
 
 @AndroidEntryPoint
 public class MainActivity extends BaseActivity {
@@ -46,6 +34,9 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate() ");
 
+        if (savedInstanceState != null) {
+            
+        }
         // UI界面屏幕显示，优先处理，不能留白
         showLoading();
 
@@ -87,30 +78,78 @@ public class MainActivity extends BaseActivity {
             });
     }
 
-    @Override 
-        public void onConfigurationChanged(Configuration newConfig) { 
-        super.onConfigurationChanged(newConfig);
- 
-        // Checks the orientation of the screen 
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) { 
-            Toast.makeText(this, "横屏模式", Toast.LENGTH_SHORT).show(); 
-        }  else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){ 
-            Toast.makeText(this, "竖屏模式", Toast.LENGTH_SHORT).show(); 
-        } 
+    @Override
+        public void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart() ");
+    }
+    @Override
+        public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart() ");
+    }
+    @Override
+        public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause() ");
+    }
+    @Override
+        public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume() ");
+    }
+    @Override
+        public void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop() ");
+    }
+    @Override
+        public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy() ");
     }
 
-//     @Override
-//         public void onSaveInstanceState(Bundle savedInstanceState) {
-//         super.onSaveInstanceState(savedInstanceState);
-//         Log.d(TAG, "onSaveInstanceState() ");
-// // 保存数据： 链表数据，三种状态，图片(我应该是可以不用管的)
-//         // savedInstanceState.putInt();
-//     }
+    
+// onRestoreInstanceState()会在onStart()和onResume()之间执行或者在onCreate()方法中判断
+    // 只有在activity销毁重建的时候,才会调用
+    @Override
+        protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.d(TAG, "onRestoreInstanceState() ");
+    }
+ 
+    // 会在 onStop()方法调用之前 调用该方法,保存当前状态
+    // 当用户主动销毁activity，如按back键，或直接执行finish(),不会执行
+    // 遇到意外情况（内存不足;用户直接按home键）由系统直接销毁一个Activity时，就会调用
+    @Override
+        public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        Log.d(TAG, "onSaveInstanceState() ");
+// 该保存哪些数据呢？如何恢复呢？怎么模拟测试内存不足的情况？
+        
+    }
+
+   // @Override // 因为这里横竖屏的布局完全一样，所以可以不必覆写这个方法
+   //     public void onConfigurationChanged(Configuration newConfig) {
+   //     super.onConfigurationChanged(newConfig);
+   //     // Checks the orientation of the screen
+   //     if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) 
+   //         Toast.makeText(this, "横屏模式", Toast.LENGTH_SHORT).show();
+   //     else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT)
+   //         Toast.makeText(this, "竖屏模式", Toast.LENGTH_SHORT).show();
+   // }
+
+    @Override
+        public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        Log.d(TAG, "onSaveInstanceState()");
+// 保存数据： 链表数据，三种状态，图片(我应该是可以不用管的)
+        // savedInstanceState.putInt();
+    }
     
     // 这部分对数据的处理，更希望放到ViewModel中去定义出三种不同的状态，暂时放这里
     private boolean isValidData(EmployeeResponse l) {
         if (l.getEmployees() == null) return false;
-        Log.d(TAG, "isValidData() ");
         for (Employee e : l.getEmployees()) {
             if (!isValidEmployee(e)) 
                 return false;

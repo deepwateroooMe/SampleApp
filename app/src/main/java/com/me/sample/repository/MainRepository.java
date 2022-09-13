@@ -6,27 +6,20 @@ import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.gson.Gson;
-import com.me.sample.model.Employee;
+import com.me.sample.application.BaseApplication;
+import com.me.sample.db.bean.Employee;
 import com.me.sample.model.EmployeeResponse;
 import com.me.sample.network.ApiService;
 import com.me.sample.network.BaseObserver;
 import com.me.sample.network.NetworkApi;
 import com.me.sample.network.utils.KLog;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
-import dagger.hilt.android.EntryPointAccessors;
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 /**
  * Main存储库 用于对数据进行处理
@@ -55,7 +48,7 @@ public class MainRepository {
         apiService.getEmployees().compose(NetworkApi.applySchedulers(new BaseObserver<EmployeeResponse>() {
                     @Override 
                         public void onSuccess(EmployeeResponse empsResponse) {
-                        KLog.d(new Gson().toJson(empsResponse));
+                        // KLog.d(new Gson().toJson(empsResponse));
                         employees.setValue(empsResponse);
                     }
                     @Override
@@ -64,5 +57,37 @@ public class MainRepository {
                     }
                 }));
         return employees;
+    }
+
+    /**
+     * 保存员工链表数据
+     */
+    private void saveEmployees(EmployeeResponse employeesResponse) {
+        Completable deleteAll = BaseApplication.getDb().employeeDao().deleteAll();
+        CustomDisposable.addDisposable(deleteAll, () -> {
+                Log.d(TAG, "saveEmployees: 删除数据成功");
+                List<Employee> employeesList = new ArrayList<>();
+                for (Employee employee : employeesResponse.getEmployees()) {
+                    employeesList.add(employee);
+                }
+                // 保存到数据库
+                Completable insertAll = BaseApplication.getDb().employeeDao().insertAll(employeesList);
+                Log.d(TAG, "saveEmployees: 插入数据：" + employeesList.size() + "条");
+                // RxJava处理Room数据存储
+                CustomDisposable.addDisposable(insertAll, () -> Log.d(TAG, "saveEmployees: 热门天气数据保存成功"));
+            });
+    }
+
+    /**
+     * 保存员工大小图像
+     */
+    private void saveImageData(EmployeeResponse employeeResponse) {
+//        Employee bean = employeeResponse.getEmployees().get(0);
+//        // 保存到数据库
+//        Completable insert = BaseApplication.getDb().imageDao().insertAll(
+//            new Image(1, bean.getUrl(), bean.getUrlbase(), bean.getCopyright(),
+//                      bean.getCopyrightlink(), bean.getTitle()));
+        // RxJava处理Room数据存储
+//        CustomDisposable.addDisposable(insert, () -> Log.d(TAG, "saveImageData: 必应数据保存成功"));
     }
 }
