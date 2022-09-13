@@ -80,5 +80,5 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
     // circle imageview：这个库直接使用是没有问题的；但因为有现做的例子，就也自己再实现一遍
-    implementation 'de.hdodenhof:circleimageview:2.2.0'
+//    implementation 'de.hdodenhof:circleimageview:2.2.0'
 }

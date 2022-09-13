@@ -16,6 +16,63 @@
 - The *employee list should not be persisted to disk*. You can reload it from the network *on each app launch and when refresh is requested* — but no more often than that unintentionally. 
 - Android developers in particular should take care *not to make redundant network calls* when the *phone is rotated, or when memory is low*.
   - 旋转手机屏的时候，或手机内存低的时候，不能重新申请网络请求。就是 *转手机屏的时候，activity不能重建* ，只更改视图就可以了；低内存的情况需要自己再考虑一下
+  - 横竖屏切换时候activity的生命周期：这个就打印日志再验证一遍吧。。。。。
+#+BEGIN_SRC text
+1、不设置Activity的android:configChanges时，切屏会重新调用各个生命周期，切横屏时会执行一次，切竖屏时会执行两次 
+2、设置Activity的android:configChanges="orientation"时，切屏还是会重新调用各个生命周期，切横、竖屏时只会执行一次 
+3、设置Activity的android:configChanges="orientation|keyboardHidden"时，切屏不会重新调用各个生命周期，只会执行onConfigurationChanged方法
+#+END_SRC 
+  -  一般情况下Configuration的改变会导致Activity被销毁重建，但也有办法让指定的Configuration改变时不重建Activity，方法是在AndroidManifest.xml里通过android:configChanges属性指定需要忽略的Configuration名字，例如下面这样： 
+#+begin_SRC xml
+<activity 
+　　android:name=".MyActivity" 
+　　android:configChanges="orientation|keyboardHidden" 
+　　android:label="@string/app_name"/>
+#+END_SRC 
+  - 这样设置以后，当屏幕旋转时Activity对象不会被销毁——作为替代，Activity的onConfigurationChanged()方法被触发，在这里开发者可以获取到当前的屏幕方向以便做必要的更新。既然这种情况下的Activity不会被销毁，旋转后Activity里正显示的信息（例如文本框中的文字）也就不会丢失了。 
+  -  假如你的应用里，横屏和竖屏使用同一个layout资源文件，onConfigurationChanged()里甚至可以什么都不做。但如果横屏与竖屏使用不同的layout资源文件，例如横屏用res/layout-land/main.xml，竖屏用res/layout-port/main.xml，则必须在onConfigurationChanged()里重新调用setContentView()方法以便新的layout能够生效，这时虽然Activity对象没有销毁，但界面上的各种控件都被销毁重建了，你需要写额外的代码来恢复界面信息。 
+#+BEGIN_SRC csharp
+@Override 
+public void onConfigurationChanged(Configuration newConfig) { 
+　　super.onConfigurationChanged(newConfig); 
+ 
+　　// Checks the orientation of the screen 
+　　if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) { 
+　　　　Toast.makeText(this, "横屏模式", Toast.LENGTH_SHORT).show(); 
+　　} 
+　　else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){ 
+　　　　Toast.makeText(this, "竖屏模式", Toast.LENGTH_SHORT).show(); 
+　　} 
+}
+#+END_SRC 
+  - （注：官方不推荐使用这种方法。）
+- 销毁当前的Activity：
+  - 如果销毁当前的Activity，那么就要重写Activity的两个方法onSaveInstanceState（）和 onRestoreInstanceState（），显然从方法名字可以看出一个是保存
+- 另一种保存-恢复现场的方法
+  - 实现onRetainNonConfigurationInstance()方法保存数据，使用方法和前面的onSaveInstanceState(Bundle)差不多。
+  #+BEGIN_SRC csharp
+/*保存*/
+ 
+@Override 
+public Object onRetainNonConfigurationInstance() { 
+　　final MyDataObject data = collectMyLoadedData(); 
+　　return data; 
+} 
+ 
+/*重建*/
+ 
+@Override 
+public void onCreate(Bundle savedInstanceState) { 
+　　super.onCreate(savedInstanceState); 
+　　setContentView(R.layout.main); 
+　　final MyDataObject data = (MyDataObject) getLastNonConfigurationInstance(); 
+　　if (data == null) {//表示不是由于Configuration改变触发的onCreate() 
+　　　　data = loadMyData(); 
+　　} 
+　　//... 
+} 
+  #+END_SRC 
+ - activity的销毁和重建有时候不一定是由屏幕旋转引起的，所以还是建议使用保存-恢复现场的方法。
 - *Images*, however, should *be cached on disk* so as to not waste device bandwidth. You may use an *open source image caching solution*, or write your own caching. Do not rely upon HTTP caching for image caching.
   - 我不担心这个，觉得Glide已经最大限度地优化了这个整个过程。只需要选对这个库就可以了
 - Note that photos at a given URL will never change. Once one is loaded, you do not need to reload the photo. If an employee’s photo changes, they will be given a new photo URL.
@@ -29,9 +86,7 @@
 - 现在终于改掉了自己网址写错的小bug了，可以再往前迈进一步，深入深解拦截器与OkHttp底层的原理了。。。
 - 顺着这个例子https://github.com/xitu/gold-miner/blob/master/TODO/getting-started-with-retrofit.md 把进阶的部分看完，弄懂
 - 终于找到了先前 *今年二三月份参考过的一个很好的案例日志序列* ： MVVM https://blog.csdn.net/qq_38436214/category_11482619.html?spm=1001.2014.3001.5482
-  - 里面有十几篇博文都作了最新的更新，上次自己那个项目，可能就只工作笔记本上还有一个版本吧，其它的两台电脑我都找过了没有了
-  - 今天刚到家，只休息了三个小时，脑袋昏昏的，会明天后天再花两三天的时间在这个项目上，把它实现完，理解得再深入透彻一点儿
-  - 参考网络上的例子，大部分都能懂，但是因为头昏昏的，实现的时候，现在都不知道是在干什么；今天好好休息一晚，到明天应该就能够好很多了
+  - 下午忘记带一根测试用的线了，就暂时理一下思路，晚上回家后再在大电脑上测试
 - 这是一个 *看似要求极其简单，实则考验的知识点和深度有着相当的跨度的小项目。*
 - 它们一定挑都要挑我出差到WSU的一个星期里来考验我，因为他们就是想要去打败一个人。呵呵，真正想要打败一个人，谈何容易，就凭这？？？
 - *Retrofit + RxJava*: 好像是更合适的，可以用注解，并且用得更为广泛

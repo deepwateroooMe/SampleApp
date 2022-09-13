@@ -46,16 +46,6 @@ public class Employee {
     @Expose
     private String employeeType;
 
-    // @Override
-    // public String toString() {
-    //     Log.d(TAG, "uuid: " + uuid);
-    //     Log.d(TAG, "fullName: " + fullName);
-    //     Log.d(TAG, "emailAddress: " + emailAddress);
-    //     Log.d(TAG, "team: " + team);
-    //     Log.d(TAG, "employeeType: " + employeeType);
-    //     return "";
-    // }
-
     public String getUuid() {
         return uuid;
     }

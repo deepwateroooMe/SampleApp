@@ -1,4 +1,4 @@
-% Created 2022-09-11 Sun 20:33
+% Created 2022-09-12 Mon 14:56
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -36,25 +36,42 @@
 \section{要求}
 \label{sec-1}
 \begin{itemize}
-\item Overview
-\begin{itemize}
 \item Build an \textbf{employee directory app} that shows a list of employees from the provided endpoint.
 \item The app should display a list (or any kind of \textbf{collection view}!) which shows all the employees returned from the JSON endpoint described below.
 \item Each item in the view should contain a \textbf{summary of the employee}, including their \textbf{photo, name, and team} at minimum. You may add more information to the summary if you want, or \textbf{sort employees in any fashion} you’d like – sort and group by name, team, etc.
+\begin{itemize}
+\item 这个很好实现：加一个ListView的下拉列表框以提供可选择的排序标准；因为是MVVM设计，由数据来驱动UI,用户选择排序后，只需要操作viewModel里的链表按标准排序，并刷新UI就可以了，因为简单，不作这个项目的重点。
+\end{itemize}
 \item There should be some UX to reload the employee list from within the app at any time. The UX can be done in any way you want: \textbf{a button, pull-to-refresh}, etc.
 \item If there is any additional UI/UX you would like to add, feel free to do so! We only ask that you please \textbf{do not build any more screens} than this list. Do not worry about building custom controls or UI elements – using \textbf{system-provided, standard elements} is totally fine.
 \item Be sure to \textbf{appropriately handle the normal variety of errors when querying an endpoint}. The app should \textbf{display useful loading, empty, and error states} where appropriate. \textbf{If images fail to load, displaying a placeholder} is fine.
+\begin{itemize}
+\item \textbf{网络请求的异常处理} ：这个我想要把它作为项目的重中之重来处理
+\end{itemize}
 \item One extra thing we ask is that you please ensure you \textbf{do not use more network bandwidth than necessary} – \textbf{load expensive resources such as photos on-demand only}.
-\item The \textbf{employee list should not be persisted to disk}. You can reload it from the network \textbf{on each app launch and when refresh is requested} — but no more often than that unintentionally. (Android developers in particular should take care \textbf{not to make redundant network calls} when the \textbf{phone is rotated, or when memory is low}).
+\begin{itemize}
+\item \textbf{网络请求处理} ：在且仅在必要的时候网络请求
+\end{itemize}
+\item The \textbf{employee list should not be persisted to disk}. You can reload it from the network \textbf{on each app launch and when refresh is requested} — but no more often than that unintentionally.
+\item Android developers in particular should take care \textbf{not to make redundant network calls} when the \textbf{phone is rotated, or when memory is low}.
+\begin{itemize}
+\item 旋转手机屏的时候，或手机内存低的时候，不能重新申请网络请求。就是 \textbf{转手机屏的时候，activity不能重建} ，只更改视图就可以了；低内存的情况需要自己再考虑一下
+\end{itemize}
 \item \textbf{Images}, however, should \textbf{be cached on disk} so as to not waste device bandwidth. You may use an \textbf{open source image caching solution}, or write your own caching. Do not rely upon HTTP caching for image caching.
+\begin{itemize}
+\item 我不担心这个，觉得Glide已经最大限度地优化了这个整个过程。只需要选对这个库就可以了
+\end{itemize}
 \item Note that photos at a given URL will never change. Once one is loaded, you do not need to reload the photo. If an employee’s photo changes, they will be given a new photo URL.
-\item Tests should be provided for the app. We do not expect 100\% code coverage, so please use your best judgment for what should be tested. We’re also interested only in unit tests. Feel free to skip snapshot or app tests.
+\begin{itemize}
+\item \textbf{不懂这句话说的是什么意思，有什么影响？}
+\end{itemize}
+\item \textbf{Tests should be provided for the app}. We do not expect 100\% code coverage, so please use your best judgment for what should be tested. We’re also interested only in \textbf{unit tests}. Feel free to skip snapshot or app tests.
+\begin{itemize}
+\item 不喜欢测试，但是这里可能 \textbf{需要加一两个测试用例}
 \end{itemize}
 \item MVVM: 需要数据驱动，viewModel里定义一个状态变量，来标记当前的活动状态
-\begin{itemize}
 \item If any employee is malformed, it is fine to invalidate the entire list of employees in the response - there is no need to exclude only malformed employees.
 \item If there are no employees to show, the app should present an \textbf{empty state} view instead of an empty list.
-\end{itemize}
 \end{itemize}
 \section{主要思路}
 \label{sec-2}
@@ -1636,8 +1653,14 @@ protected void onActivityResult(int requestCode, int resultCode, @Nullable Inten
 }
 \end{minted}
 
-\section{Library Hours}
+\section{其它相对比较有参考价值的链接}
 \label{sec-12}
+\begin{itemize}
+\item \url{https://blog.51cto.com/u_15456329/4799618}
+\end{itemize}
+
+\section{Library Hours}
+\label{sec-13}
 \begin{enumerate}
 \item 34007 Alvarado-Niles Rd, \textbf{Union City}, CA 94587 (4.3 miles)
 \item 37055 Newark Blvd, \textbf{Newark}, CA 94560 (5-7 miles)

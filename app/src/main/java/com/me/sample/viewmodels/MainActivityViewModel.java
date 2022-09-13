@@ -15,7 +15,7 @@ import com.me.sample.repository.MainRepository;
 import java.util.List;
 
 public class MainActivityViewModel extends BaseViewModel {
-    private final String TAG = "MainViewModel";
+    private final String TAG = "MainActivityViewModel";
 
     public LiveData<EmployeeResponse> mEmpList;
 
