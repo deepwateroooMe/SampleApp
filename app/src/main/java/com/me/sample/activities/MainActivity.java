@@ -8,6 +8,7 @@ import com.me.sample.databinding.ActivityMainBinding;
 import com.me.sample.db.bean.Employee;
 import com.me.sample.model.EmployeeResponse;
 import com.me.sample.viewmodels.MainActivityViewModel;
+import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import android.os.PersistableBundle;
 import android.util.Log;
@@ -25,6 +26,8 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 
 // @AndroidEntryPoint
 public class MainActivity extends BaseActivity {
@@ -39,16 +42,23 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate() ");
 
-        // // 这是kotlin语言的版本
-        // Observable.interval(1, TimeUnit.SECONDS) 
-        //     .doOnDispose {
-        //     Log.i(TAG, "Unsubscribing subscription from onDestory()")
-        //         }
-        // .compose(bindUntilEvent(ActivityEvent.DESTROY))
-        //     .subscribe {
-        //     Log.i(TAG, "Started in onCreate(), running until in onDestroy(): $it")
-        //         }
-
+        // 以Activity为例，在Activity中使用bindToLifecycle()方法，完成Observable发布的事件和当前的组件绑定，实现生命周期同步。
+        // 从而实现当前组件生命周期结束时，自动取消对Observable订阅
+        // 当执行onDestory()时， 自动解除订阅
+        Observable.interval(1, TimeUnit.SECONDS)
+            .doOnDispose(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        Log.i(TAG, "Unsubscribing subscription from onCreate()");
+                    }
+                })
+            .compose(this.<Long>bindToLifecycle())
+            .subscribe(new Consumer<Long>() {
+                    @Override
+                        public void accept(Long num) throws Exception {
+                        Log.i(TAG, "Started in onCreate(), running until onDestory(): " + num);
+                    }
+                });
         
         // if (savedInstanceState != null) {
         // }
@@ -59,7 +69,7 @@ public class MainActivity extends BaseActivity {
         dataBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 //        dataBinding.setLifecycleOwner(this); // 绑定生命周期 ？？？ 怎么用呢？
 
-        mMainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
+        mMainActivityViewModel = new ViewModelProvider((ViewModelStoreOwner) this).get(MainActivityViewModel.class);
         mMainActivityViewModel.init();
 // OkHttp Call for fetching data：网络申请有延迟，希望早点儿下发请求
         // mMainActivityViewModel.getEmployees();
@@ -71,7 +81,7 @@ public class MainActivity extends BaseActivity {
 
 // 感觉这里每次都New 一个新的 RecyclerAdapter也不是很好，暂时用不优雅的公用API的方式重置数据；
 // 因为涉及几个不同状态的切换，所以还是移到里面，应该差别也不是很大               
-        mMainActivityViewModel.mEmpList.observe(this, empListResponse -> {
+        mMainActivityViewModel.mEmpList.observe((LifecycleOwner) this, empListResponse -> {
                 // 觉得这里的数据分类的各要的办法：是在ViewModel中定义三个不同的状态，直接传三个最简单的状态到视图层，但是暂时先这样
                 if (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)) {
                     Toast toast = Toast.makeText(this, "The Employee list is Empty or contained invalide data.", Toast.LENGTH_LONG);
@@ -83,7 +93,7 @@ public class MainActivity extends BaseActivity {
                 dismissLoading();
             });
         
-        mMainActivityViewModel.failed.observe(this, failed -> dismissLoading());
+        mMainActivityViewModel.failed.observe((LifecycleOwner) this, failed -> dismissLoading());
 
         dataBinding.fab.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -112,6 +122,22 @@ public class MainActivity extends BaseActivity {
         public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume() ");
+        // 与上面onCreate()中的方法，两者选择一个即可。问题是：两种方法，有区别吗，区别是什么呢？
+        // Observable.interval(1, TimeUnit.SECONDS)
+        //     .doOnDispose(new Action() {
+        //             @Override
+        //             public void run() throws Exception {
+        //                 Log.i(TAG, "Unsubscribing subscription from onResume()");
+        //             }
+        //         })
+        //     //bindUntilEvent()，内部传入指定生命周期参数
+        //     .compose(this.<Long>bindUntilEvent(ActivityEvent.DESTROY))
+        //     .subscribe(new Consumer<Long>() {
+        //             @Override
+        //                 public void accept(Long num) throws Exception {
+        //                 Log.i(TAG, "Started in onResume(), running until in onDestroy(): " + num);
+        //             }
+        //         });
     }
     @Override
         public void onStop() {

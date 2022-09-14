@@ -20,14 +20,15 @@ import androidx.annotation.RequiresApi;
 import com.me.sample.application.BaseApplication;
 import com.me.sample.utils.PermissionUtils;
 import com.me.sample.view.dialog.LoadingDialog;
+import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 /**
  * 基础Activity
  *
  * @author llw
  */
-public class BaseActivity extends AppCompatActivity {
-// public class BaseActivity extends RxAppCompatActivity {
+// public class BaseActivity extends AppCompatActivity {
+public class BaseActivity extends RxAppCompatActivity {
 
     protected BaseActivity context;
     private LoadingDialog loadingDialog;
