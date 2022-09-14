@@ -11,21 +11,14 @@ import com.me.sample.db.bean.Employee;
  * @author llw
  * @description BiYingImgResponse
  */
-@Generated("jsonschema2pojo")
 public class EmployeeResponse {
-
-    @SerializedName("employees")
-    @Expose
     private List<Employee> employees = null;
-
     public List<Employee> getEmployees() {
         return employees;
     }
-
     public void setEmployees(List<Employee> employees) {
         this.employees = employees;
     }
-
 }
 
 // public class EmployeeResponse {

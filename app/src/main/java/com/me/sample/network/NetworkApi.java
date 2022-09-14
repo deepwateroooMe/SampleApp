@@ -1,6 +1,6 @@
 package com.me.sample.network;
 
-import static com.trello.rxlifecycle2.RxLifecycle.bindUntilEvent;
+import static com.trello.rxlifecycle3.RxLifecycle.bindUntilEvent;
 
 import android.util.Log;
 
@@ -9,7 +9,7 @@ import com.me.sample.network.errorhandler.HttpErrorHandler;
 import com.me.sample.network.interceptor.RequestInterceptor;
 import com.me.sample.network.interceptor.ResponseInterceptor;
 import com.me.sample.utils.Constant;
-import com.trello.rxlifecycle2.android.ActivityEvent;
+import com.trello.rxlifecycle3.android.ActivityEvent;
 
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;

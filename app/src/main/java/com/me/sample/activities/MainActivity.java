@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -165,5 +166,10 @@ public class MainActivity extends BaseActivity {
     private void initRecyclerView(){
         RecyclerView.LayoutManager linearLayoutManager = new LinearLayoutManager(this); 
         dataBinding.rv.setLayoutManager(linearLayoutManager);
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+        super.onPointerCaptureChanged(hasCapture);
     }
 }

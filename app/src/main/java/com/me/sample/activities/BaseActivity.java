@@ -11,27 +11,25 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.annotation.RequiresApi;
 
 import com.me.sample.application.BaseApplication;
 import com.me.sample.utils.PermissionUtils;
 import com.me.sample.view.dialog.LoadingDialog;
+import com.trello.rxlifecycle3.components.support.RxAppCompatActivity;
+
 /**
  * 基础Activity
  *
  * @author llw
  */
-public class BaseActivity extends AppCompatActivity {
+// public class BaseActivity extends AppCompatActivity {
+public class BaseActivity extends RxAppCompatActivity {
 
-    protected AppCompatActivity context;
+    protected BaseActivity context;
     private LoadingDialog loadingDialog;
 
     /**
