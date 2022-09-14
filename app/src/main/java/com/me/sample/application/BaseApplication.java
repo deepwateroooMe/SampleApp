@@ -9,14 +9,11 @@ import com.me.sample.db.AppDatabase;
 import com.me.sample.network.NetworkApi;
 import com.me.sample.utils.MVUtils;
 import com.tencent.mmkv.MMKV;
-
-import dagger.hilt.android.HiltAndroidApp;
-
 /**
  * 自定义 Application
  * @author llw
  */
-@HiltAndroidApp
+// @HiltAndroidApp
 public class BaseApplication extends Application {
 
     @SuppressLint("StaticFieldLeak")

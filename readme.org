@@ -30,7 +30,15 @@
 
 * 主要思路
 - *对照它提示过/读得懂的要求，把自己可能会miss掉的小细节全捡回来*
-- 现在重新再次整合Room数据库，把手机内存产资源不足时销毁activity保存数据的部分补充完整；
+- 现在重新再次整合Room数据库，把手机内存产资源不足时销毁activity保存数据(应该需要的是持久性数据保存)的部分补充完整；
+- 现在存在问题：
+  - 网络请求可能存在内存泄露(比如，使用RxJava发布一个订阅后，当Activity被finish，此时订阅逻辑还未完成，如果没有及时取消订阅，就会导致Activity无法被回收，从而引发内存泄漏)；写往数据库的部分因为使用了CompositeDisposable可能没有这个问题；
+  - 现在应用恢复正常运行，并且移除了Hilt的自动注入，不再存在Hilt与RxLifeCycle不合作的问题，先(今天晚上)把这个内存泄露问题给解决了；
+  - 目前网上对RxJava的内存泄漏有几种方案：
+    - 通过封装，手动为RxJava的每一次订阅进行控制，在指定的时机进行取消订阅；
+    - 使用 Daniel Lew 的 RxLifecycle ，通过监听Activity、Fragment的生命周期，来自动断开subscription以防止内存泄漏。
+   - 测试模块还没有写
+   - 一个极端情况下安卓手机内存不足时应用被系统杀死的数据保存与恢复需要数据库；这个地方想得还不是很透，可能把前面的问题解决了再解决这个极端用例
 - 现在终于改掉了自己网址写错的小bug了，可以再往前迈进一步，深入深解拦截器与OkHttp底层的原理了。。。
 - 顺着这个例子https://github.com/xitu/gold-miner/blob/master/TODO/getting-started-with-retrofit.md 把进阶的部分看完，弄懂
 - 终于找到了先前 *今年二三月份参考过的一个很好的案例日志序列* ： MVVM https://blog.csdn.net/qq_38436214/category_11482619.html?spm=1001.2014.3001.5482

@@ -1,6 +1,5 @@
 package com.me.sample.viewmodels;
 
-import androidx.hilt.lifecycle.ViewModelInject;
 import androidx.lifecycle.LiveData;
 
 import com.me.sample.model.EmployeeResponse;
@@ -11,11 +10,18 @@ public class MainActivityViewModel extends BaseViewModel {
 
     public LiveData<EmployeeResponse> mEmpList;
 
-    private final MainRepository mainRepository;
+    private MainRepository mainRepository;
 
-    @ViewModelInject
-        MainActivityViewModel(MainRepository mainRepository) {
-        this.mainRepository = mainRepository;
+    // @ViewModelInject
+    // MainActivityViewModel(MainRepository mainRepository) {
+    //     this.mainRepository = mainRepository;
+    // }
+    public void init() {
+        if (mEmpList != null) return;
+        mainRepository = MainRepository.getInstance();
+
+        failed = mainRepository.failed;
+        mEmpList = mainRepository.getEmployees();
     }
 
     public void getEmployees() {

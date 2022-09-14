@@ -17,12 +17,16 @@ import android.widget.Toast;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import dagger.hilt.android.AndroidEntryPoint;
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
-@AndroidEntryPoint
+import io.reactivex.Observable;
+
+// @AndroidEntryPoint
 public class MainActivity extends BaseActivity {
     private final String TAG = "MainActivity"; 
 
@@ -35,19 +39,30 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate() ");
 
-        if (savedInstanceState != null) {
-            
-        }
+        // // 这是kotlin语言的版本
+        // Observable.interval(1, TimeUnit.SECONDS) 
+        //     .doOnDispose {
+        //     Log.i(TAG, "Unsubscribing subscription from onDestory()")
+        //         }
+        // .compose(bindUntilEvent(ActivityEvent.DESTROY))
+        //     .subscribe {
+        //     Log.i(TAG, "Started in onCreate(), running until in onDestroy(): $it")
+        //         }
+
+        
+        // if (savedInstanceState != null) {
+        // }
         // UI界面屏幕显示，优先处理，不能留白
         showLoading();
 
         // 数据绑定视图
         dataBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        dataBinding.setLifecycleOwner(this); // 绑定生命周期 ？？？ 怎么用呢？
+//        dataBinding.setLifecycleOwner(this); // 绑定生命周期 ？？？ 怎么用呢？
 
         mMainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
+        mMainActivityViewModel.init();
 // OkHttp Call for fetching data：网络申请有延迟，希望早点儿下发请求
-        mMainActivityViewModel.getEmployees();
+        // mMainActivityViewModel.getEmployees();
 
 // 应该是不需要每次都重新设置viewModel，也不需要每次都重启RecyclerView
         // 返回数据时更新ViewModel，ViewModel更新则xml更新 
@@ -56,9 +71,6 @@ public class MainActivity extends BaseActivity {
 
 // 感觉这里每次都New 一个新的 RecyclerAdapter也不是很好，暂时用不优雅的公用API的方式重置数据；
 // 因为涉及几个不同状态的切换，所以还是移到里面，应该差别也不是很大               
-        // mAdapter = new RecyclerAdapter(new ArrayList<Employee>(0));
-        // dataBinding.rv.setAdapter(mAdapter);
-        // dataBinding.rv.setHasFixedSize(true);
         mMainActivityViewModel.mEmpList.observe(this, empListResponse -> {
                 // 觉得这里的数据分类的各要的办法：是在ViewModel中定义三个不同的状态，直接传三个最简单的状态到视图层，但是暂时先这样
                 if (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)) {
@@ -128,7 +140,6 @@ public class MainActivity extends BaseActivity {
         super.onSaveInstanceState(outState, outPersistentState);
         Log.d(TAG, "onSaveInstanceState() ");
 // 该保存哪些数据呢？如何恢复呢？怎么模拟测试内存不足的情况？
-        
     }
 
    // @Override // 因为这里横竖屏的布局完全一样，所以可以不必覆写这个方法

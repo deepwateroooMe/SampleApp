@@ -17,8 +17,6 @@ import com.me.sample.network.utils.KLog;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import io.reactivex.Completable;
 
 /**
@@ -35,9 +33,15 @@ public class MainRepository {
     final MutableLiveData<EmployeeResponse> employees = new MutableLiveData<>();
     public final MutableLiveData<String> failed = new MutableLiveData<>();
 
-    @Inject
-    public MainRepository() { }
-
+//    @Inject
+    // public MainRepository() { }
+    private static MainRepository instance;
+    public static MainRepository getInstance() {
+        if (instance == null)
+            instance = new MainRepository();
+        return instance;
+    }
+    
     // 对 ApiService里定义的网络接口进行请求，然后返回LiveData
     // 为什么要单独建一个包来管理页面的数据获取，其实你可以将这里的代码写到MainViewModel中，
     // 但是你得保证唯一性，因为假如你一个接口在多个地方会使用，你每一个都写到对应的ViewModel中，是不是就会有很多的重复代码？

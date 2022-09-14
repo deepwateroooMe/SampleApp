@@ -1,15 +1,10 @@
 package com.me.sample.network;
 
-import static com.trello.rxlifecycle3.RxLifecycle.bindUntilEvent;
-
-import android.util.Log;
-
 import com.me.sample.network.errorhandler.ExceptionHandle;
 import com.me.sample.network.errorhandler.HttpErrorHandler;
 import com.me.sample.network.interceptor.RequestInterceptor;
 import com.me.sample.network.interceptor.ResponseInterceptor;
 import com.me.sample.utils.Constant;
-import com.trello.rxlifecycle3.android.ActivityEvent;
 
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -78,26 +73,26 @@ public class NetworkApi {
         // builder.connectTimeout(Constant.DEFAULT_TIME, TimeUnit.SECONDS); 
         builder.writeTimeout(Constant.DEFAULT_TIME,TimeUnit.SECONDS);    // 设置写入超时时间
 
-        // // 添加请求拦截器，如果接口有请求头的话，可以放在这个拦截器里面
-        // builder.addInterceptor(new RequestInterceptor(iNetworkRequiredInfo));
-        // // 添加返回拦截器，可用于查看接口的请求耗时，对于网络优化有帮助
-        // builder.addInterceptor(new ResponseInterceptor());
+        // 添加请求拦截器，如果接口有请求头的话，可以放在这个拦截器里面
+        builder.addInterceptor(new RequestInterceptor(iNetworkRequiredInfo));
+        // 添加返回拦截器，可用于查看接口的请求耗时，对于网络优化有帮助
+        builder.addInterceptor(new ResponseInterceptor());
 
-        // // 当程序在debug过程中则打印数据日志，方便调试用。
-        // if (iNetworkRequiredInfo != null && iNetworkRequiredInfo.isDebug()){
-        //     // iNetworkRequiredInfo不为空且处于debug状态下则初始化日志拦截器
-        //     HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
-        //     // HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-        //     //         @Override
-        //     //         public void log(String message) {
-        //     //             Log.i("Http请求参数：", message);
-        //     //         }
-        //     //     });
-        //     // 设置要打印日志的内容等级，BODY为主要内容，还有BASIC、HEADERS、NONE。
-        //     httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        //     // 将拦截器添加到OkHttp构建器中
-        //     builder.addInterceptor(httpLoggingInterceptor);
-        // }
+        // 当程序在debug过程中则打印数据日志，方便调试用。
+        if (iNetworkRequiredInfo != null && iNetworkRequiredInfo.isDebug()){
+            // iNetworkRequiredInfo不为空且处于debug状态下则初始化日志拦截器
+            HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
+            // HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            //         @Override
+            //         public void log(String message) {
+            //             Log.i("Http请求参数：", message);
+            //         }
+            //     });
+            // 设置要打印日志的内容等级，BODY为主要内容，还有BASIC、HEADERS、NONE。
+            httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            // 将拦截器添加到OkHttp构建器中
+            builder.addInterceptor(httpLoggingInterceptor);
+        }
 
         // OkHttp配置完成
         okHttpClient = builder.build();
@@ -150,9 +145,11 @@ public class NetworkApi {
                 .subscribeOn(Schedulers.io())// 线程订阅
                 .observeOn(AndroidSchedulers.mainThread())// 观察Android主线程
 
-                // // 绑定生命周期: 防止内存泄露;这里暂时还不知道该如何实现，暂时先放一下
-                // // 与lifecycleOwner结合，网络请求可以根据lifecyclerOwner生命周期选择执行请求或是自动取消请求
-                // .compose(bindUntilEvent(ActivityEvent.DESTROY))
+                // 绑定生命周期: 防止内存泄露;这里暂时还不知道该如何实现，暂时先放一下
+                // 与lifecycleOwner结合，网络请求可以根据lifecyclerOwner生命周期选择执行请求或是自动取消请求
+// 这里没有修改好：Hilt 与RxLifeCycle看起来还不能够很好地合作
+// 这里可能需要其它的实现方法：相对于高大上的Hilt自动注入，先解决问题内存泄露的问题                
+//                .compose(bindUntilEvent(ActivityEvent.DESTROY)) // 或者这里写的地方不对 ？
 
                 .map(NetworkApi.getAppErrorHandler())// 判断有没有500的错误，有则进入getAppErrorHandler
                 .onErrorResumeNext(new HttpErrorHandler<>());// 判断有没有400的错误
