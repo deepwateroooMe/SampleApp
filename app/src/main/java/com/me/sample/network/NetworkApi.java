@@ -150,7 +150,8 @@ public class NetworkApi {
 // 这里没有修改好：Hilt 与RxLifeCycle看起来还不能够很好地合作
 // 这里可能需要其它的实现方法：相对于高大上的Hilt自动注入，先解决问题内存泄露的问题                
 //                .compose(bindUntilEvent(ActivityEvent.DESTROY)) // 或者这里写的地方不对 ？
-
+//                .as(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this)) // 不可以写在static方法这里，感知生命周期，呵呵
+                    
                 .map(NetworkApi.getAppErrorHandler())// 判断有没有500的错误，有则进入getAppErrorHandler
                 .onErrorResumeNext(new HttpErrorHandler<>());// 判断有没有400的错误
             // 订阅观察者

@@ -75,8 +75,8 @@ public abstract class AppDatabase extends RoomDatabase {
                              "PRIMARY KEY(`uuid`))");
         }
     };
-    private boolean isValidEmployee(Employee e) {
-        return e.getUuid() != null && e.getFullName() != null && e.getEmailAddress() != null
-            && e.getTeam() != null && e.getEmployeeType() != null;
-    }
+    // private boolean isValidEmployee(Employee e) {
+    //     return e.getUuid() != null && e.getFullName() != null && e.getEmailAddress() != null
+    //         && e.getTeam() != null && e.getEmployeeType() != null;
+    // }
 }

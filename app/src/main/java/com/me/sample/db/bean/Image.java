@@ -9,16 +9,16 @@ import androidx.room.PrimaryKey;
 public class Image {
 
     @PrimaryKey
-    @NonNull
-    private String name;
+     @NonNull
+    private String fullName;
     private String url;
 
-    public String getName() {
-        return name;
+    public String getFullName() {
+        return fullName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getUrl() {
@@ -32,8 +32,8 @@ public class Image {
 	public Image(){}
     
     @Ignore
-	public Image(String name, String url) {
-        this.name = name;
+	public Image(String fullName, String url) {
+        this.fullName = fullName;
         this.url = url;
     }
 }

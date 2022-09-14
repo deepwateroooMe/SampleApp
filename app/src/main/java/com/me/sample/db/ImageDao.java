@@ -19,13 +19,12 @@ public interface ImageDao {
     @Query("SELECT * FROM image")
     List<Image> getAll();
     
-    @Query("SELECT * FROM image WHERE name LIKE :name LIMIT 1") // 这里可能还需要再修改一下
-    // Image queryByName(String name);
-    Flowable<Image> queryByName(String name);
+    @Query("SELECT * FROM image WHERE fullName LIKE :fullName LIMIT 1") 
+    Image queryByName(String fullName);
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    // void insertAll(Image... images);
-    Completable insertAll(Image... images);
+    void insertAll(Image... images);
+    // Completable insertAll(Image... images);
 
     @Delete
     void delete(Image image);

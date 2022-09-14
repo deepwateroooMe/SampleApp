@@ -28,19 +28,26 @@
 - If any employee is malformed, it is fine to invalidate the entire list of employees in the response - there is no need to exclude only malformed employees.
 - If there are no employees to show, the app should present an *empty state* view instead of an empty list. 
 
-* 主要思路
-- *对照它提示过/读得懂的要求，把自己可能会miss掉的小细节全捡回来*
+* 主要思路: *对照它提示过/读得懂的要求，把自己可能会miss掉的小细节全捡回来*
 - 现在重新再次整合Room数据库，把手机内存产资源不足时销毁activity保存数据(应该需要的是持久性数据保存)的部分补充完整；
+- 一个极端情况下安卓手机内存不足时应用被系统杀死的数据保存与恢复需要数据库；这个地方想得还不是很透，可能把前面的问题解决了再解决这个极端用例
+- 总结一下：onSaveInstanceState 只能保存少量数据，ViewModel 只能保存数据到内存。所以对于更大的数据状态保存我们应该放在磁盘文件中或者使用数据库处理。
+- 比如这样一个场景，我们的应用是一个 im 的即时通讯 app。在聊天列表页面，每次更新了列表中的联系人窗口数据都会使用数据库进行存储。那么就有一下三种场景了：
+    - Activity 初次创建,或是用户点击了网络请求的按钮之后，网络请求，刷新UI，并(每有刷新都第二时间，第一时间UI)同步数据到数据库
+    - Activity 配置发生更改导致 Activity 被重建(不需要网络刷新，直接使用ViewModel里内存里的现存数据)
+    - Activity 所在进程被系统回收，再次进入被重建
+- 针对 1：刚进入 Activity 的时候我们需要请求后台查看有没有增量的联系人，如果有拉取数据存储在本地数据库。还是使用轻量的sharedPreference来保存是否有数据库的数据。分两种情况：第一次创建以及用户要求刷新时，刷新并保存网络数据；其它任何时候都只从数据库读取现胡有数据
+- 针对 2：的情况，Activity 被重建的时候，因为 ViewModel 没有被销毁，我们可以直接从 ViewModel 中恢复数据，不需要请求网络（当然了你为了保持数据的实时性去请求也无可厚非）
+- 针对 3：的情况，我们可以在 onSaveInstanceState 中保存联系人的 id，Activity 被重建的时候拿到这个 id 去数据库中查找数据，这种情况也不需要请求网络。（当然了你为了保持数据的实时性去请求也无可厚非）
 - 现在存在问题：
+  - *测试模块还没有写(有一个系统自带的测试用例，不想写这个模块了)*
   - 网络请求可能存在内存泄露(比如，使用RxJava发布一个订阅后，当Activity被finish，此时订阅逻辑还未完成，如果没有及时取消订阅，就会导致Activity无法被回收，从而引发内存泄漏)；写往数据库的部分因为使用了CompositeDisposable可能没有这个问题；
   - 现在应用恢复正常运行，并且移除了Hilt的自动注入，不再存在Hilt与RxLifeCycle不合作的问题，先(今天晚上)把这个内存泄露问题给解决了；(参考消息： https://www.jianshu.com/p/8311410de676)
     - 这个问题太好解决了，虽然原理都还木有弄懂。。。。。明天早上再看一下
-    - 去了解一下一个更为优秀的库： *用AutoDisposable来代替RxLifeCycle来解决网络请求过程中可能会出现的内存泄露问题; 明天早上再看一下这个问题的原理*
-  - 目前网上对RxJava的内存泄漏有几种方案：
+    - 去了解一下一个更为优秀的库： *用AutoDisposable来代替RxLifeCycle来解决网络请求过程中可能会出现的内存泄露问题; 明天早上再看一下这个问题的原理* https://blog.csdn.net/fitaotao/article/details/117519733
+  - 目前网上对RxJava的内存泄漏有几种方案：(现实现了RxLifeCycle里的防止，可以再试一下AutoDisposable第三方库，暂时先这样)
     - 通过封装，手动为RxJava的每一次订阅进行控制，在指定的时机进行取消订阅；
     - 使用 Daniel Lew 的 RxLifecycle ，通过监听Activity、Fragment的生命周期，来自动断开subscription以防止内存泄漏。
-   - 测试模块还没有写
-   - 一个极端情况下安卓手机内存不足时应用被系统杀死的数据保存与恢复需要数据库；这个地方想得还不是很透，可能把前面的问题解决了再解决这个极端用例
 - 现在终于改掉了自己网址写错的小bug了，可以再往前迈进一步，深入深解拦截器与OkHttp底层的原理了。。。
 - 顺着这个例子https://github.com/xitu/gold-miner/blob/master/TODO/getting-started-with-retrofit.md 把进阶的部分看完，弄懂
 - 终于找到了先前 *今年二三月份参考过的一个很好的案例日志序列* ： MVVM https://blog.csdn.net/qq_38436214/category_11482619.html?spm=1001.2014.3001.5482

@@ -3,15 +3,15 @@ package com.me.sample.utils;
 public class Constant {
 
     // 设置默认超时时间
-    public static final int DEFAULT_TIME=10;
+    public static final int DEFAULT_TIME = 10;
 
 /**
-     * 今日请求接口返回数据的时间戳
-     */
-    public static final String REQUEST_TIMESTAMP = "requestTimestamp";
+ * 数据库是否已经存有员工链表数据
+ */
+    public static final String HAS_LIST = "emp_list";
 
     /**
-     * 今日是否请求了接口
+     * 数据库是否已经存有员工头像数据
      */
-    public static final String IS_TODAY_REQUEST = "isToday Request";
+    public static final String HAS_IMGS = "imgs";
 }
