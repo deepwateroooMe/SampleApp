@@ -3,13 +3,13 @@ package com.me.sample.repository;
 import static com.me.sample.application.BaseApplication.getContext;
 
 import android.annotation.SuppressLint;
-import android.media.Image;
 import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
 
 import com.me.sample.application.BaseApplication;
 import com.me.sample.db.bean.Employee;
+import com.me.sample.db.bean.Image;
 import com.me.sample.model.EmployeeResponse;
 import com.me.sample.network.ApiService;
 import com.me.sample.network.BaseObserver;
@@ -39,6 +39,7 @@ public class MainRepository {
      * 员工链表数据
      */
     final MutableLiveData<EmployeeResponse> employees = new MutableLiveData<>();
+    final MutableLiveData<List<Image>> imgs = new MutableLiveData<>();
     public final MutableLiveData<String> failed = new MutableLiveData<>();
 
 //    @Inject
@@ -96,6 +97,7 @@ public class MainRepository {
                 emp.setEmployees(l);
                 employees.postValue(emp);
             });
+        return employees;
     }
 
 /**
@@ -134,7 +136,7 @@ public class MainRepository {
         CustomDisposable.addDisposable(deleteAll, () -> {
                 Log.d(TAG, "saveImageData: 删除员工头像数据成功");
                 List<Image> l = new ArrayList<>();
-                for (Employee employee : employeesResponse.getEmployees())
+                for (Employee employee : employeeResponse.getEmployees())
                     l.add(new Image(employee.getFullName(), employee.getPhotoUrlSmall()));
                 // 保存到数据库
                 Completable insertAll = BaseApplication.getDb().imageDao().insertAll(l);

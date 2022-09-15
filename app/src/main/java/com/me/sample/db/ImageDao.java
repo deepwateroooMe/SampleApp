@@ -23,13 +23,8 @@ public interface ImageDao {
     Image queryByName(String fullName);
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertOneImage(Image one);
-    // void insertAll(Image... images);
-    // Completable insertAll(Image... images);
+    Completable insertAll(List<Image> images);
 
     @Query("DELETE FROM image")
     Completable deleteAll();
-
-    // @Delete
-    // void delete(Image image);
 }
