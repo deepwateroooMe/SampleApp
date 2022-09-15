@@ -59,9 +59,11 @@ public class MainActivity extends BaseActivity {
                         Log.i(TAG, "Started in onCreate(), running until onDestory(): " + num);
                     }
                 });
-        
-        // if (savedInstanceState != null) {
-        // }
+
+        // 当被安卓系统低内存杀死的重建，走从本地数据库读取数据的方式，而不是从网络提取
+        if (savedInstanceState != null) {
+            
+        }
         // UI界面屏幕显示，优先处理，不能留白
         showLoading();
 

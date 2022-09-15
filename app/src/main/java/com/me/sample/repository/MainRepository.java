@@ -105,9 +105,12 @@ public class MainRepository {
         // 记录数据库里已经存有员工链表数据
         mvUtils.put(Constant.HAS_LIST, true);
         Completable deleteAll = BaseApplication.getDb().employeeDao().deleteAll();
+        
         CustomDisposable.addDisposable(deleteAll, () -> {
                 Log.d(TAG, "saveEmployees: 删除员工链表数据成功");
                 List<Employee> employeesList = new ArrayList<>();
+                // 这里，不光是把每个员工加入链表；把把每个员工的头像也加入到头像的表格中去
+                // 简单的办法是；把整个员工链表作为参数传给另一个方法
                 for (Employee employee : employeesResponse.getEmployees()) 
                     employeesList.add(employee);
                 // 保存到数据库
@@ -116,18 +119,28 @@ public class MainRepository {
                 // RxJava处理Room数据存储
                 CustomDisposable.addDisposable(insertAll, () -> Log.d(TAG, "saveEmployees: 员工数据保存成功"));
             });
+        saveImageData(employeesResponse); // 同时保存员工头像数据
     }
 
     /**
-     * 保存员工大小图像
+     * 保存员工大小图像: 保存每个员工的头像图片，一次只能保存一个
      */
     private void saveImageData(EmployeeResponse employeeResponse) {
-//        Employee bean = employeeResponse.getEmployees().get(0);
-//        // 保存到数据库
-//        Completable insert = BaseApplication.getDb().imageDao().insertAll(
-//            new Image(1, bean.getUrl(), bean.getUrlbase(), bean.getCopyright(),
-//                      bean.getCopyrightlink(), bean.getTitle()));
-        // RxJava处理Room数据存储
-//        CustomDisposable.addDisposable(insert, () -> Log.d(TAG, "saveImageData: 必应数据保存成功"));
+        // 记录数据库里已经存有员工头像数据
+        mvUtils.put(Constant.HAS_IMGS, true);
+        // 员工头像表：需要删除所有以前(上一次)所存过的员工头像数据；再一个一个地加进来
+        // 需要删除所有以前(上一次)所存过的员工头像数据；再一个一个地加进来
+        Completable deleteAll = BaseApplication.getDb().imageDao().deleteAll();
+        CustomDisposable.addDisposable(deleteAll, () -> {
+                Log.d(TAG, "saveImageData: 删除员工头像数据成功");
+                List<Image> l = new ArrayList<>();
+                for (Employee employee : employeesResponse.getEmployees())
+                    l.add(new Image(employee.getFullName(), employee.getPhotoUrlSmall()));
+                // 保存到数据库
+                Completable insertAll = BaseApplication.getDb().imageDao().insertAll(l);
+                Log.d(TAG, "saveImageData: 插入员工头像数据：" + l.size() + "条");
+                // RxJava处理Room数据存储
+                CustomDisposable.addDisposable(insertAll, () -> Log.d(TAG, "saveImageData: 员工头像数据保存成功"));
+            });
     }
 }
