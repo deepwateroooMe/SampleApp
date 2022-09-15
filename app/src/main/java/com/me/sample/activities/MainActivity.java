@@ -62,9 +62,10 @@ public class MainActivity extends BaseActivity {
 
         // 当被安卓系统低内存杀死的重建，走从本地数据库读取数据的方式，而不是从网络提取
         // 这里最好是能够测试一下：验证一下低内存被杀死时重建的回调方法和数据，需要日志来帮忙好好融解一下这个过程
-        if (savedInstanceState != null) {
-            Log.d(TAG, "(savedInstanceState != null): " + (savedInstanceState != null));
-        }
+        // if (savedInstanceState != null) {
+        //     Log.d(TAG, "(savedInstanceState != null): " + (savedInstanceState != null));
+        // }
+
         // UI界面屏幕显示，优先处理，不能留白
         showLoading();
 
