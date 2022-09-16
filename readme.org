@@ -120,6 +120,8 @@ com.me.sample I/ViewRootImpl@1413ed8[MainActivity]: dispatchDetachedFromWindow
 com.me.sample I/ViewRootImpl@a363778[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
 #+END_SRC 
 - 当把应用杀死：再重建，去检查安卓系统帮保存或是恢复了什么，却发现大概是因为使用了第三方库根不上配置的原因，被杀后的重建视图会成为一片空白。所以这里就一定要修改重建逻辑了
+  
+[[./pic/readme_20220915_225835.png]]
 #+BEGIN_SRC text
 com.me.sample D/MainRepository: saveImageData: 删除员工头像数据成功
 com.me.sample D/MainRepository: saveImageData: 插入员工头像数据：11条

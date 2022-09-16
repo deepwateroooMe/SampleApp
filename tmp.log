@@ -1,0 +1,78 @@
+com.me.sample D/MainRepository: saveImageData: 删除员工头像数据成功
+com.me.sample D/MainRepository: saveImageData: 插入员工头像数据：11条
+com.me.sample D/MainRepository: saveEmployees: 删除员工链表数据成功
+com.me.sample D/MainRepository: saveEmployees: 插入员工链表数据：11条
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+com.me.sample D/InputMethodManager: startInputInner - Id : 0
+com.me.sample I/InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
+com.me.sample D/MainRepository: saveImageData: 员工头像数据保存成功
+com.me.sample D/MainRepository: saveEmployees: 员工数据保存成功
+com.me.sample D/InputMethodManager: startInputInner - Id : 0
+com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
+com.me.sample D/OpenGLRenderer: setSurface called with nullptr
+com.me.sample W/System: A resource failed to call close. 
+com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 1
+com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 2
+com.me.sample D/MainActivity: onPause() 
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 0 1
+com.me.sample D/InputTransport: Input channel destroyed: 'ClientS', fd=113
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: handleAppVisibility mAppVisible=true visible=false
+com.me.sample D/OpenGLRenderer: setSurface called with nullptr
+com.me.sample D/OpenGLRenderer: setSurface() destroyed EGLSurface
+com.me.sample D/OpenGLRenderer: destroyEglSurface
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)8 dur=8 res=0x5 s={false 0} ch=true fn=7
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: stopped(true) old=false
+com.me.sample D/MainActivity: onStop() 
+com.me.sample D/MainActivity: onSaveInstanceState()
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)8 dur=4 res=0x5 s={false 0} ch=false fn=-1
+? D/ProcessState: Binder ioctl to enable oneway spam detection failed: Invalid argument
+? D/ActivityThread: setConscryptValidator
+? D/ActivityThread: setConscryptValidator - put
+? W/com.me.sample: DexFile /data/data/com.me.sample/code_cache/.studio/instruments-1f2f27f8.jar is in boot class path but is not in a known location
+com.me.sample W/com.me.sample: Redefining intrinsic method java.lang.Thread java.lang.Thread.currentThread(). This may cause the unexpected use of the original definition of java.lang.Thread java.lang.Thread.currentThread()in methods that have already been compiled.
+com.me.sample W/com.me.sample: Redefining intrinsic method boolean java.lang.Thread.interrupted(). This may cause the unexpected use of the original definition of boolean java.lang.Thread.interrupted()in methods that have already been compiled.
+com.me.sample D/ActivityThread: handleBindApplication()++ app=com.me.sample
+com.me.sample D/CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10702; state: ENABLED
+com.me.sample W/com.me.sample: ClassLoaderContext classpath size mismatch. expected=0, found=1 (PCL[] | PCL[/data/data/com.me.sample/code_cache/.overlay/base.apk/classes14.dex*1294054685])
+com.me.sample D/LoadedApk: LoadedApk::makeApplication() appContext.mOpPackageName=com.me.sample appContext.mBasePackageName=com.me.sample
+com.me.sample D/NetworkSecurityConfig: Using Network Security Config from resource network_security_config debugBuild: true
+com.me.sample D/ActivityThread: handleBindApplication() --
+com.me.sample I/MMKV: Enable checkProcessMode()
+com.me.sample I/MMKV: <native-bridge.cpp:104::JNI_OnLoad> current API level = 31, libc++_shared=0
+com.me.sample I/MMKV: <MMKV.cpp:165::initialize> version v1.2.11, page size 4096, arch arm64-v8a
+com.me.sample I/MMKV: <MMKV.cpp:176::initialize> armv8 AES instructions is supported
+com.me.sample I/MMKV: <MMKV.cpp:184::initialize> armv8 CRC32 instructions is supported
+com.me.sample I/MMKV: <MMKV.cpp:207::initializeMMKV> root dir: /data/user/0/com.me.sample/files/mmkv
+com.me.sample I/MMKV: <MemoryFile.cpp:97::open> open fd[0x4d], /data/user/0/com.me.sample/files/mmkv/mmkv.default
+com.me.sample I/MMKV: <MemoryFile.cpp:97::open> open fd[0x4e], /data/user/0/com.me.sample/files/mmkv/mmkv.default.crc
+com.me.sample I/MMKV: <MMKV_IO.cpp:81::loadFromFile> loading [mmkv.default] with 0 actual size, file size 4096, InterProcess 0, meta info version:1
+com.me.sample I/MMKV: <MMKV_IO.cpp:130::loadFromFile> loaded [mmkv.default] with 0 key-values
+com.me.sample D/OpenGLRenderer: RenderThread::requireGlContext()
+
+com.me.sample D/OpenGLRenderer: RenderThread::setGrContext()
+com.me.sample D/MainActivity: onCreate() 
+com.me.sample D/MainActivity: (savedInstanceState != null): true
+com.me.sample I/DecorView: [INFO] isPopOver=false, config=true
+com.me.sample I/DecorView: updateCaptionType >> DecorView@b21fe66[], isFloating=false, isApplication=true, hasWindowControllerCallback=true, hasWindowDecorCaption=false
+com.me.sample D/DecorView: setCaptionType = 0, this = DecorView@b21fe66[]
+com.me.sample I/DecorView: getCurrentDensityDpi: from real metrics. densityDpi=560 msg=resources_loaded
+com.me.sample D/MainActivity: onStart() 
+com.me.sample D/MainActivity: onRestoreInstanceState() 
+com.me.sample W/com.me.sample: Accessing hidden method Landroid/view/View;->computeFitSystemWindows(Landroid/graphics/Rect;Landroid/graphics/Rect;)Z (unsupported, reflection, allowed)
+com.me.sample W/com.me.sample: Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (unsupported, reflection, allowed)
+com.me.sample D/MainActivity: onResume() 
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: setView = com.android.internal.policy.DecorView@b21fe66 TM=true
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)0 dur=7 res=0x7 s={true -5476376617398057808} ch=true fn=-1
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+com.me.sample D/hw-ProcessState: Binder ioctl to enable oneway spam detection failed: Invalid argument
+com.me.sample D/OpenGLRenderer: eglCreateWindowSurface
+com.me.sample I/BufferQueueProducer: [ViewRootImpl@cfdc231[MainActivity]#0(BLAST Consumer)0](id:2d4e00000000,api:1,p:11598,c:11598) queueBuffer: queued for the first time.
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] rdf()
+com.me.sample D/ViewRootImpl@cfdc231[MainActivity]: reportDrawFinished (fn: -1) 
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+com.me.sample D/InputMethodManager: startInputInner - Id : 0
+com.me.sample I/InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
+com.me.sample D/InputMethodManager: startInputInner - Id : 0
+com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
+com.me.sample W/System: A resource failed to call close. 

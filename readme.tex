@@ -1,4 +1,4 @@
-% Created 2022-09-15 Thu 18:36
+% Created 2022-09-15 Thu 22:58
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -175,8 +175,96 @@ com.me.sample I/ViewRootImpl@1413ed8[MainActivity]: dispatchDetachedFromWindow
 com.me.sample I/ViewRootImpl@a363778[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
 \end{minted}
 \begin{itemize}
+\item 当把应用杀死：再重建，去检查安卓系统帮保存或是恢复了什么，却发现大概是因为使用了第三方库根不上配置的原因，被杀后的重建视图会成为一片空白。所以这里就一定要修改重建逻辑了
+\end{itemize}
+
+\includegraphics[width=.9\linewidth]{./pic/readme_20220915_225835.png}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{text}
+com.me.sample D/MainRepository: saveImageData: 删除员工头像数据成功
+com.me.sample D/MainRepository: saveImageData: 插入员工头像数据：11条
+com.me.sample D/MainRepository: saveEmployees: 删除员工链表数据成功
+com.me.sample D/MainRepository: saveEmployees: 插入员工链表数据：11条
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+com.me.sample D/InputMethodManager: startInputInner - Id : 0
+com.me.sample I/InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
+com.me.sample D/MainRepository: saveImageData: 员工头像数据保存成功
+com.me.sample D/MainRepository: saveEmployees: 员工数据保存成功
+com.me.sample D/InputMethodManager: startInputInner - Id : 0
+com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
+com.me.sample D/OpenGLRenderer: setSurface called with nullptr
+com.me.sample W/System: A resource failed to call close. 
+com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 1
+com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 2
+com.me.sample D/MainActivity: onPause() 
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 0 1
+com.me.sample D/InputTransport: Input channel destroyed: 'ClientS', fd=113
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: handleAppVisibility mAppVisible=true visible=false
+com.me.sample D/OpenGLRenderer: setSurface called with nullptr
+com.me.sample D/OpenGLRenderer: setSurface() destroyed EGLSurface
+com.me.sample D/OpenGLRenderer: destroyEglSurface
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)8 dur=8 res=0x5 s={false 0} ch=true fn=7
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: stopped(true) old=false
+com.me.sample D/MainActivity: onStop() 
+com.me.sample D/MainActivity: onSaveInstanceState()
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)8 dur=4 res=0x5 s={false 0} ch=false fn=-1
+? I/com.me.sample: Late-enabling -Xcheck:jni
+? E/USNET: USNET: appName: com.me.sample
+? D/ProcessState: Binder ioctl to enable oneway spam detection failed: Invalid argument
+? D/ActivityThread: setConscryptValidator
+? D/ActivityThread: setConscryptValidator - put
+? W/com.me.sample: DexFile /data/data/com.me.sample/code_cache/.studio/instruments-1f2f27f8.jar is in boot class path but is not in a known location
+com.me.sample W/com.me.sample: Redefining intrinsic method java.lang.Thread java.lang.Thread.currentThread(). This may cause the unexpected use of the original definition of java.lang.Thread java.lang.Thread.currentThread()in methods that have already been compiled.
+com.me.sample W/com.me.sample: Redefining intrinsic method boolean java.lang.Thread.interrupted(). This may cause the unexpected use of the original definition of boolean java.lang.Thread.interrupted()in methods that have already been compiled.
+com.me.sample D/ActivityThread: handleBindApplication()++ app=com.me.sample
+com.me.sample D/CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10702; state: ENABLED
+com.me.sample W/com.me.sample: ClassLoaderContext classpath size mismatch. expected=0, found=1 (PCL[] | PCL[/data/data/com.me.sample/code_cache/.overlay/base.apk/classes14.dex*1294054685])
+com.me.sample D/LoadedApk: LoadedApk::makeApplication() appContext.mOpPackageName=com.me.sample appContext.mBasePackageName=com.me.sample
+com.me.sample D/NetworkSecurityConfig: Using Network Security Config from resource network_security_config debugBuild: true
+com.me.sample D/ActivityThread: handleBindApplication() --
+com.me.sample I/MMKV: Enable checkProcessMode()
+com.me.sample I/MMKV: <native-bridge.cpp:104::JNI_OnLoad> current API level = 31, libc++_shared=0
+com.me.sample I/MMKV: <MMKV.cpp:165::initialize> version v1.2.11, page size 4096, arch arm64-v8a
+com.me.sample I/MMKV: <MMKV.cpp:176::initialize> armv8 AES instructions is supported
+com.me.sample I/MMKV: <MMKV.cpp:184::initialize> armv8 CRC32 instructions is supported
+com.me.sample I/MMKV: <MMKV.cpp:207::initializeMMKV> root dir: /data/user/0/com.me.sample/files/mmkv
+com.me.sample I/MMKV: <MemoryFile.cpp:97::open> open fd[0x4d], /data/user/0/com.me.sample/files/mmkv/mmkv.default
+com.me.sample I/MMKV: <MemoryFile.cpp:97::open> open fd[0x4e], /data/user/0/com.me.sample/files/mmkv/mmkv.default.crc
+com.me.sample I/MMKV: <MMKV_IO.cpp:81::loadFromFile> loading [mmkv.default] with 0 actual size, file size 4096, InterProcess 0, meta info version:1
+com.me.sample I/MMKV: <MMKV_IO.cpp:130::loadFromFile> loaded [mmkv.default] with 0 key-values
+com.me.sample D/OpenGLRenderer: RenderThread::requireGlContext()
+
+com.me.sample D/OpenGLRenderer: RenderThread::setGrContext()
+com.me.sample D/MainActivity: onCreate() 
+com.me.sample D/MainActivity: (savedInstanceState != null): true
+com.me.sample I/DecorView: [INFO] isPopOver=false, config=true
+com.me.sample I/DecorView: updateCaptionType >> DecorView@b21fe66[], isFloating=false, isApplication=true, hasWindowControllerCallback=true, hasWindowDecorCaption=false
+com.me.sample D/DecorView: setCaptionType = 0, this = DecorView@b21fe66[]
+com.me.sample I/DecorView: getCurrentDensityDpi: from real metrics. densityDpi=560 msg=resources_loaded
+com.me.sample D/MainActivity: onStart() 
+com.me.sample D/MainActivity: onRestoreInstanceState() 
+com.me.sample W/com.me.sample: Accessing hidden method Landroid/view/View;->computeFitSystemWindows(Landroid/graphics/Rect;Landroid/graphics/Rect;)Z (unsupported, reflection, allowed)
+com.me.sample W/com.me.sample: Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (unsupported, reflection, allowed)
+com.me.sample D/MainActivity: onResume() 
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: setView = com.android.internal.policy.DecorView@b21fe66 TM=true
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)0 dur=7 res=0x7 s={true -5476376617398057808} ch=true fn=-1
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+com.me.sample D/hw-ProcessState: Binder ioctl to enable oneway spam detection failed: Invalid argument
+com.me.sample D/OpenGLRenderer: eglCreateWindowSurface
+com.me.sample I/BufferQueueProducer: [ViewRootImpl@cfdc231[MainActivity]#0(BLAST Consumer)0](id:2d4e00000000,api:1,p:11598,c:11598) queueBuffer: queued for the first time.
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] rdf()
+com.me.sample D/ViewRootImpl@cfdc231[MainActivity]: reportDrawFinished (fn: -1) 
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+com.me.sample D/InputMethodManager: startInputInner - Id : 0
+com.me.sample I/InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
+com.me.sample D/InputMethodManager: startInputInner - Id : 0
+com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
+com.me.sample W/System: A resource failed to call close.
+\end{minted}
+\begin{itemize}
 \item 现在就真正到了 \textbf{要自己调控应用被系统杀死的重启过程了} ，hihi
 \item 这里会分为当活动(activitty被系统杀死的时候，应用是否被系统杀死的情况)来把这单个活动的恢复，和或整个应用被杀死后的重启过程搞清楚，如何优化启动过程，以及规避不必要的网络请求等。今天是晚上回家后再接着把这个部分弄懂弄透写完
+\item 需要找一找大电脑上还有没有先前写的日志文件syslog-mode的关键词parser传上去，笔记上会需要用到;同步先前所修改过的syslog-mode相关的所有emacs bug到window系统上，明天要用
 \item 总结一下：onSaveInstanceState 只能保存少量数据，ViewModel 只能保存数据到内存。所以对于更大的数据状态保存我们应该放在磁盘文件中或者使用数据库处理。
 \item 比如这样一个场景，我们的应用是一个 im 的即时通讯 app。在聊天列表页面，每次更新了列表中的联系人窗口数据都会使用数据库进行存储。那么就有一下三种场景了：
 \begin{itemize}
