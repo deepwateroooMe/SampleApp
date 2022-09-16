@@ -1,4 +1,4 @@
-% Created 2022-09-15 Thu 16:58
+% Created 2022-09-15 Thu 18:36
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -89,11 +89,17 @@ adb shell am force-stop com.me.sample
 
 # 应用通过home键已经停留在后台使用，杀死指定package包应用进程，该命令在安全模式下杀死进程，不影响用户体验。
 # 参数选项：–user <USER_ID> | all | current: 指定user进程杀死，如果不指定默认为所有users。（关于USER_ID下面会介绍到）
+# 可是这个方法杀不掉，应用还是最近应用列表里活着？【看着活着的是假的；它是真死了，留了个假象】
+adb shell am kill com.me.sample 
+adb shell ==> ps -A | grep com.me.sample # 前后对比就能够验证出，它是真死了
+
+# 应用通过home键已经停留在后台使用，杀掉所有后台程序，需要先将目标程序按home进入后台，然后打开一个其他程序
 # 可是这个方法杀不掉，应用还是最近应用列表里活着
-adb shell am kill com.me.sample
+adb shell am kill-all 　　　　　　　　　　　　　
 \end{minted}
 \begin{itemize}
-\item 应用被系统杀死后的重启，activity流程创建了两遍，是两个实例了吗？
+\item 应用被系统杀死后的重启，activity流程创建了两遍，是两个实例了吗？是，因为在onCreate()里两个实例reference的内存地址是不同的，所以是两个不同的实例。。。。。
+\item 下面是应用被杀后，点击应用图标的重启过程，创建了两个实例
 \end{itemize}
 \begin{minted}[fontsize=\scriptsize,linenos=false]{text}
 com.me.sample D/MainActivity: onCreate() 
@@ -143,7 +149,34 @@ com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: handleResized, msg = 5 frame
 com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.handleResized:2204 android.view.ViewRootImpl.access$1200:294
 \end{minted}
 \begin{itemize}
+\item 从最近应用列表点击图标，重启过程会是怎样的呢？
+\end{itemize}
+\begin{minted}[fontsize=\scriptsize,linenos=false]{text}
+com.me.sample D/MainActivity: onCreate() 
+com.me.sample I/ViewRootImpl@1413ed8[MainActivity]: setView = com.android.internal.policy.DecorView@11529a TM=true
+com.me.sample D/MainActivity: onStart() 
+com.me.sample D/MainActivity: onRestoreInstanceState() 
+com.me.sample I/ViewRootImpl@1413ed8[MainActivity]: stopped(false) old=false
+com.me.sample D/MainActivity: onResume() 
+com.me.sample I/ViewRootImpl@a363778[MainActivity]: setView = com.android.internal.policy.DecorView@e9d0fec TM=true
+com.me.sample I/ViewRootImpl@1413ed8[MainActivity]: Relayout returned: old=(0,142,1440,2872) new=(510,1297,930,1717) req=(420,420)0 dur=5 res=0x7 s={true -5476376617398040368} ch=true fn=-1
+com.me.sample I/ViewRootImpl@1413ed8[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+com.me.sample I/BufferQueueProducer: [ViewRootImpl@1413ed8[MainActivity]#0(BLAST Consumer)0](id:610c00000000,api:1,p:24844,c:24844) queueBuffer: queued for the first time.
+com.me.sample I/ViewRootImpl@a363778[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)0 dur=4 res=0x7 s={true -5476376617398005488} ch=true fn=-1
+com.me.sample I/ViewRootImpl@a363778[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+com.me.sample I/BufferQueueProducer: [ViewRootImpl@a363778[MainActivity]#1(BLAST Consumer)1](id:610c00000001,api:1,p:24844,c:24844) queueBuffer: queued for the first time.
+com.me.sample I/ViewRootImpl@a363778[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+com.me.sample I/ViewRootImpl@a363778[MainActivity]: [DP] rdf()
+com.me.sample D/ViewRootImpl@a363778[MainActivity]: reportDrawFinished (fn: -1) 
+com.me.sample I/ViewRootImpl@1413ed8[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+com.me.sample I/ViewRootImpl@1413ed8[MainActivity]: [DP] rdf()
+com.me.sample D/ViewRootImpl@1413ed8[MainActivity]: reportDrawFinished (fn: -1) 
+com.me.sample I/ViewRootImpl@1413ed8[MainActivity]: dispatchDetachedFromWindow
+com.me.sample I/ViewRootImpl@a363778[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+\end{minted}
+\begin{itemize}
 \item 现在就真正到了 \textbf{要自己调控应用被系统杀死的重启过程了} ，hihi
+\item 这里会分为当活动(activitty被系统杀死的时候，应用是否被系统杀死的情况)来把这单个活动的恢复，和或整个应用被杀死后的重启过程搞清楚，如何优化启动过程，以及规避不必要的网络请求等。今天是晚上回家后再接着把这个部分弄懂弄透写完
 \item 总结一下：onSaveInstanceState 只能保存少量数据，ViewModel 只能保存数据到内存。所以对于更大的数据状态保存我们应该放在磁盘文件中或者使用数据库处理。
 \item 比如这样一个场景，我们的应用是一个 im 的即时通讯 app。在聊天列表页面，每次更新了列表中的联系人窗口数据都会使用数据库进行存储。那么就有一下三种场景了：
 \begin{itemize}
