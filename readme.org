@@ -31,6 +31,65 @@
 * 主要思路: *对照它提示过/读得懂的要求，把自己可能会miss掉的小细节全捡回来*
 - 现在重新再次整合Room数据库，把手机内存产资源不足时销毁activity保存数据(应该需要的是持久性数据保存)的部分补充完整；
 - 一个极端情况下安卓手机内存不足时应用被系统杀死的数据保存与恢复需要数据库；这个地方想得还不是很透，可能把前面的问题解决了再解决这个极端用例
+- 这里模拟一下真机内存不足的时候杀进程，把它杀死，打个日志，分析一下，再进一步修改.试过上面一行Home后应用在后台杀死的方法，杀不掉；在前台倒是可以杀掉，抓个日志看一下
+#+begin_SRC ssh
+# 应用在前台强制关闭，强制停止指定的package包应用。
+adb shell am force-stop com.me.sample 
+
+# 应用通过home键已经停留在后台使用，杀死指定package包应用进程，该命令在安全模式下杀死进程，不影响用户体验。
+# 参数选项：–user <USER_ID> | all | current: 指定user进程杀死，如果不指定默认为所有users。（关于USER_ID下面会介绍到）
+# 可是这个方法杀不掉，应用还是最近应用列表里活着
+adb shell am kill com.me.sample 
+#+END_SRC 
+- 应用被系统杀死后的重启，activity流程创建了两遍，是两个实例了吗？
+#+BEGIN_SRC text
+com.me.sample D/MainActivity: onCreate() 
+com.me.sample I/ViewRootImpl@9fdb9bb[MainActivity]: setView = com.android.internal.policy.DecorView@ec3fbc TM=true
+com.me.sample D/MainActivity: onStart() 
+com.me.sample I/ViewRootImpl@9fdb9bb[MainActivity]: stopped(false) old=false
+com.me.sample D/MainActivity: onResume() 
+com.me.sample I/ViewRootImpl@e7eb0db[MainActivity]: setView = com.android.internal.policy.DecorView@798929f TM=true
+com.me.sample I/ViewRootImpl@9fdb9bb[MainActivity]: Relayout returned: old=(0,142,1440,2872) new=(510,1297,930,1717) req=(420,420)0 dur=5 res=0x7 s={true -5476376617398110128} ch=true fn=-1
+com.me.sample I/ViewRootImpl@9fdb9bb[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+com.me.sample I/BufferQueueProducer: [ViewRootImpl@9fdb9bb[MainActivity]#0(BLAST Consumer)0](id:297f00000000,api:1,p:10623,c:10623) queueBuffer: queued for the first time.
+com.me.sample I/ViewRootImpl@e7eb0db[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)0 dur=5 res=0x7 s={true -5476376617397988048} ch=true fn=-1
+com.me.sample I/ViewRootImpl@e7eb0db[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+com.me.sample I/BufferQueueProducer: [ViewRootImpl@e7eb0db[MainActivity]#1(BLAST Consumer)1](id:297f00000001,api:1,p:10623,c:10623) queueBuffer: queued for the first time.
+com.me.sample I/ViewRootImpl@e7eb0db[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+com.me.sample I/ViewRootImpl@e7eb0db[MainActivity]: [DP] rdf()
+com.me.sample D/ViewRootImpl@e7eb0db[MainActivity]: reportDrawFinished (fn: -1) 
+com.me.sample I/ViewRootImpl@9fdb9bb[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+com.me.sample I/ViewRootImpl@9fdb9bb[MainActivity]: [DP] rdf()
+com.me.sample D/ViewRootImpl@9fdb9bb[MainActivity]: reportDrawFinished (fn: -1) 
+com.me.sample I/ViewRootImpl@9fdb9bb[MainActivity]: dispatchDetachedFromWindow
+com.me.sample I/ViewRootImpl@e7eb0db[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
+com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 1
+com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 2
+
+com.me.sample D/MainActivity: onCreate() 
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: setView = com.android.internal.policy.DecorView@11ea6c1 TM=true
+com.me.sample D/MainActivity: onStart() 
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: stopped(false) old=false
+com.me.sample D/MainActivity: onResume() 
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: setView = com.android.internal.policy.DecorView@41dfb5 TM=true
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: Resizing android.view.ViewRootImpl@d4d842: frame=[510,1297][930,1717] reportDraw=true forceLayout=false backDropFrame=Rect(0, 0 - 420, 420)
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: Relayout returned: old=(0,142,1440,2872) new=(510,1297,930,1717) req=(420,420)0 dur=6 res=0x7 s={true -5476376617398049088} ch=true fn=-1
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+com.me.sample I/BufferQueueProducer: [ViewRootImpl@cfdc231[MainActivity]#0(BLAST Consumer)0](id:2e8c00000000,api:1,p:11916,c:11916) queueBuffer: queued for the first time.
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)0 dur=6 res=0x7 s={true -5476376617398005488} ch=true fn=-1
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+com.me.sample I/BufferQueueProducer: [ViewRootImpl@ccc5e51[MainActivity]#1(BLAST Consumer)1](id:2e8c00000001,api:1,p:11916,c:11916) queueBuffer: queued for the first time.
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: [DP] rdf()
+com.me.sample D/ViewRootImpl@ccc5e51[MainActivity]: reportDrawFinished (fn: -1) 
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] rdf()
+com.me.sample D/ViewRootImpl@cfdc231[MainActivity]: reportDrawFinished (fn: -1) 
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: handleResized, msg = 5 frames=ClientWindowFrames{frame=[510,1297][930,1717] display=[0,142][1440,2872] backdrop=[0,0][420,420]} forceNextWindowRelayout=false displayId=0 frameChanged=false backdropFrameChanged=true configChanged=false displayChanged=false mNextDrawUseBlastSync=false mergedConfiguration={mGlobalConfig={1.1 311mcc480mnc [en_US] ldltr sw411dp w411dp h780dp 560dpi nrml long hdr widecg port finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1440, 3040) mAppBounds=Rect(0, 142 - 1440, 2872) mMaxBounds=Rect(0, 0 - 1440, 3040) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0 mPopOver=off mFreeformTaskPinningState=unpinned} s.26854 fontWeightAdjustment=0 ff=0 bf=0 bts=0 desktop/d dm/n dc/d ?dcui ?dcaf enb/d themeSeq=0} mOverrideConfig={1.1 311mcc480mnc [en_US] ldltr sw411dp w411dp h780dp 560dpi nrml long hdr widecg port finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1440, 3040) mAppBounds=Rect(0, 142 - 1440, 2872) mMaxBounds=Rect(0, 0 - 1440, 3040) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0 mPopOver=off mFreeformTaskPinningState=unpinned} s.1 fontWeightAdjustment=0 ff=0 bf=0 bts=0 desktop/d dm/n dc/d ?dcui ?dcaf enb/d themeSeq=0}}
+com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.handleResized:2204 android.view.ViewRootImpl.access$1200:294 
+#+END_SRC 
+- 现在就真正到了 *要自己调控应用被系统杀死的重启过程了* ，hihi
 - 总结一下：onSaveInstanceState 只能保存少量数据，ViewModel 只能保存数据到内存。所以对于更大的数据状态保存我们应该放在磁盘文件中或者使用数据库处理。
 - 比如这样一个场景，我们的应用是一个 im 的即时通讯 app。在聊天列表页面，每次更新了列表中的联系人窗口数据都会使用数据库进行存储。那么就有一下三种场景了：
     - Activity 初次创建,或是用户点击了网络请求的按钮之后，网络请求，刷新UI，并(每有刷新都第二时间，第一时间UI)同步数据到数据库
