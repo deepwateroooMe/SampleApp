@@ -62,49 +62,51 @@ public class MainActivity extends BaseActivity {
 
         // 当被安卓系统低内存杀死的重建，走从本地数据库读取数据的方式，而不是从网络提取
         // 这里最好是能够测试一下：验证一下低内存被杀死时重建的回调方法和数据，需要日志来帮忙好好融解一下这个过程
-        // if (savedInstanceState != null) {
-        //     Log.d(TAG, "(savedInstanceState != null): " + (savedInstanceState != null));
-        // }
+        if (savedInstanceState != null) {
+            Log.d(TAG, "(savedInstanceState != null): " + (savedInstanceState != null));
+        } else {
+            Log.d(TAG, "(savedInstanceState == null): " + (savedInstanceState == null));
 
-        // UI界面屏幕显示，优先处理，不能留白
-        showLoading();
+            // UI界面屏幕显示，优先处理，不能留白
+            showLoading();
 
-        // 数据绑定视图
-        dataBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+            // 数据绑定视图
+            dataBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 //        dataBinding.setLifecycleOwner(this); // 绑定生命周期 ？？？ 怎么用呢？
 
-        mMainActivityViewModel = new ViewModelProvider((ViewModelStoreOwner) this).get(MainActivityViewModel.class);
-        mMainActivityViewModel.init();
+            mMainActivityViewModel = new ViewModelProvider((ViewModelStoreOwner) this).get(MainActivityViewModel.class);
+            mMainActivityViewModel.init();
 // OkHttp Call for fetching data：网络申请有延迟，希望早点儿下发请求
-        // mMainActivityViewModel.getEmployees();
+            // mMainActivityViewModel.getEmployees();
 
 // 应该是不需要每次都重新设置viewModel，也不需要每次都重启RecyclerView
-        // 返回数据时更新ViewModel，ViewModel更新则xml更新 
-        dataBinding.setViewModel(mMainActivityViewModel);
-        initRecyclerView(); 
+            // 返回数据时更新ViewModel，ViewModel更新则xml更新 
+            dataBinding.setViewModel(mMainActivityViewModel);
+            initRecyclerView(); 
 
 // 感觉这里每次都New 一个新的 RecyclerAdapter也不是很好，暂时用不优雅的公用API的方式重置数据；
 // 因为涉及几个不同状态的切换，所以还是移到里面，应该差别也不是很大               
-        mMainActivityViewModel.mEmpList.observe((LifecycleOwner) this, empListResponse -> {
-                // 觉得这里的数据分类的各要的办法：是在ViewModel中定义三个不同的状态，直接传三个最简单的状态到视图层，但是暂时先这样
-                if (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)) {
-                    Toast toast = Toast.makeText(this, "The Employee list is Empty or contained invalide data.", Toast.LENGTH_LONG);
-                    toast.show();
-                } else {
-                    dataBinding.rv.setAdapter(new RecyclerAdapter(empListResponse.getEmployees()));
-                    // mAdapter.updateEmpList(empListResponse.getEmployees());
-                }
-                dismissLoading();
-            });
+            mMainActivityViewModel.mEmpList.observe((LifecycleOwner) this, empListResponse -> {
+                    // 觉得这里的数据分类的各要的办法：是在ViewModel中定义三个不同的状态，直接传三个最简单的状态到视图层，但是暂时先这样
+                    if (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)) {
+                        Toast toast = Toast.makeText(this, "The Employee list is Empty or contained invalide data.", Toast.LENGTH_LONG);
+                        toast.show();
+                    } else {
+                        dataBinding.rv.setAdapter(new RecyclerAdapter(empListResponse.getEmployees()));
+                        // mAdapter.updateEmpList(empListResponse.getEmployees());
+                    }
+                    dismissLoading();
+                });
         
-        mMainActivityViewModel.failed.observe((LifecycleOwner) this, failed -> dismissLoading());
+            mMainActivityViewModel.failed.observe((LifecycleOwner) this, failed -> dismissLoading());
 
-        dataBinding.fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                    public void onClick(View view) { // 网络申请刷新数据: Ui Event向viewModel下传回调
-                    mMainActivityViewModel.getEmployees();
-                }
-            });
+            dataBinding.fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                        public void onClick(View view) { // 网络申请刷新数据: Ui Event向viewModel下传回调
+                        mMainActivityViewModel.getEmployees();
+                    }
+                });
+        }
     }
 
     @Override
@@ -165,12 +167,12 @@ public class MainActivity extends BaseActivity {
     // 会在 onStop()方法调用之前 调用该方法,保存当前状态
     // 当用户主动销毁activity，如按back键，或直接执行finish(),不会执行
     // 遇到意外情况（内存不足;用户直接按home键）由系统直接销毁一个Activity时，就会调用
-    @Override
-        public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
-        Log.d(TAG, "onSaveInstanceState() ");
-// 该保存哪些数据呢？如何恢复呢？怎么模拟测试内存不足的情况？
-    }
+//     @Override
+//         public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+//         super.onSaveInstanceState(outState, outPersistentState);
+//         Log.d(TAG, "onSaveInstanceState() ");
+// // 该保存哪些数据呢？如何恢复呢？怎么模拟测试内存不足的情况？
+//     }
 
    // @Override // 因为这里横竖屏的布局完全一样，所以可以不必覆写这个方法
    //     public void onConfigurationChanged(Configuration newConfig) {
