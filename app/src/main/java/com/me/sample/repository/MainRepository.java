@@ -84,17 +84,19 @@ public class MainRepository {
      */
 // 提供一个数据库读取数据的公用方法供使用
     public MutableLiveData<EmployeeResponse> retrieveEmployees() {
+        Log.d(TAG, "retrieveEmployees() ");
         EmployeeResponse emp = new EmployeeResponse();
         List<Employee> l = new ArrayList<>();
         Flowable<List<Employee>> listFlowable = BaseApplication.getDb().employeeDao().getAll();
-        CustomDisposable.addDisposable(listFlowable, wallPapers -> {
-                for (Employee employee : wallPapers) {
-                    Employee verticalBean = new Employee();
-                    verticalBean.setFullName(employee.getFullName());
-                    verticalBean.setPhotoUrlSmall(employee.getPhotoUrlSmall());
-                    verticalBean.setTeam(employee.getTeam());
-                    l.add(verticalBean);
+        CustomDisposable.addDisposable(listFlowable, empList -> {
+                for (Employee employee : empList) {
+                    Employee one = new Employee();
+                    one.setFullName(employee.getFullName());
+                    one.setPhotoUrlSmall(employee.getPhotoUrlSmall());
+                    one.setTeam(employee.getTeam());
+                    l.add(one);
                 }
+                Log.d(TAG, "l.size(): " + l.size());
                 emp.setEmployees(l);
                 employees.postValue(emp);
             });

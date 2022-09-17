@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.os.Environment;
 import android.provider.Settings;
 import android.view.View;
@@ -29,7 +30,8 @@ import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
  */
 // public class BaseActivity extends AppCompatActivity {
 public class BaseActivity extends RxAppCompatActivity {
-
+    private final String TAG = "BaseActivity";
+    
     protected BaseActivity context;
     private LoadingDialog loadingDialog;
 
@@ -47,6 +49,7 @@ public class BaseActivity extends RxAppCompatActivity {
         protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.context = this;
+        Log.d(TAG, "onCreate() ");
         BaseApplication.getActivityManager().addActivity(this);
         PermissionUtils.getInstance();
     }

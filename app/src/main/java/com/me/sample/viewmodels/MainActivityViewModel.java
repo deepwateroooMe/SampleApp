@@ -20,8 +20,12 @@ public class MainActivityViewModel extends BaseViewModel {
         if (mEmpList != null) return;
         mainRepository = MainRepository.getInstance();
 
-        failed = mainRepository.failed;
-        mEmpList = mainRepository.getEmployees();
+        // failed = mainRepository.failed;
+        // mEmpList = mainRepository.getEmployees(); // 这里自动从网络读是不对的
+    }
+
+    public void retrieveEmployees() {
+        mEmpList = mainRepository.retrieveEmployees();
     }
 
     public void getEmployees() {

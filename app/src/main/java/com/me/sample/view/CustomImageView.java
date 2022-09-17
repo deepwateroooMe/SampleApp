@@ -24,16 +24,18 @@ import io.reactivex.annotations.Nullable;
 public class CustomImageView extends ShapeableImageView {
 
     private static final RequestOptions OPTIONS = new RequestOptions()
-        .placeholder(R.drawable.wallpaper_bg)//图片加载出来前，显示的图片
-        .fallback(R.drawable.wallpaper_bg) //url为空的时候,显示的图片
-        .error(R.mipmap.ic_loading_failed);//图片加载失败后，显示的图片
+        .placeholder(R.drawable.wallpaper_bg)// 图片加载出来前，显示的图片
+        .fallback(R.drawable.wallpaper_bg)   // url为空的时候,显示的图片
+        .error(R.mipmap.ic_loading_failed)   // 图片加载失败后，显示的图片
+        .diskCacheStrategy(DiskCacheStrategy.ALL) // 不做磁盘缓存
+        .skipMemoryCache(false);
 
     private static final RequestOptions OPTIONS_LOCAL = new RequestOptions()
-        .placeholder(R.drawable.logo)//图片加载出来前，显示的图片
-        .fallback(R.drawable.logo) //url为空的时候,显示的图片
-        .error(R.mipmap.ic_loading_failed)//图片加载失败后，显示的图片
-        .diskCacheStrategy(DiskCacheStrategy.NONE)//不做磁盘缓存
-        .skipMemoryCache(true);
+        .placeholder(R.drawable.logo) // 图片加载出来前，显示的图片
+        .fallback(R.drawable.logo)    // url为空的时候,显示的图片
+        .error(R.mipmap.ic_loading_failed) // 图片加载失败后，显示的图片
+        .diskCacheStrategy(DiskCacheStrategy.ALL) // 不做磁盘缓存
+        .skipMemoryCache(false);
 
     public CustomImageView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);

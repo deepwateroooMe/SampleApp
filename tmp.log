@@ -21,7 +21,7 @@ com.me.sample D/OpenGLRenderer: setSurface called with nullptr
 com.me.sample D/OpenGLRenderer: setSurface() destroyed EGLSurface
 com.me.sample D/OpenGLRenderer: destroyEglSurface
 com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)8 dur=8 res=0x5 s={false 0} ch=true fn=7
-com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: stopped(true) old=false
+com.me.sample I/ViewRootImpl@ccc5e51[MainActivi2ty]: stopped(true) old=false
 com.me.sample D/MainActivity: onStop() 
 com.me.sample D/MainActivity: onSaveInstanceState()
 com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)8 dur=4 res=0x5 s={false 0} ch=false fn=-1
@@ -75,4 +75,64 @@ com.me.sample D/InputMethodManager: startInputInner - Id : 0
 com.me.sample I/InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
 com.me.sample D/InputMethodManager: startInputInner - Id : 0
 com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
-com.me.sample W/System: A resource failed to call close. 
+com.me.sample W/System: A resource failed to call close.
+
+
+2022-09-16 16:24:14.152 28619-28619/com.me.sample D/MainActivity: onCreate() 
+2022-09-16 16:24:14.205 28619-28619/com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: setView = com.android.internal.policy.DecorView@11ea6c1 TM=true
+2022-09-16 16:24:14.228 28619-28619/com.me.sample D/MainActivity: (savedInstanceState == null): true
+2022-09-16 16:24:14.247 28619-28619/com.me.sample D/MainActivity: onStart() 
+2022-09-16 16:24:14.249 28619-28619/com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: stopped(false) old=false
+2022-09-16 16:24:14.249 28619-28619/com.me.sample D/MainActivity: onResume() 
+2022-09-16 16:24:14.257 28619-28619/com.me.sample I/ViewRootImpl@a363778[MainActivity]: setView = com.android.internal.policy.DecorView@41dfb5 TM=true
+2022-09-16 16:24:14.274 28619-28619/com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: Relayout returned: old=(0,142,1440,2872) new=(510,1297,930,1717) req=(420,420)0 dur=5 res=0x7 s={true -5476376617398057808} ch=true fn=-1
+2022-09-16 16:24:14.276 28619-28619/com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+2022-09-16 16:24:14.285 28619-28645/com.me.sample I/BufferQueueProducer: [ViewRootImpl@cfdc231[MainActivity]#0(BLAST Consumer)0](id:6fcb00000000,api:1,p:28619,c:28619) queueBuffer: queued for the first time.
+2022-09-16 16:24:14.302 28619-28619/com.me.sample I/ViewRootImpl@a363778[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)0 dur=5 res=0x7 s={true -5476376617397988048} ch=true fn=-1
+2022-09-16 16:24:14.306 28619-28619/com.me.sample I/ViewRootImpl@a363778[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+2022-09-16 16:24:14.315 28619-28645/com.me.sample I/BufferQueueProducer: [ViewRootImpl@a363778[MainActivity]#1(BLAST Consumer)1](id:6fcb00000001,api:1,p:28619,c:28619) queueBuffer: queued for the first time.
+2022-09-16 16:24:14.317 28619-28619/com.me.sample I/ViewRootImpl@a363778[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+2022-09-16 16:24:14.317 28619-28619/com.me.sample I/ViewRootImpl@a363778[MainActivity]: [DP] rdf()
+2022-09-16 16:24:14.317 28619-28619/com.me.sample D/ViewRootImpl@a363778[MainActivity]: reportDrawFinished (fn: -1) 
+2022-09-16 16:24:14.318 28619-28619/com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+2022-09-16 16:24:14.318 28619-28619/com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: [DP] rdf()
+2022-09-16 16:24:14.318 28619-28619/com.me.sample D/ViewRootImpl@cfdc231[MainActivity]: reportDrawFinished (fn: -1) 
+2022-09-16 16:24:14.324 28619-28619/com.me.sample I/ViewRootImpl@cfdc231[MainActivity]: dispatchDetachedFromWindow
+2022-09-16 16:24:14.470 28619-28619/com.me.sample I/ViewRootImpl@a363778[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+2022-09-16 16:24:15.164 28619-28650/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
+2022-09-16 16:24:16.162 28619-28650/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 1
+2022-09-16 16:24:17.163 28619-28650/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 2
+2022-09-16 16:24:18.162 28619-28650/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 3
+2022-09-16 16:24:18.676 28619-28619/com.me.sample D/MainActivity: onPause() 
+2022-09-16 16:24:18.684 28619-28619/com.me.sample I/ViewRootImpl@a363778[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 0 1
+2022-09-16 16:24:19.153 28619-28619/com.me.sample I/ViewRootImpl@a363778[MainActivity]: handleAppVisibility mAppVisible=true visible=false
+2022-09-16 16:24:19.161 28619-28650/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 4
+2022-09-16 16:24:19.185 28619-28619/com.me.sample I/ViewRootImpl@a363778[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)8 dur=5 res=0x5 s={false 0} ch=true fn=7
+2022-09-16 16:24:19.189 28619-28619/com.me.sample I/ViewRootImpl@a363778[MainActivity]: stopped(true) old=false
+2022-09-16 16:24:19.191 28619-28619/com.me.sample D/MainActivity: onStop() 
+2022-09-16 16:24:19.196 28619-28619/com.me.sample D/MainActivity: onSaveInstanceState()
+2022-09-16 16:24:19.207 28619-28619/com.me.sample I/ViewRootImpl@a363778[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)8 dur=5 res=0x5 s={false 0} ch=false fn=-1
+2022-09-16 16:25:09.422 28738-28738/com.me.sample D/MainActivity: onCreate() 
+2022-09-16 16:25:09.477 28738-28738/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: setView = com.android.internal.policy.DecorView@1e095a7 TM=true
+2022-09-16 16:25:09.506 28738-28738/com.me.sample D/MainActivity: (savedInstanceState != null): true
+2022-09-16 16:25:09.513 28738-28738/com.me.sample D/MainActivity: onStart() 
+2022-09-16 16:25:09.515 28738-28738/com.me.sample D/MainActivity: onRestoreInstanceState() 
+2022-09-16 16:25:09.516 28738-28738/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: stopped(false) old=false
+2022-09-16 16:25:09.516 28738-28738/com.me.sample D/MainActivity: onResume() 
+2022-09-16 16:25:09.523 28738-28738/com.me.sample I/ViewRootImpl@6b23872[MainActivity]: setView = com.android.internal.policy.DecorView@9fdb9bb TM=true
+2022-09-16 16:25:09.544 28738-28738/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: Relayout returned: old=(0,142,1440,2872) new=(510,1297,930,1717) req=(420,420)0 dur=5 res=0x7 s={true -5476376617398110128} ch=true fn=-1
+2022-09-16 16:25:09.546 28738-28738/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+2022-09-16 16:25:09.555 28738-28770/com.me.sample I/BufferQueueProducer: [ViewRootImpl@3c43697[MainActivity]#0(BLAST Consumer)0](id:704200000000,api:1,p:28738,c:28738) queueBuffer: queued for the first time.
+2022-09-16 16:25:09.573 28738-28738/com.me.sample I/ViewRootImpl@6b23872[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)0 dur=5 res=0x7 s={true -5476376617397979328} ch=true fn=-1
+2022-09-16 16:25:09.577 28738-28738/com.me.sample I/ViewRootImpl@6b23872[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+2022-09-16 16:25:09.586 28738-28770/com.me.sample I/BufferQueueProducer: [ViewRootImpl@6b23872[MainActivity]#1(BLAST Consumer)1](id:704200000001,api:1,p:28738,c:28738) queueBuffer: queued for the first time.
+2022-09-16 16:25:09.588 28738-28738/com.me.sample I/ViewRootImpl@6b23872[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+2022-09-16 16:25:09.588 28738-28738/com.me.sample I/ViewRootImpl@6b23872[MainActivity]: [DP] rdf()
+2022-09-16 16:25:09.588 28738-28738/com.me.sample D/ViewRootImpl@6b23872[MainActivity]: reportDrawFinished (fn: -1) 
+2022-09-16 16:25:09.588 28738-28738/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+2022-09-16 16:25:09.588 28738-28738/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] rdf()
+2022-09-16 16:25:09.588 28738-28738/com.me.sample D/ViewRootImpl@3c43697[MainActivity]: reportDrawFinished (fn: -1) 
+2022-09-16 16:25:09.609 28738-28738/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: dispatchDetachedFromWindow
+2022-09-16 16:25:09.645 28738-28738/com.me.sample I/ViewRootImpl@6b23872[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+2022-09-16 16:25:10.432 28738-28777/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
+2022-09-16 16:25:11.432 28738-28777/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 1
