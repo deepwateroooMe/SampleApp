@@ -1,7 +1,5 @@
 package com.me.sample.repository;
 
-import static com.me.sample.application.BaseApplication.getContext;
-
 import android.annotation.SuppressLint;
 import android.util.Log;
 
@@ -15,20 +13,16 @@ import com.me.sample.network.ApiService;
 import com.me.sample.network.BaseObserver;
 import com.me.sample.network.NetworkApi;
 import com.me.sample.network.utils.KLog;
-import com.me.sample.utils.Constant;
 import com.me.sample.utils.MVUtils;
-import com.me.sample.utils.MVUtilsEntryPoint;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import dagger.hilt.android.EntryPointAccessors;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 
 /**
  * Main存储库 用于对数据进行处理
- * @author llw
  */
 @SuppressLint("CheckResult")
 public class MainRepository {
@@ -48,11 +42,6 @@ public class MainRepository {
     public static MainRepository getInstance() {
         if (instance == null)
             instance = new MainRepository();
-
-        // // 获取mvUtils: 写在这里面，是否会逻辑混乱 ？
-        // MVUtilsEntryPoint entryPoint =
-        //     EntryPointAccessors.fromApplication(getContext(), MVUtilsEntryPoint.class);
-        // mvUtils = entryPoint.getMVUtils();
 
         return instance;
     }
@@ -91,13 +80,11 @@ public class MainRepository {
         Flowable<List<Employee>> listFlowable = BaseApplication.getDb().employeeDao().getAll();
         CustomDisposable.addDisposable(listFlowable, empList -> {
                 for (Employee employee : empList) {
-                    Employee one = new Employee(employee.getUuid(), employee.getFullName(), employee.getEmailAddress(), employee.getTeam(), employee.getEmployeeType(), employee.getPhotoUrlSmall());
-                    // one.setFullName(employee.getFullName());
-                    // one.setPhotoUrlSmall(employee.getPhotoUrlSmall());
-                    // one.setTeam(employee.getTeam());
+                    Employee one = new Employee(employee.getUuid(), employee.getFullName(),
+                                                employee.getEmailAddress(), employee.getTeam(),
+                                                employee.getEmployeeType(), employee.getPhotoUrlSmall());
                     l.add(one);
                 }
-                Log.d(TAG, "l.size(): " + l.size());
                 emp.setEmployees(l);
                 employees.postValue(emp);
             });
@@ -109,15 +96,11 @@ public class MainRepository {
      */
     private void saveEmployees(EmployeeResponse employeesResponse) {
         Log.d(TAG, "saveEmployees() ");
-        // // 记录数据库里已经存有员工链表数据
-        // mvUtils.put(Constant.HAS_LIST, true);
         Completable deleteAll = BaseApplication.getDb().employeeDao().deleteAll();
-        
         CustomDisposable.addDisposable(deleteAll, () -> {
                 Log.d(TAG, "saveEmployees: 删除员工链表数据成功");
                 List<Employee> employeesList = new ArrayList<>();
                 // 这里，不光是把每个员工加入链表；把把每个员工的头像也加入到头像的表格中去
-                // 简单的办法是；把整个员工链表作为参数传给另一个方法
                 for (Employee employee : employeesResponse.getEmployees()) 
                     employeesList.add(employee);
                 // 保存到数据库
@@ -134,8 +117,6 @@ public class MainRepository {
      */
     private void saveImageData(EmployeeResponse employeeResponse) {
         Log.d(TAG, "saveImageData() ");
-        // // 记录数据库里已经存有员工头像数据
-        // mvUtils.put(Constant.HAS_IMGS, true);
         // 员工头像表：需要删除所有以前(上一次)所存过的员工头像数据；再一个一个地加进来
         // 需要删除所有以前(上一次)所存过的员工头像数据；再一个一个地加进来
         Completable deleteAll = BaseApplication.getDb().imageDao().deleteAll();

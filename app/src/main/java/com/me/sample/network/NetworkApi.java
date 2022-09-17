@@ -145,14 +145,14 @@ public class NetworkApi {
                 .subscribeOn(Schedulers.io())// 线程订阅
                 .observeOn(AndroidSchedulers.mainThread())// 观察Android主线程
 
-                // 绑定生命周期: 防止内存泄露;这里暂时还不知道该如何实现，暂时先放一下
+                // 绑定生命周期: 防止内存泄露;
                 // 与lifecycleOwner结合，网络请求可以根据lifecyclerOwner生命周期选择执行请求或是自动取消请求
 // 这里没有修改好：Hilt 与RxLifeCycle看起来还不能够很好地合作
-// 这里可能需要其它的实现方法：相对于高大上的Hilt自动注入，先解决问题内存泄露的问题                
-//                .compose(bindUntilEvent(ActivityEvent.DESTROY)) // 或者这里写的地方不对 ？
+// 这里可能需要其它的实现方法：相对于高大上的Hilt自动注入，先解决问题内存泄露的问题,去Hilt自动注入的模块去掉                
+//                .compose(bindUntilEvent(ActivityEvent.DESTROY)) // 或者这里写的地方不对 ？即便是写，也该是在activity或是fragment等具备生命周期的地方写
 //                .as(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(this)) // 不可以写在static方法这里，感知生命周期，呵呵
                     
-                .map(NetworkApi.getAppErrorHandler())// 判断有没有500的错误，有则进入getAppErrorHandler
+                .map(NetworkApi.getAppErrorHandler())        // 判断有没有500的错误，有则进入getAppErrorHandler
                 .onErrorResumeNext(new HttpErrorHandler<>());// 判断有没有400的错误
             // 订阅观察者
             observable.subscribe(observer);
