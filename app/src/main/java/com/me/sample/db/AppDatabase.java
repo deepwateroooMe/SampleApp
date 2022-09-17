@@ -27,12 +27,6 @@ public abstract class AppDatabase extends RoomDatabase {
                 if (instance == null) {
                     instance = Room
                         .databaseBuilder(context.getApplicationContext(), AppDatabase.class, DATABASE_NAME)
-                        
-// 关于数据库升级迁移，以及出错出现异常时回退到某个版本的逻辑处理
-                        // .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-                        // //为了防止数据库升级失败导致崩溃，加入该方法可以在出现异常时创建数据表而不崩溃，但表中数据会丢失
-                        // .fallbackToDestructiveMigration()
-                        
                         .build(); 
                 }
             }
@@ -40,7 +34,7 @@ public abstract class AppDatabase extends RoomDatabase {
         return instance;
     }
     
-    public abstract ImageDao imageDao(); // Declare your data access objects as abstract
+    public abstract ImageDao imageDao(); 
     public abstract EmployeeDao employeeDao();
 
     // 数据库迁移升级的逻辑可以补上
@@ -75,8 +69,4 @@ public abstract class AppDatabase extends RoomDatabase {
                              "PRIMARY KEY(`uuid`))");
         }
     };
-    // private boolean isValidEmployee(Employee e) {
-    //     return e.getUuid() != null && e.getFullName() != null && e.getEmailAddress() != null
-    //         && e.getTeam() != null && e.getEmployeeType() != null;
-    // }
 }

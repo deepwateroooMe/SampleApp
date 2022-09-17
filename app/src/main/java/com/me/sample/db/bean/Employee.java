@@ -15,14 +15,6 @@ import com.google.gson.annotations.SerializedName;
 @Entity(tableName = "employee")
 public class Employee {
 
-    @Override
-    public String toString() {
-        return "Employee: \n fullName: " + fullName + "; \n"
-            + "uuid: " + uuid + "; \n"
-            + "emailAddress: " + emailAddress + "; \n"
-            + "team: " + team + "; \n"
-            + "employeeType: " + employeeType + "; \n";
-    }
     @PrimaryKey
     @NonNull
     @SerializedName("uuid")
@@ -62,8 +54,10 @@ public class Employee {
     private String employeeType;
 
     public Employee() {}
+
     @Ignore
-    public Employee(String uuid, String fullName, String emailAddress, String team, String employeeType, String photoUrlSmall) {
+    public Employee(String uuid, String fullName, String emailAddress,
+                    String team, String employeeType, String photoUrlSmall) {
         this.uuid = uuid;
         this.fullName = fullName;
         this.emailAddress = emailAddress;
@@ -142,5 +136,14 @@ public class Employee {
 
     public void setEmployeeType(String employeeType) {
         this.employeeType = employeeType;
+    }
+
+    @Override
+    public String toString() {
+        return "Employee: \n fullName: " + fullName + "; \n"
+            + "uuid: " + uuid + "; \n"
+            + "emailAddress: " + emailAddress + "; \n"
+            + "team: " + team + "; \n"
+            + "employeeType: " + employeeType + "; \n";
     }
 }
