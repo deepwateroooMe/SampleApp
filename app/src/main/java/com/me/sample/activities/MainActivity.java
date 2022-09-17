@@ -99,8 +99,8 @@ public class MainActivity extends BaseActivity {
                 Log.d(TAG, "(empListResponse != null && empListResponse.getEmployees().size() == 0): " + (empListResponse != null && empListResponse.getEmployees().size() == 0));
                 Log.d(TAG, "(empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)): " + (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)));
 // 既然是说数据不全，那么简单也很简单，就直接不全的数据也让它能够显示出来就可以了
-                // if (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)) {
-                if (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0) {
+                if (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)) {
+                // if (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0) {
                     dataBinding.rv.setVisibility(INVISIBLE);
                     Toast toast = Toast.makeText(this, "The Employee list is Empty or contained invalide data.", Toast.LENGTH_LONG);
                     toast.show();

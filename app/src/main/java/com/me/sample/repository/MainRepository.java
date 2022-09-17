@@ -91,10 +91,10 @@ public class MainRepository {
         Flowable<List<Employee>> listFlowable = BaseApplication.getDb().employeeDao().getAll();
         CustomDisposable.addDisposable(listFlowable, empList -> {
                 for (Employee employee : empList) {
-                    Employee one = new Employee();
-                    one.setFullName(employee.getFullName());
-                    one.setPhotoUrlSmall(employee.getPhotoUrlSmall());
-                    one.setTeam(employee.getTeam());
+                    Employee one = new Employee(employee.getUuid(), employee.getFullName(), employee.getEmailAddress(), employee.getTeam(), employee.getEmployeeType(), employee.getPhotoUrlSmall());
+                    // one.setFullName(employee.getFullName());
+                    // one.setPhotoUrlSmall(employee.getPhotoUrlSmall());
+                    // one.setTeam(employee.getTeam());
                     l.add(one);
                 }
                 Log.d(TAG, "l.size(): " + l.size());
