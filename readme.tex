@@ -1,4 +1,4 @@
-% Created 2022-09-15 Thu 23:08
+% Created 2022-09-16 Fri 18:39
 \documentclass[9pt, b5paper]{article}
 \usepackage{xeCJK}
 \usepackage{minted}
@@ -33,7 +33,7 @@
 \tableofcontents
 
 
-\section{要求}
+\section{要求: \url{https://square.github.io/microsite/mobile-interview-project/}}
 \label{sec-1}
 \begin{itemize}
 \item Build an \textbf{employee directory app} that shows a list of employees from the provided endpoint.
@@ -79,6 +79,10 @@
 \section{主要思路: \textbf{对照它提示过/读得懂的要求，把自己可能会miss掉的小细节全捡回来}}
 \label{sec-2}
 \begin{itemize}
+\item 能够把应用在前台或是后台被杀死后重建的情况优化，实现期望的逻辑；但是对图片的处理，好像仍然是从网上抓的图片，对图片的缓存与处理这块做得不够好
+\item 第一次安装应用并运行的启动过程仍然很慢，图处的placeholder还没有设置好；
+\item 最简单的对数据的处理没有处理好：当要求一个员工的数据必须五项都有的时候，可能有些数据是不全的；不过这个关系不大
+\item 重大版块的逻辑都是实现了和连通好了的
 \item 现在重新再次整合Room数据库，把手机内存产资源不足时销毁activity保存数据(应该需要的是持久性数据保存)的部分补充完整；
 \item 一个极端情况下安卓手机内存不足时应用被系统杀死的数据保存与恢复需要数据库；这个地方想得还不是很透，可能把前面的问题解决了再解决这个极端用例
 \item 这里模拟一下真机内存不足的时候杀进程，把它杀死，打个日志，分析一下，再进一步修改.试过上面一行Home后应用在后台杀死的方法，杀不掉；在前台倒是可以杀掉，抓个日志看一下

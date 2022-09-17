@@ -15,6 +15,10 @@ import com.google.gson.annotations.SerializedName;
 public class Employee {
 //    private final String TAG = "Employee";
 
+    @Override
+    public String toString() {
+        return "Employee: fullName: " + fullName + "; team: " + team;
+    }
     @PrimaryKey
     @NonNull
     @SerializedName("uuid")

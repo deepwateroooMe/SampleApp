@@ -136,3 +136,269 @@ com.me.sample W/System: A resource failed to call close.
 2022-09-16 16:25:09.645 28738-28738/com.me.sample I/ViewRootImpl@6b23872[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
 2022-09-16 16:25:10.432 28738-28777/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
 2022-09-16 16:25:11.432 28738-28777/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 1
+
+
+
+2022-09-16 18:25:12.386 30141-30141/com.me.sample D/MainActivity: onCreate() 
+2022-09-16 18:25:12.395 30141-30141/com.me.sample I/Dialog: mIsDeviceDefault = false, mIsSamsungBasicInteraction = false, isMetaDataInActivity = false
+2022-09-16 18:25:12.402 30141-30141/com.me.sample I/DecorView: [INFO] isPopOver=false, config=false
+2022-09-16 18:25:12.403 30141-30141/com.me.sample I/DecorView: updateCaptionType >> DecorView@1e095a7[], isFloating=true, isApplication=true, hasWindowControllerCallback=false, hasWindowDecorCaption=false
+2022-09-16 18:25:12.403 30141-30141/com.me.sample D/DecorView: setCaptionType = 0, this = DecorView@1e095a7[]
+2022-09-16 18:25:12.425 30141-30141/com.me.sample I/DecorView: [INFO] isPopOver=false, config=true
+2022-09-16 18:25:12.426 30141-30141/com.me.sample I/DecorView: updateCaptionType >> DecorView@9fdb9bb[], isFloating=false, isApplication=true, hasWindowControllerCallback=true, hasWindowDecorCaption=false
+2022-09-16 18:25:12.426 30141-30141/com.me.sample D/DecorView: setCaptionType = 0, this = DecorView@9fdb9bb[]
+2022-09-16 18:25:12.427 30141-30141/com.me.sample I/DecorView: getCurrentDensityDpi: from real metrics. densityDpi=560 msg=resources_loaded
+2022-09-16 18:25:12.438 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: setView = com.android.internal.policy.DecorView@1e095a7 TM=true
+2022-09-16 18:25:12.443 30141-30141/com.me.sample W/com.me.sample: Accessing hidden method Landroid/view/View;->computeFitSystemWindows(Landroid/graphics/Rect;Landroid/graphics/Rect;)Z (unsupported, reflection, allowed)
+2022-09-16 18:25:12.443 30141-30141/com.me.sample W/com.me.sample: Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (unsupported, reflection, allowed)
+2022-09-16 18:25:12.465 30141-30141/com.me.sample D/MainActivity: (savedInstanceState != null): true
+2022-09-16 18:25:12.465 30141-30141/com.me.sample D/MainRepository: retrieveEmployees() 
+2022-09-16 18:25:12.472 30141-30141/com.me.sample D/MainActivity: onStart() 
+2022-09-16 18:25:12.473 30141-30141/com.me.sample D/MainActivity: onRestoreInstanceState() 
+2022-09-16 18:25:12.474 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: stopped(false) old=false
+2022-09-16 18:25:12.475 30141-30141/com.me.sample D/MainActivity: onResume() 
+2022-09-16 18:25:12.479 30141-30141/com.me.sample I/DecorView: notifyKeepScreenOnChanged: keepScreenOn=false
+2022-09-16 18:25:12.483 30141-30141/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: setView = com.android.internal.policy.DecorView@9fdb9bb TM=true
+2022-09-16 18:25:12.505 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: Relayout returned: old=(0,142,1440,2872) new=(510,1297,930,1717) req=(420,420)0 dur=8 res=0x7 s={true -5476376617398101408} ch=true fn=-1
+2022-09-16 18:25:12.507 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+2022-09-16 18:25:12.508 30141-30169/com.me.sample D/hw-ProcessState: Binder ioctl to enable oneway spam detection failed: Invalid argument
+2022-09-16 18:25:12.508 30141-30169/com.me.sample D/OpenGLRenderer: eglCreateWindowSurface
+2022-09-16 18:25:12.517 30141-30169/com.me.sample I/BufferQueueProducer: [ViewRootImpl@3c43697[MainActivity]#0(BLAST Consumer)0](id:75bd00000000,api:1,p:30141,c:30141) queueBuffer: queued for the first time.
+2022-09-16 18:25:12.534 30141-30141/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)0 dur=4 res=0x7 s={true -5476376617397988048} ch=true fn=-1
+2022-09-16 18:25:12.535 30141-30169/com.me.sample D/OpenGLRenderer: eglCreateWindowSurface
+2022-09-16 18:25:12.537 30141-30141/com.me.sample W/RecyclerView: No adapter attached; skipping layout
+2022-09-16 18:25:12.538 30141-30141/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+2022-09-16 18:25:12.547 30141-30169/com.me.sample I/BufferQueueProducer: [ViewRootImpl@140f4c3[MainActivity]#1(BLAST Consumer)1](id:75bd00000001,api:1,p:30141,c:30141) queueBuffer: queued for the first time.
+2022-09-16 18:25:12.549 30141-30141/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+2022-09-16 18:25:12.549 30141-30141/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: [DP] rdf()
+2022-09-16 18:25:12.549 30141-30141/com.me.sample D/ViewRootImpl@140f4c3[MainActivity]: reportDrawFinished (fn: -1) 
+2022-09-16 18:25:12.549 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+2022-09-16 18:25:12.549 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] rdf()
+2022-09-16 18:25:12.549 30141-30141/com.me.sample D/ViewRootImpl@3c43697[MainActivity]: reportDrawFinished (fn: -1) 
+2022-09-16 18:25:12.550 30141-30141/com.me.sample D/MainRepository: l.size(): 11
+2022-09-16 18:25:12.557 30141-30141/com.me.sample D/MainActivity: (empListResponse.getEmployees() == null): false
+2022-09-16 18:25:12.557 30141-30141/com.me.sample D/MainActivity: (empListResponse != null && empListResponse.getEmployees().size() == 0): false
+2022-09-16 18:25:12.557 30141-30141/com.me.sample D/MainActivity: e.toString(): Employee: fullName: Justine Mason; team: Point of Sale
+2022-09-16 18:25:12.557 30141-30141/com.me.sample D/MainActivity: (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)): true
+2022-09-16 18:25:12.558 30141-30141/com.me.sample D/MainActivity: e.toString(): Employee: fullName: Justine Mason; team: Point of Sale
+2022-09-16 18:25:12.558 30141-30141/com.me.sample D/CompatibilityChangeReporter: Compat change id reported: 147798919; UID 10704; state: ENABLED
+2022-09-16 18:25:12.569 30141-30169/com.me.sample D/OpenGLRenderer: setSurface called with nullptr
+2022-09-16 18:25:12.569 30141-30169/com.me.sample D/OpenGLRenderer: setSurface() destroyed EGLSurface
+2022-09-16 18:25:12.569 30141-30169/com.me.sample D/OpenGLRenderer: destroyEglSurface
+
+
+
+
+2022-09-16 18:25:12.386 30141-30141/com.me.sample D/BaseActivity: onCreate() 
+2022-09-16 18:25:12.386 30141-30141/com.me.sample D/MainActivity: onCreate() 
+2022-09-16 18:25:12.395 30141-30141/com.me.sample I/Dialog: mIsDeviceDefault = false, mIsSamsungBasicInteraction = false, isMetaDataInActivity = false
+2022-09-16 18:25:12.402 30141-30141/com.me.sample I/DecorView: [INFO] isPopOver=false, config=false
+2022-09-16 18:25:12.403 30141-30141/com.me.sample I/DecorView: updateCaptionType >> DecorView@1e095a7[], isFloating=true, isApplication=true, hasWindowControllerCallback=false, hasWindowDecorCaption=false
+2022-09-16 18:25:12.403 30141-30141/com.me.sample D/DecorView: setCaptionType = 0, this = DecorView@1e095a7[]
+2022-09-16 18:25:12.425 30141-30141/com.me.sample I/DecorView: [INFO] isPopOver=false, config=true
+2022-09-16 18:25:12.426 30141-30141/com.me.sample I/DecorView: updateCaptionType >> DecorView@9fdb9bb[], isFloating=false, isApplication=true, hasWindowControllerCallback=true, hasWindowDecorCaption=false
+2022-09-16 18:25:12.426 30141-30141/com.me.sample D/DecorView: setCaptionType = 0, this = DecorView@9fdb9bb[]
+2022-09-16 18:25:12.427 30141-30141/com.me.sample I/DecorView: getCurrentDensityDpi: from real metrics. densityDpi=560 msg=resources_loaded
+2022-09-16 18:25:12.438 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: setView = com.android.internal.policy.DecorView@1e095a7 TM=true
+2022-09-16 18:25:12.443 30141-30141/com.me.sample W/com.me.sample: Accessing hidden method Landroid/view/View;->computeFitSystemWindows(Landroid/graphics/Rect;Landroid/graphics/Rect;)Z (unsupported, reflection, allowed)
+2022-09-16 18:25:12.443 30141-30141/com.me.sample W/com.me.sample: Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (unsupported, reflection, allowed)
+2022-09-16 18:25:12.465 30141-30141/com.me.sample D/MainActivity: (savedInstanceState != null): true
+2022-09-16 18:25:12.465 30141-30141/com.me.sample D/MainRepository: retrieveEmployees() 
+2022-09-16 18:25:12.472 30141-30141/com.me.sample D/MainActivity: onStart() 
+2022-09-16 18:25:12.473 30141-30141/com.me.sample D/MainActivity: onRestoreInstanceState() 
+2022-09-16 18:25:12.474 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: stopped(false) old=false
+2022-09-16 18:25:12.475 30141-30141/com.me.sample D/MainActivity: onResume() 
+2022-09-16 18:25:12.479 30141-30141/com.me.sample I/DecorView: notifyKeepScreenOnChanged: keepScreenOn=false
+2022-09-16 18:25:12.483 30141-30141/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: setView = com.android.internal.policy.DecorView@9fdb9bb TM=true
+2022-09-16 18:25:12.505 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: Relayout returned: old=(0,142,1440,2872) new=(510,1297,930,1717) req=(420,420)0 dur=8 res=0x7 s={true -5476376617398101408} ch=true fn=-1
+2022-09-16 18:25:12.507 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+2022-09-16 18:25:12.508 30141-30169/com.me.sample D/hw-ProcessState: Binder ioctl to enable oneway spam detection failed: Invalid argument
+2022-09-16 18:25:12.508 30141-30169/com.me.sample D/OpenGLRenderer: eglCreateWindowSurface
+2022-09-16 18:25:12.517 30141-30169/com.me.sample I/BufferQueueProducer: [ViewRootImpl@3c43697[MainActivity]#0(BLAST Consumer)0](id:75bd00000000,api:1,p:30141,c:30141) queueBuffer: queued for the first time.
+2022-09-16 18:25:12.534 30141-30141/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)0 dur=4 res=0x7 s={true -5476376617397988048} ch=true fn=-1
+2022-09-16 18:25:12.535 30141-30169/com.me.sample D/OpenGLRenderer: eglCreateWindowSurface
+2022-09-16 18:25:12.537 30141-30141/com.me.sample W/RecyclerView: No adapter attached; skipping layout
+2022-09-16 18:25:12.538 30141-30141/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+2022-09-16 18:25:12.547 30141-30169/com.me.sample I/BufferQueueProducer: [ViewRootImpl@140f4c3[MainActivity]#1(BLAST Consumer)1](id:75bd00000001,api:1,p:30141,c:30141) queueBuffer: queued for the first time.
+2022-09-16 18:25:12.549 30141-30141/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+2022-09-16 18:25:12.549 30141-30141/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: [DP] rdf()
+2022-09-16 18:25:12.549 30141-30141/com.me.sample D/ViewRootImpl@140f4c3[MainActivity]: reportDrawFinished (fn: -1) 
+2022-09-16 18:25:12.549 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+2022-09-16 18:25:12.549 30141-30141/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] rdf()
+2022-09-16 18:25:12.549 30141-30141/com.me.sample D/ViewRootImpl@3c43697[MainActivity]: reportDrawFinished (fn: -1) 
+2022-09-16 18:25:12.550 30141-30141/com.me.sample D/MainRepository: l.size(): 11
+2022-09-16 18:25:12.557 30141-30141/com.me.sample D/MainActivity: (empListResponse.getEmployees() == null): false
+2022-09-16 18:25:12.557 30141-30141/com.me.sample D/MainActivity: (empListResponse != null && empListResponse.getEmployees().size() == 0): false
+2022-09-16 18:25:12.557 30141-30141/com.me.sample D/MainActivity: e.toString(): Employee: fullName: Justine Mason; team: Point of Sale
+2022-09-16 18:25:12.557 30141-30141/com.me.sample D/MainActivity: (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)): true
+2022-09-16 18:25:12.558 30141-30141/com.me.sample D/MainActivity: e.toString(): Employee: fullName: Justine Mason; team: Point of Sale
+2022-09-16 18:25:12.558 30141-30
+141/com.me.sample D/CompatibilityChangeReporter: Compat change id reported: 147798919; UID 10704; state: ENABLED
+2022-09-16 18:25:12.569 30141-30169/com.me.sample D/OpenGLRenderer: setSurface called with nullptr
+2022-09-16 18:25:12.569 30141-30169/com.me.sample D/OpenGLRenderer: setSurface() destroyed EGLSurface
+2022-09-16 18:25:12.569 30141-30169/com.me.sample D/OpenGLRenderer: destroyEglSurface
+
+
+
+
+
+
+
+
+
+2022-09-16 18:31:02.018 31058-31058/com.me.sample D/MainRepository: saveImageData: 删除员工头像数据成功
+2022-09-16 18:31:02.018 31058-31058/com.me.sample D/MainRepository: saveImageData: 插入员工头像数据：11条
+2022-09-16 18:31:02.018 31058-31058/com.me.sample D/MainRepository: saveEmployees: 删除员工链表数据成功
+2022-09-16 18:31:02.019 31058-31058/com.me.sample D/MainRepository: saveEmployees: 插入员工链表数据：11条
+2022-09-16 18:31:02.021 31058-31058/com.me.sample I/ViewRootImpl@a363778[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+2022-09-16 18:31:02.023 31058-31058/com.me.sample D/InputMethodManager: startInputInner - Id : 0
+2022-09-16 18:31:02.023 31058-31058/com.me.sample I/InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
+2022-09-16 18:31:02.034 31058-31058/com.me.sample D/MainRepository: saveImageData: 员工头像数据保存成功
+2022-09-16 18:31:02.034 31058-31058/com.me.sample D/MainRepository: saveEmployees: 员工数据保存成功
+2022-09-16 18:31:02.034 31058-31058/com.me.sample D/InputMethodManager: startInputInner - Id : 0
+2022-09-16 18:31:21.415 31158-31158/com.me.sample W/com.me.sample: Redefining intrinsic method java.lang.Thread java.lang.Thread.currentThread(). This may cause the unexpected use of the original definition of java.lang.Thread java.lang.Thread.currentThread()in methods that have already been compiled.
+2022-09-16 18:31:21.415 31158-31158/com.me.sample W/com.me.sample: Redefining intrinsic method boolean java.lang.Thread.interrupted(). This may cause the unexpected use of the original definition of boolean java.lang.Thread.interrupted()in methods that have already been compiled.
+2022-09-16 18:31:02.722 31058-31087/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
+2022-09-16 18:31:03.603 31058-31082/com.me.sample D/OpenGLRenderer: setSurface called with nullptr
+2022-09-16 18:31:03.610 31058-31070/com.me.sample W/System: A resource failed to call close. 
+2022-09-16 18:31:03.720 31058-31087/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 1
+2022-09-16 18:31:04.720 31058-31087/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 2
+2022-09-16 18:31:05.720 31058-31087/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 3
+2022-09-16 18:31:21.417 31158-31158/com.me.sample D/ActivityThread: handleBindApplication()++ app=com.me.sample
+2022-09-16 18:31:06.187 31058-31058/com.me.sample D/MainActivity: onPause() 
+2022-09-16 18:31:21.418 31158-31158/com.me.sample D/CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10704; state: ENABLED
+2022-09-16 18:31:06.195 31058-31058/com.me.sample I/ViewRootImpl@a363778[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 0 1
+2022-09-16 18:31:21.435 31158-31158/com.me.sample W/com.me.sample: ClassLoaderContext classpath size mismatch. expected=0, found=1 (PCL[] | PCL[/data/data/com.me.sample/code_cache/.overlay/base.apk/classes14.dex*117265503])
+2022-09-16 18:31:06.277 31058-31058/com.me.sample D/InputTransport: Input channel destroyed: 'ClientS', fd=104
+2022-09-16 18:31:06.629 31058-31058/com.me.sample I/ViewRootImpl@a363778[MainActivity]: handleAppVisibility mAppVisible=true visible=false
+2022-09-16 18:31:21.451 31158-31158/com.me.sample D/LoadedApk: LoadedApk::makeApplication() appContext.mOpPackageName=com.me.sample appContext.mBasePackageName=com.me.sample
+2022-09-16 18:31:06.649 31058-31082/com.me.sample D/OpenGLRenderer: setSurface called with nullptr
+2022-09-16 18:31:06.649 31058-31082/com.me.sample D/OpenGLRenderer: setSurface() destroyed EGLSurface
+2022-09-16 18:31:06.650 31058-31082/com.me.sample D/OpenGLRenderer: destroyEglSurface
+2022-09-16 18:31:06.667 31058-31058/com.me.sample I/ViewRootImpl@a363778[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)8 dur=8 res=0x5 s={false 0} ch=true fn=7
+2022-09-16 18:31:06.671 31058-31058/com.me.sample I/ViewRootImpl@a363778[MainActivity]: stopped(true) old=false
+2022-09-16 18:31:06.673 31058-31058/com.me.sample D/MainActivity: onStop() 
+2022-09-16 18:31:06.678 31058-31058/com.me.sample D/MainActivity: onSaveInstanceState()
+2022-09-16 18:31:06.698 31058-31058/com.me.sample I/ViewRootImpl@a363778[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)8 dur=4 res=0x5 s={false 0} ch=false fn=-1
+2022-09-16 18:31:21.350 31158-31158/? I/com.me.sample: Late-enabling -Xcheck:jni
+2022-09-16 18:31:21.368 31158-31158/? E/USNET: USNET: appName: com.me.sample
+2022-09-16 18:31:21.369 31158-31158/? D/ProcessState: Binder ioctl to enable oneway spam detection failed: Invalid argument
+2022-09-16 18:31:21.372 31158-31158/? D/ActivityThread: setConscryptValidator
+2022-09-16 18:31:21.372 31158-31158/? D/ActivityThread: setConscryptValidator - put
+2022-09-16 18:31:21.452 31158-31158/com.me.sample D/NetworkSecurityConfig: Using Network Security Config from resource network_security_config debugBuild: true
+2022-09-16 18:31:21.462 31158-31158/com.me.sample D/NetworkSecurityConfig: Using Network Security Config from resource network_security_config debugBuild: true
+2022-09-16 18:31:21.469 31158-31158/com.me.sample D/ActivityThread: handleBindApplication() --
+2022-09-16 18:31:21.472 31158-31158/com.me.sample I/MMKV: Enable checkProcessMode()
+2022-09-16 18:31:21.474 31158-31158/com.me.sample I/MMKV: <native-bridge.cpp:104::JNI_OnLoad> current API level = 31, libc++_shared=0
+2022-09-16 18:31:21.474 31158-31158/com.me.sample I/MMKV: <MMKV.cpp:165::initialize> version v1.2.11, page size 4096, arch arm64-v8a
+2022-09-16 18:31:21.474 31158-31158/com.me.sample I/MMKV: <MMKV.cpp:176::initialize> armv8 AES instructions is supported
+2022-09-16 18:31:21.474 31158-31158/com.me.sample I/MMKV: <MMKV.cpp:184::initialize> armv8 CRC32 instructions is supported
+2022-09-16 18:31:21.474 31158-31158/com.me.sample I/MMKV: <MMKV.cpp:207::initializeMMKV> root dir: /data/user/0/com.me.sample/files/mmkv
+2022-09-16 18:31:21.474 31158-31158/com.me.sample I/MMKV: <MemoryFile.cpp:97::open> open fd[0x4d], /data/user/0/com.me.sample/files/mmkv/mmkv.default
+2022-09-16 18:31:21.474 31158-31158/com.me.sample I/MMKV: <MemoryFile.cpp:97::open> open fd[0x4e], /data/user/0/com.me.sample/files/mmkv/mmkv.default.crc
+2022-09-16 18:31:21.474 31158-31158/com.me.sample I/MMKV: <MMKV_IO.cpp:81::loadFromFile> loading [mmkv.default] with 0 actual size, file size 4096, InterProcess 0, meta info version:1
+2022-09-16 18:31:21.474 31158-31158/com.me.sample I/MMKV: <MMKV_IO.cpp:130::loadFromFile> loaded [mmkv.default] with 0 key-values
+2022-09-16 18:31:21.479 31158-31186/com.me.sample D/OpenGLRenderer: RenderThread::requireGlContext()
+2022-09-16 18:31:21.480 31158-31186/com.me.sample I/AdrenoGLES-0: QUALCOMM build                   : 3dad7f8ed7, I593c16c433
+Build Date                       : 10/01/21
+OpenGL ES Shader Compiler Version: EV031.32.02.02
+Local Branch                     : 
+Remote Branch                    : refs/tags/AU_LINUX_ANDROID_LA.UM.9.1.R1.11.00.00.604.073
+Remote Branch                    : NONE
+Reconstruct Branch               : NOTHING
+2022-09-16 18:31:21.480 31158-31186/com.me.sample I/AdrenoGLES-0: Build Config                     : S P 10.0.7 AArch64
+2022-09-16 18:31:21.480 31158-31186/com.me.sample I/AdrenoGLES-0: Driver Path                      : /vendor/lib64/egl/libGLESv2_adreno.so
+2022-09-16 18:31:21.483 31158-31186/com.me.sample I/AdrenoGLES-0: PFP: 0x016ee190, ME: 0x00000000
+2022-09-16 18:31:21.489 31158-31186/com.me.sample D/OpenGLRenderer: RenderThread::setGrContext()
+2022-09-16 18:31:21.512 31158-31158/com.me.sample D/BaseActivity: onCreate() 
+2022-09-16 18:31:21.512 31158-31158/com.me.sample D/MainActivity: onCreate() 
+2022-09-16 18:31:21.521 31158-31158/com.me.sample I/Dialog: mIsDeviceDefault = false, mIsSamsungBasicInteraction = false, isMetaDataInActivity = false
+2022-09-16 18:31:21.528 31158-31158/com.me.sample I/DecorView: [INFO] isPopOver=false, config=false
+2022-09-16 18:31:21.529 31158-31158/com.me.sample I/DecorView: updateCaptionType >> DecorView@1e095a7[], isFloating=true, isApplication=true, hasWindowControllerCallback=false, hasWindowDecorCaption=false
+2022-09-16 18:31:21.529 31158-31158/com.me.sample D/DecorView: setCaptionType = 0, this = DecorView@1e095a7[]
+2022-09-16 18:31:21.553 31158-31158/com.me.sample I/DecorView: [INFO] isPopOver=false, config=true
+2022-09-16 18:31:21.553 31158-31158/com.me.sample I/DecorView: updateCaptionType >> DecorView@9fdb9bb[], isFloating=false, isApplication=true, hasWindowControllerCallback=true, hasWindowDecorCaption=false
+2022-09-16 18:31:21.553 31158-31158/com.me.sample D/DecorView: setCaptionType = 0, this = DecorView@9fdb9bb[]
+2022-09-16 18:31:21.554 31158-31158/com.me.sample I/DecorView: getCurrentDensityDpi: from real metrics. densityDpi=560 msg=resources_loaded
+2022-09-16 18:31:21.571 31158-31158/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: setView = com.android.internal.policy.DecorView@1e095a7 TM=true
+2022-09-16 18:31:21.574 31158-31158/com.me.sample W/com.me.sample: Accessing hidden method Landroid/view/View;->computeFitSystemWindows(Landroid/graphics/Rect;Landroid/graphics/Rect;)Z (unsupported, reflection, allowed)
+2022-09-16 18:31:21.575 31158-31158/com.me.sample W/com.me.sample: Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (unsupported, reflection, allowed)
+2022-09-16 18:31:21.599 31158-31158/com.me.sample D/MainActivity: (savedInstanceState != null): true
+2022-09-16 18:31:21.599 31158-31158/com.me.sample D/MainRepository: retrieveEmployees() 
+2022-09-16 18:31:21.605 31158-31158/com.me.sample D/MainActivity: onStart() 
+2022-09-16 18:31:21.606 31158-31158/com.me.sample D/MainActivity: onRestoreInstanceState() 
+2022-09-16 18:31:21.607 31158-31158/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: stopped(false) old=false
+2022-09-16 18:31:21.608 31158-31158/com.me.sample D/MainActivity: onResume() 
+2022-09-16 18:31:21.621 31158-31158/com.me.sample I/DecorView: notifyKeepScreenOnChanged: keepScreenOn=false
+2022-09-16 18:31:21.626 31158-31158/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: setView = com.android.internal.policy.DecorView@9fdb9bb TM=true
+2022-09-16 18:31:21.646 31158-31158/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: Relayout returned: old=(0,142,1440,2872) new=(510,1297,930,1717) req=(420,420)0 dur=5 res=0x7 s={true -5476376617398057808} ch=true fn=-1
+2022-09-16 18:31:21.649 31158-31186/com.me.sample D/hw-ProcessState: Binder ioctl to enable oneway spam detection failed: Invalid argument
+2022-09-16 18:31:21.649 31158-31186/com.me.sample D/OpenGLRenderer: eglCreateWindowSurface
+2022-09-16 18:31:21.649 31158-31158/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+2022-09-16 18:31:21.658 31158-31186/com.me.sample I/BufferQueueProducer: [ViewRootImpl@3c43697[MainActivity]#0(BLAST Consumer)0](id:79b600000000,api:1,p:31158,c:31158) queueBuffer: queued for the first time.
+2022-09-16 18:31:21.677 31158-31158/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: Relayout returned: old=(0,0,1440,3040) new=(0,0,1440,3040) req=(1440,3040)0 dur=5 res=0x7 s={true -5476376617398005488} ch=true fn=-1
+2022-09-16 18:31:21.678 31158-31186/com.me.sample D/OpenGLRenderer: eglCreateWindowSurface
+2022-09-16 18:31:21.680 31158-31158/com.me.sample W/RecyclerView: No adapter attached; skipping layout
+2022-09-16 18:31:21.680 31158-31158/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: [DP] dp(1) 1 android.view.ViewRootImpl.reportNextDraw:11374 android.view.ViewRootImpl.performTraversals:4167 android.view.ViewRootImpl.doTraversal:2893 
+2022-09-16 18:31:21.689 31158-31186/com.me.sample I/BufferQueueProducer: [ViewRootImpl@140f4c3[MainActivity]#1(BLAST Consumer)1](id:79b600000001,api:1,p:31158,c:31158) queueBuffer: queued for the first time.
+2022-09-16 18:31:21.691 31158-31158/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+2022-09-16 18:31:21.691 31158-31158/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: [DP] rdf()
+2022-09-16 18:31:21.691 31158-31158/com.me.sample D/ViewRootImpl@140f4c3[MainActivity]: reportDrawFinished (fn: -1) 
+2022-09-16 18:31:21.692 31158-31158/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] pdf(0) 1 android.view.ViewRootImpl.lambda$addFrameCompleteCallbackIfNeeded$3$ViewRootImpl:4969 android.view.ViewRootImpl$$ExternalSyntheticLambda16.run:6 android.os.Handler.handleCallback:938 
+2022-09-16 18:31:21.692 31158-31158/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: [DP] rdf()
+2022-09-16 18:31:21.692 31158-31158/com.me.sample D/ViewRootImpl@3c43697[MainActivity]: reportDrawFinished (fn: -1) 
+2022-09-16 18:31:21.693 31158-31158/com.me.sample D/MainRepository: l.size(): 11
+2022-09-16 18:31:21.698 31158-31158/com.me.sample D/MainActivity: (empListResponse.getEmployees() == null): false
+2022-09-16 18:31:21.698 31158-31158/com.me.sample D/MainActivity: (empListResponse != null && empListResponse.getEmployees().size() == 0): false
+2022-09-16 18:31:21.698 31158-31158/com.me.sample D/MainActivity: e.toString(): Employee: fullName: Justine Mason; team: Point of Sale
+2022-09-16 18:31:21.698 31158-31158/com.me.sample D/MainActivity: (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)): true
+2022-09-16 18:31:21.700 31158-31186/com.me.sample D/OpenGLRenderer: setSurface called with nullptr
+2022-09-16 18:31:21.700 31158-31186/com.me.sample D/OpenGLRenderer: setSurface() destroyed EGLSurface
+2022-09-16 18:31:21.700 31158-31186/com.me.sample D/OpenGLRenderer: destroyEglSurface
+2022-09-16 18:31:21.700 31158-31158/com.me.sample I/ViewRootImpl@3c43697[MainActivity]: dispatchDetachedFromWindow
+2022-09-16 18:31:21.718 31158-31158/com.me.sample D/InputTransport: Input channel destroyed: 'f9936c5', fd=90
+2022-09-16 18:31:21.732 31158-31158/com.me.sample D/KLog: KLog printLog msg: https://s3.amazonaws.com/sq-mobile-interview/photos/16c00560-6dd3-4af4-97a6-d4754e7f2394/small.jpg
+2022-09-16 18:31:21.733 31158-31158/com.me.sample D/CustomImageView.java: [ (CustomImageView.java:51)#SetImgUrl ] https://s3.amazonaws.com/sq-mobile-interview/photos/16c00560-6dd3-4af4-97a6-d4754e7f2394/small.jpg
+2022-09-16 18:31:21.733 31158-31158/com.me.sample W/Glide: Failed to find GeneratedAppGlideModule. You should include an annotationProcessor compile dependency on com.github.bumptech.glide:compiler in your application and a @GlideModule annotated AppGlideModule implementation or LibraryGlideModules will be silently ignored
+2022-09-16 18:31:21.757 31158-31158/com.me.sample D/KLog: KLog printLog msg: https://s3.amazonaws.com/sq-mobile-interview/photos/5095a907-abc9-4734-8d1e-0eeb2506bfa8/small.jpg
+2022-09-16 18:31:21.757 31158-31158/com.me.sample D/CustomImageView.java: [ (CustomImageView.java:51)#SetImgUrl ] https://s3.amazonaws.com/sq-mobile-interview/photos/5095a907-abc9-4734-8d1e-0eeb2506bfa8/small.jpg
+2022-09-16 18:31:21.760 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.760 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.767 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.767 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.769 31158-31158/com.me.sample D/KLog: KLog printLog msg: https://s3.amazonaws.com/sq-mobile-interview/photos/43ed39b3-fbc0-4eb8-8ed3-6a8de479a52a/small.jpg
+2022-09-16 18:31:21.770 31158-31158/com.me.sample D/CustomImageView.java: [ (CustomImageView.java:51)#SetImgUrl ] https://s3.amazonaws.com/sq-mobile-interview/photos/43ed39b3-fbc0-4eb8-8ed3-6a8de479a52a/small.jpg
+2022-09-16 18:31:21.774 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.774 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.780 31158-31158/com.me.sample D/KLog: KLog printLog msg: https://s3.amazonaws.com/sq-mobile-interview/photos/57bc7ed2-5f9e-4814-a7df-dea85c2ed97f/small.jpg
+2022-09-16 18:31:21.780 31158-31158/com.me.sample D/CustomImageView.java: [ (CustomImageView.java:51)#SetImgUrl ] https://s3.amazonaws.com/sq-mobile-interview/photos/57bc7ed2-5f9e-4814-a7df-dea85c2ed97f/small.jpg
+2022-09-16 18:31:21.784 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.784 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.789 31158-31158/com.me.sample D/KLog: KLog printLog msg: https://s3.amazonaws.com/sq-mobile-interview/photos/8ab10188-74d0-4843-9eb2-1938571f6830/small.jpg
+2022-09-16 18:31:21.790 31158-31158/com.me.sample D/CustomImageView.java: [ (CustomImageView.java:51)#SetImgUrl ] https://s3.amazonaws.com/sq-mobile-interview/photos/8ab10188-74d0-4843-9eb2-1938571f6830/small.jpg
+2022-09-16 18:31:21.794 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.794 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.799 31158-31158/com.me.sample D/KLog: KLog printLog msg: https://s3.amazonaws.com/sq-mobile-interview/photos/92f8e6f4-8d1b-4ea6-801f-a352dfea3751/small.jpg
+2022-09-16 18:31:21.799 31158-31158/com.me.sample D/CustomImageView.java: [ (CustomImageView.java:51)#SetImgUrl ] https://s3.amazonaws.com/sq-mobile-interview/photos/92f8e6f4-8d1b-4ea6-801f-a352dfea3751/small.jpg
+2022-09-16 18:31:21.804 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.804 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.809 31158-31158/com.me.sample D/KLog: KLog printLog msg: https://s3.amazonaws.com/sq-mobile-interview/photos/077c1707-4199-415c-86b5-a29afe4e29e3/small.jpg
+2022-09-16 18:31:21.809 31158-31158/com.me.sample D/CustomImageView.java: [ (CustomImageView.java:51)#SetImgUrl ] https://s3.amazonaws.com/sq-mobile-interview/photos/077c1707-4199-415c-86b5-a29afe4e29e3/small.jpg
+2022-09-16 18:31:21.813 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.813 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.818 31158-31158/com.me.sample D/KLog: KLog printLog msg: https://s3.amazonaws.com/sq-mobile-interview/photos/7959987e-0d64-4bf6-8b9e-da78deac3457/small.jpg
+2022-09-16 18:31:21.819 31158-31158/com.me.sample D/CustomImageView.java: [ (CustomImageView.java:51)#SetImgUrl ] https://s3.amazonaws.com/sq-mobile-interview/photos/7959987e-0d64-4bf6-8b9e-da78deac3457/small.jpg
+2022-09-16 18:31:21.823 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.823 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.828 31158-31158/com.me.sample D/KLog: KLog printLog msg: https://s3.amazonaws.com/sq-mobile-interview/photos/b44629e2-47e0-459a-a936-4683f783536b/small.jpg
+2022-09-16 18:31:21.828 31158-31158/com.me.sample D/CustomImageView.java: [ (CustomImageView.java:51)#SetImgUrl ] https://s3.amazonaws.com/sq-mobile-interview/photos/b44629e2-47e0-459a-a936-4683f783536b/small.jpg
+2022-09-16 18:31:21.833 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.833 31158-31203/com.me.sample W/ExifInterface: Stop reading file since a wrong offset may cause an infinite loop: 0
+2022-09-16 18:31:21.842 31158-31158/com.me.sample I/ViewRootImpl@140f4c3[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
+2022-09-16 18:31:21.844 31158-31158/com.me.sample D/InputMethodManager: startInputInner - Id : 0
+2022-09-16 18:31:21.844 31158-31158/com.me.sample I/InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
+2022-09-16 18:31:21.854 31158-31158/com.me.sample D/InputMethodManager: startInputInner - Id : 0
+2022-09-16 18:31:22.522 31158-31191/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
+2022-09-16 18:31:23.419 31158-31186/com.me.sample D/OpenGLRenderer: setSurface called with nullptr
+2022-09-16 18:31:23.424 31158-31170/com.me.sample W/System: A resource failed to call close. 
+2022-09-16 18:31:23.522 31158-31191/com.me.sample I/MainActivity: Started in onCreate(), running until onDestory

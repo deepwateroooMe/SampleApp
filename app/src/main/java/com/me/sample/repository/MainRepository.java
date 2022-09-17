@@ -63,6 +63,7 @@ public class MainRepository {
     // 现在也只是获取网络数据，实际中App的数据还有多个来源，本地数据库、本地缓存。都是可以拿数据的
     // 这些环节如果要写的话，都是要写在这个Repository中的，如果你放到ViewModel中，会导致里面的代码量很大，因为你一个ViewModel中可能有多个网络请求，这很正常。
     public MutableLiveData<EmployeeResponse> getEmployees() {
+        Log.d(TAG, "getEmployees() ");
         ApiService apiService = NetworkApi.createService(ApiService.class);
         apiService.getEmployees().compose(NetworkApi.applySchedulers(new BaseObserver<EmployeeResponse>() {
                     @Override 
@@ -107,6 +108,7 @@ public class MainRepository {
      * 保存员工链表数据
      */
     private void saveEmployees(EmployeeResponse employeesResponse) {
+        Log.d(TAG, "saveEmployees() ");
         // // 记录数据库里已经存有员工链表数据
         // mvUtils.put(Constant.HAS_LIST, true);
         Completable deleteAll = BaseApplication.getDb().employeeDao().deleteAll();
@@ -131,6 +133,7 @@ public class MainRepository {
      * 保存员工大小图像: 保存每个员工的头像图片，一次只能保存一个
      */
     private void saveImageData(EmployeeResponse employeeResponse) {
+        Log.d(TAG, "saveImageData() ");
         // // 记录数据库里已经存有员工头像数据
         // mvUtils.put(Constant.HAS_IMGS, true);
         // 员工头像表：需要删除所有以前(上一次)所存过的员工头像数据；再一个一个地加进来

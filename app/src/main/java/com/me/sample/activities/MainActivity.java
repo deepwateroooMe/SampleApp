@@ -1,5 +1,8 @@
 package com.me.sample.activities;
 
+import static android.view.View.INVISIBLE;
+import static android.view.View.VISIBLE;
+
 import android.os.Bundle;
 
 import com.me.sample.R;
@@ -91,13 +94,20 @@ public class MainActivity extends BaseActivity {
 // 因为涉及几个不同状态的切换，所以还是移到里面，应该差别也不是很大               
         mMainActivityViewModel.mEmpList.observe((LifecycleOwner) this, empListResponse -> {
                 // 觉得这里的数据分类的各要的办法：是在ViewModel中定义三个不同的状态，直接传三个最简单的状态到视图层，但是暂时先这样
-                if (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)) {
+
+                Log.d(TAG, "(empListResponse.getEmployees() == null): " + (empListResponse.getEmployees() == null));
+                Log.d(TAG, "(empListResponse != null && empListResponse.getEmployees().size() == 0): " + (empListResponse != null && empListResponse.getEmployees().size() == 0));
+                Log.d(TAG, "(empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)): " + (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)));
+// 既然是说数据不全，那么简单也很简单，就直接不全的数据也让它能够显示出来就可以了
+                // if (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0 || !isValidData(empListResponse)) {
+                if (empListResponse.getEmployees() == null || empListResponse.getEmployees().size() == 0) {
                     dataBinding.rv.setVisibility(INVISIBLE);
                     Toast toast = Toast.makeText(this, "The Employee list is Empty or contained invalide data.", Toast.LENGTH_LONG);
                     toast.show();
                 } else {
                     dataBinding.rv.setAdapter(new RecyclerAdapter(empListResponse.getEmployees()));
                     // mAdapter.updateEmpList(empListResponse.getEmployees());
+                    dataBinding.rv.setVisibility(VISIBLE);
                 }
                 dismissLoading();
             });
@@ -110,6 +120,22 @@ public class MainActivity extends BaseActivity {
                     mMainActivityViewModel.getEmployees();
                 }
             });
+    }
+
+    // 这部分对数据的处理，更希望放到ViewModel中去定义出三种不同的状态，暂时放这里
+    private boolean isValidData(EmployeeResponse l) {
+        // if (l.getEmployees() == null) return false;
+        for (Employee e : l.getEmployees()) {
+            if (!isValidEmployee(e)) {
+                Log.d(TAG, "e.toString(): " + e.toString());
+                return false;
+            }
+        }
+        return true;
+    }
+    private boolean isValidEmployee(Employee e) {
+        return e.getUuid() != null && e.getFullName() != null && e.getEmailAddress() != null
+            && e.getTeam() != null && e.getEmployeeType() != null;
     }
 
     // 会在 onStop()方法调用之前 调用该方法,保存当前状态
@@ -195,20 +221,6 @@ public class MainActivity extends BaseActivity {
         Log.d(TAG, "onSaveInstanceState()");
 // 保存数据： 链表数据，三种状态，图片(我应该是可以不用管的)
         // savedInstanceState.putInt();
-    }
-    
-    // 这部分对数据的处理，更希望放到ViewModel中去定义出三种不同的状态，暂时放这里
-    private boolean isValidData(EmployeeResponse l) {
-        if (l.getEmployees() == null) return false;
-        for (Employee e : l.getEmployees()) {
-            if (!isValidEmployee(e)) 
-                return false;
-        }
-        return true;
-    }
-    private boolean isValidEmployee(Employee e) {
-        return e.getUuid() != null && e.getFullName() != null && e.getEmailAddress() != null
-            && e.getTeam() != null && e.getEmployeeType() != null;
     }
     
     private void initRecyclerView(){
