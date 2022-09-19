@@ -35,11 +35,10 @@ public class NetworkApi {
     // https://s3.amazonaws.com/sq-mobile-interview/employees.json
     private static String BASE_URL = "https://s3.amazonaws.com";
 
-    // OkHttp客户端
-    private static OkHttpClient okHttpClient;
+    // OkHttp客户端: 设计成单例模式
+    private static OkHttpClient okHttpClient; // volatile： 问题是这个小项目里，有多线程使用的情况吗？ 
 
     // retrofitHashMap
-// 这里final的只是map的reference, 里面的内容当然可以变的
     private static final HashMap<String, Retrofit> retrofitHashMap = new HashMap<>(); 
 
     // 初始化: 提取应用的最基本配置信息
