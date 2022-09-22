@@ -30,7 +30,7 @@
 adb shell am force-stop com.me.sample 
 
 adb shell am kill com.me.sample 
-adb shell ==> ps -A | grep com.me.sample # 前后对比就能够验证出，它是真死了
+adb shell ==> ps -A | grep com.me.sample 
 
 adb shell am kill-all 　　　　　　　　　　　　　
 #+END_SRC 
@@ -108,15 +108,15 @@ com.me.sample I/ViewRootImpl@a363778[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
   
 [[./pic/readme_20220915_225835.png]]
 #+BEGIN_SRC text
-com.me.sample D/MainRepository: saveImageData: 删除员工头像数据成功
-com.me.sample D/MainRepository: saveImageData: 插入员工头像数据：11条
-com.me.sample D/MainRepository: saveEmployees: 删除员工链表数据成功
-com.me.sample D/MainRepository: saveEmployees: 插入员工链表数据：11条
+com.me.sample D/MainRepository: saveImageData: 
+com.me.sample D/MainRepository: saveImageData: 
+com.me.sample D/MainRepository: saveEmployees: 
+com.me.sample D/MainRepository: saveEmployees: 
 com.me.sample I/ViewRootImpl@ccc5e51[MainActivity]: MSG_WINDOW_FOCUS_CHANGED 1 1
 com.me.sample D/InputMethodManager: startInputInner - Id : 0
 com.me.sample I/InputMethodManager: startInputInner - mService.startInputOrWindowGainedFocus
-com.me.sample D/MainRepository: saveImageData: 员工头像数据保存成功
-com.me.sample D/MainRepository: saveEmployees: 员工数据保存成功
+com.me.sample D/MainRepository: saveImageData: 
+com.me.sample D/MainRepository: saveEmployees: 
 com.me.sample D/InputMethodManager: startInputInner - Id : 0
 com.me.sample I/MainActivity: Started in onCreate(), running until onDestory(): 0
 com.me.sample D/OpenGLRenderer: setSurface called with nullptr
