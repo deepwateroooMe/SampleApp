@@ -18,9 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    /**
-     * 传递过来的数据
-     */
     private List<Employee> mEmpList;
     
     public RecyclerAdapter(List<Employee> mEmpList) {
@@ -65,10 +62,8 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
     
-//     // 这个功能是：从RecycleView 中点击某张图片时，时入观看该小图的大图片模式，实现点击回调绑定, 这个应用里没有添加这个页面
 //     public static class ClickBinding {
 //         public void itemClick(EmployeeResponse.EmployeesBean verticalBean, View view) {
-// // <<<<<<<<<< 需要定义一个特定的Activity这里我没有实现，没有要求
 //             Intent intent = new Intent(view.getContext(), PictureViewActivity.class); 
 //             intent.putExtra("img", verticalBean.getImg());
 //             view.getContext().startActivity(intent);

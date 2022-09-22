@@ -12,10 +12,6 @@ import java.util.List;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 
-/**
- * 壁纸数据操作
- * @author llw
- */
 @Dao
 public interface EmployeeDao {
 

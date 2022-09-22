@@ -23,26 +23,14 @@ import com.me.sample.utils.PermissionUtils;
 import com.me.sample.view.dialog.LoadingDialog;
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
-/**
- * 基础Activity
- *
- * @author llw
- */
-// public class BaseActivity extends AppCompatActivity {
 public class BaseActivity extends RxAppCompatActivity {
     private final String TAG = "BaseActivity";
     
     protected BaseActivity context;
     private LoadingDialog loadingDialog;
 
-    /**
-     * 打开相册请求码
-     */
     protected static final int SELECT_PHOTO_CODE = 2000;
 
-    /**
-     * 打开相机请求码
-     */
     protected static final int TAKE_PHOTO_CODE = 2001;
 
     @Override
@@ -62,20 +50,10 @@ public class BaseActivity extends RxAppCompatActivity {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
 
-    /**
-     * 跳转页面
-     *
-     * @param clazz 目标页面
-     */
     protected void jumpActivity(final Class<?> clazz) {
         startActivity(new Intent(context, clazz));
     }
 
-    /**
-     * 跳转页面并关闭当前页面
-     *
-     * @param clazz 目标页面
-     */
     protected void jumpActivityFinish(final Class<?> clazz) {
         startActivity(new Intent(context, clazz));
         finish();
@@ -89,11 +67,6 @@ public class BaseActivity extends RxAppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> finish());
     }
 
-    /**
-     * 状态栏文字图标颜色
-     *
-     * @param dark 深色 false 为浅色
-     */
     protected void setStatusBar(boolean dark) {
         View decor = getWindow().getDecorView();
         if (dark) {
@@ -103,64 +76,38 @@ public class BaseActivity extends RxAppCompatActivity {
         }
     }
 
-    /**
-     * 退出应用程序
-     */
     protected void exitTheProgram() {
         BaseApplication.getActivityManager().finishAllActivity();
     }
 
-    /**
-     * 显示加载弹窗
-     */
     protected void showLoading() {
         loadingDialog = new LoadingDialog(this);
         loadingDialog.show();
     }
 
-    /**
-     * 显示加载弹窗
-     *
-     * @param isClose true 则点击其他区域弹窗关闭， false 不关闭。
-     */
     protected void showLoading(boolean isClose) {
         loadingDialog = new LoadingDialog(this, isClose);
         loadingDialog.show();
     }
 
-    /**
-     * 隐藏加载弹窗
-     */
     protected void dismissLoading() {
         if (loadingDialog != null) {
             loadingDialog.dismiss();
         }
     }
 
-    /**
-     * 当前是否在Android11.0及以上
-     */
     protected boolean isAndroid11() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R;
     }
 
-    /**
-     * 当前是否在Android10.0及以上
-     */
     protected boolean isAndroid10() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 
-    /**
-     * 当前是否在Android7.0及以上
-     */
     protected boolean isAndroid7() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
     }
 
-    /**
-     * 当前是否在Android6.0及以上
-     */
     protected boolean isAndroid6() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
@@ -178,9 +125,6 @@ public class BaseActivity extends RxAppCompatActivity {
         PermissionUtils.requestPermission(this, permissionName);
     }
 
-    /**
-     * 请求外部存储管理 Android11版本时获取文件读写权限时调用 新的方式
-     */
     protected void requestManageExternalStorage(ActivityResultLauncher<Intent> intentActivityResultLauncher) {
         Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
         intent.setData(Uri.parse("package:" + getPackageName()));

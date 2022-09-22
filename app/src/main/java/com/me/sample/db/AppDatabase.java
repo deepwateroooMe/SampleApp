@@ -14,16 +14,16 @@ import com.me.sample.db.bean.Employee;
 
 @Database(entities={Image.class,
         Employee.class
-    }, version = 1, exportSchema = false) // exportSchema: 这个是干什么用的 ？
+    }, version = 1, exportSchema = false) // exportSchema: 
 public abstract class AppDatabase extends RoomDatabase {
     private final String TAG = "EmployeeDatabase";
     private static final String DATABASE_NAME = "mvvm_demo";
 
     private static volatile AppDatabase instance;
     
-    public static AppDatabase getInstance(Context context) { // 使用单例模式，双重检测机制
+    public static AppDatabase getInstance(Context context) {
         if (instance == null) {
-            synchronized (AppDatabase.class) { // 上锁锁在这个类上
+            synchronized (AppDatabase.class) { 
                 if (instance == null) {
                     instance = Room
                         .databaseBuilder(context.getApplicationContext(), AppDatabase.class, DATABASE_NAME)
@@ -37,20 +37,15 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract ImageDao imageDao(); 
     public abstract EmployeeDao employeeDao();
 
-    // 数据库迁移升级的逻辑可以补上
     // private static final Migration MIGRATION_2_3 = new Migration(2, 3) {
     //     @Override
     //     public void migrate(@NonNull SupportSQLiteDatabase database) {
-    //         //创建临时表
     //         database.execSQL("CREATE TABLE tem_emperor (" + "id INTEGER PRIMARY KEY NOT NULL," +
     //                          "emperor_name TEXT," +
     //                          "age INTEGER," +
     //                          "gender TEXT)");
-    //         //将数据导入临时表
     //         database.execSQL("INSERT INTO tem_emperor (id,emperor_name,age,gender) SELECT id,emperor_name,age,gender FROM emperor_table");
-    //         //删除原表
     //         database.execSQL("DROP TABLE emperor_table");
-    //         //临时表改成原表的名字
     //         database.execSQL("ALTER TABLE tem_emperor RENAME TO emperor_table");
     //     }
     // };
@@ -58,7 +53,6 @@ public abstract class AppDatabase extends RoomDatabase {
     private static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
-            // 在这里做升级操作，比如增加或者减少表中的字段
             // Create the new table
             database.execSQL("CREATE TABLE `employee` " +
                              "(uuid STRING NOT NULL, " +

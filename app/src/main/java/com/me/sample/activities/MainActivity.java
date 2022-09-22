@@ -45,9 +45,6 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate() ");
 
-        // 以Activity为例，在Activity中使用bindToLifecycle()方法，完成Observable发布的事件和当前的组件绑定，实现生命周期同步。
-        // 从而实现当前组件生命周期结束时，自动取消对Observable订阅
-        // 当执行onDestory()时， 自动解除订阅
         Observable.interval(1, TimeUnit.SECONDS)
             .doOnDispose(new Action() {
                     @Override
@@ -63,20 +60,16 @@ public class MainActivity extends BaseActivity {
                     }
                 });
 
-        // UI界面屏幕显示，优先处理，不能留白
         showLoading();
 
-        // 数据绑定视图
         dataBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         mMainActivityViewModel = new ViewModelProvider((ViewModelStoreOwner) this).get(MainActivityViewModel.class);
         mMainActivityViewModel.init(); 
 
-        // 返回数据时更新ViewModel，ViewModel更新则xml更新 
         dataBinding.setViewModel(mMainActivityViewModel);
         initRecyclerView(); 
 
-        // 当被安卓系统低内存杀死的重建，走从本地数据库读取数据的方式，而不是从网络提取
         if (savedInstanceState != null) {
             Log.d(TAG, "(savedInstanceState != null): " + (savedInstanceState != null));
             mMainActivityViewModel.retrieveEmployees();
@@ -85,10 +78,7 @@ public class MainActivity extends BaseActivity {
             mMainActivityViewModel.getEmployees();
         }
         
-// 感觉这里每次都New 一个新的 RecyclerAdapter也不是很好，暂时用不优雅的公用API的方式重置数据；
-// 因为涉及几个不同状态的切换，所以还是移到里面，应该差别也不是很大               
         mMainActivityViewModel.mEmpList.observe((LifecycleOwner) this, empListResponse -> {
-                // 觉得这里的数据分类的各要的办法：是在ViewModel中定义三个不同的状态，直接传三个最简单的状态到视图层，但是暂时先这样
                 // if (empListResponse.getEmployees() == null) {
                 //     dataBinding.rv.setVisibility(INVISIBLE);
                 //     Toast toast = Toast.makeText(this, "The Employee list contains invalid data, invalidated list.", Toast.LENGTH_LONG);
@@ -119,7 +109,6 @@ public class MainActivity extends BaseActivity {
             });
     }
 
-    // 这部分对数据的处理，更希望放到ViewModel中去定义出三种不同的状态，暂时放这里
     private boolean isValidData(EmployeeResponse l) {
         // if (l.getEmployees() == null) return false;
         for (Employee e : l.getEmployees()) {
@@ -135,22 +124,15 @@ public class MainActivity extends BaseActivity {
             && e.getTeam() != null && e.getEmployeeType() != null;
     }
 
-    // 会在 onStop()方法调用之前 调用该方法,保存当前状态
-    // 当用户主动销毁activity，如按back键，或直接执行finish(),不会执行
-    // 遇到意外情况（内存不足;用户直接按home键）由系统直接销毁一个Activity时，就会调用
     @Override
         public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        // super.onSaveInstanceState(outState, outPersistentState); // 不希望安卓系统帮保存任何状态
+        // super.onSaveInstanceState(outState, outPersistentState);
         Log.d(TAG, "onSaveInstanceState() ");
-        // 是在任何从网络调用数据的时机和关口都已经第一时间将数据保存到了数据库，所有任何时间数据库都是最新的(可能需要优化一下保存时机)
-        // 可能还需要保存一下RecyclerView的当前位置(或ListView的当前选择的位置)
     }
 
-    // onRestoreInstanceState()会在onStart()和onResume()之间执行或者在onCreate()方法中判断
-    // 只有在activity在非用户意愿被销毁后重建的时候,才会调用
     @Override
         protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        // super.onRestoreInstanceState(savedInstanceState); // 要安卓系统不要再去做任何多余的事  
+        // super.onRestoreInstanceState(savedInstanceState); 
         Log.d(TAG, "onRestoreInstanceState() ");
     }
 
@@ -173,7 +155,6 @@ public class MainActivity extends BaseActivity {
         public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume() ");
-        // 与上面onCreate()中的方法，两者选择一个即可。问题是：两种方法，有区别吗，区别是什么呢？
         // Observable.interval(1, TimeUnit.SECONDS)
         //     .doOnDispose(new Action() {
         //             @Override
@@ -181,7 +162,7 @@ public class MainActivity extends BaseActivity {
         //                 Log.i(TAG, "Unsubscribing subscription from onResume()");
         //             }
         //         })
-        //     //bindUntilEvent()，内部传入指定生命周期参数
+        //     // bindUntilEvent()，
         //     .compose(this.<Long>bindUntilEvent(ActivityEvent.DESTROY))
         //     .subscribe(new Consumer<Long>() {
         //             @Override
@@ -201,7 +182,7 @@ public class MainActivity extends BaseActivity {
         Log.d(TAG, "onDestroy() ");
     }
     
-   // @Override // 因为这里横竖屏的布局完全一样，所以可以不必覆写这个方法
+   // @Override 
    //     public void onConfigurationChanged(Configuration newConfig) {
    //     super.onConfigurationChanged(newConfig);
    //     // Checks the orientation of the screen

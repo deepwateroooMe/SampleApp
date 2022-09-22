@@ -7,11 +7,6 @@ import com.me.sample.db.bean.Employee;
 
 import javax.annotation.Generated;
 
-/**
- * 员工访问接口返回数据实体
- * @author llw
- * @description BiYingImgResponse
- */
 @Generated("jsonschema2pojo")
 public class EmployeeResponse {
 

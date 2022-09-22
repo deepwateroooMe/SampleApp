@@ -7,7 +7,6 @@ import retrofit2.http.GET;
 
 public interface ApiService { 
     
-    // 下载所有员工数据的接口
 // https://s3.amazonaws.com/sq-mobile-interview/employees.json
 // https://s3.amazonaws.com/sq-mobile-interview/employees_malformed.json
 // https://s3.amazonaws.com/sq-mobile-interview/employees_empty.json

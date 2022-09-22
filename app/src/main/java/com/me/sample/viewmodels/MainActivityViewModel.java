@@ -20,12 +20,12 @@ public class MainActivityViewModel extends BaseViewModel {
     // MainActivityViewModel(MainRepository mainRepository) {
     //     this.mainRepository = mainRepository;
     // }
-    public void init() { // init: 无法区分 是系统恢复应用或是活动，还是新创建应用和活动
+    public void init() { 
         if (mEmpList != null) return;
         mainRepository = MainRepository.getInstance();
 
         // failed = mainRepository.failed;
-        // mEmpList = mainRepository.getEmployees(); // 这里自动从网络读是不对的
+        // mEmpList = mainRepository.getEmployees(); 
     }
 
     public void retrieveEmployees() {
@@ -35,13 +35,10 @@ public class MainActivityViewModel extends BaseViewModel {
     public void getEmployees() {
         failed = mainRepository.failed;
         mEmpList = mainRepository.getEmployees();
-// walk around: 暂时还是把逻辑放在MainActivity UI中鉴定过滤分类        
-// 还没有想明白：为什么我在viewmodel里过滤数据，就不对？根上面 getEmployees() 的结果是发布在主线程引起的吗？
-// 还是说，网络请示的时候，这里的变化太多太快，过滤时的结果与时间都卡不准，过滤不好数据而已呢？
         // LiveData<EmployeeResponse> tmp = mainRepository.getEmployees();
         // if (tmp.getValue() != null && isValidData(tmp.getValue())) // mal_formed works
         //     mEmpList = tmp;
-        // else { // 含有无效数据
+        // else { 
         //     EmployeeResponse esp = new EmployeeResponse();
         //     mEmpList = new MutableLiveData<>(esp);
         // }

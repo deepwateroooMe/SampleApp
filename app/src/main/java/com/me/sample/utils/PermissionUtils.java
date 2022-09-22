@@ -7,11 +7,6 @@ import android.os.Build;
 
 import androidx.core.app.ActivityCompat;
 
-/**
- * 权限请求工具类
- *
- * @author llw
- */
 public class PermissionUtils {
 
     private static PermissionUtils mInstance;
@@ -37,12 +32,6 @@ public class PermissionUtils {
         return mInstance;
     }
 
-    /**
-     * 检查是有拥有某权限
-     *
-     * @param permission 权限名称
-     * @return true 有  false 没有
-     */
     public static boolean hasPermission(Activity activity, String permission) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             return activity.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED;
@@ -51,12 +40,6 @@ public class PermissionUtils {
         }
     }
 
-    /**
-     * 通过权限名称获取请求码
-     *
-     * @param permissionName 权限名称
-     * @return requestCode 权限请求码
-     */
     private static int getPermissionRequestCode(String permissionName) {
         int requestCode;
         switch (permissionName) {
@@ -77,16 +60,8 @@ public class PermissionUtils {
         return requestCode;
     }
 
-    /**
-     * 请求权限
-     *
-     * @param permission 权限名称
-     */
     public static void requestPermission(Activity activity, String permission) {
         int requestCode = getPermissionRequestCode(permission);
-        //请求此权限
         ActivityCompat.requestPermissions(activity, new String[]{permission}, requestCode);
     }
-
-
 }
